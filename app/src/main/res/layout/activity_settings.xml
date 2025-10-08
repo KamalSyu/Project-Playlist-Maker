@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:orientation="vertical"
+    android:padding="@dimen/standard_padding">
+
+    <TextView
+        android:id="@+id/back"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start"
+        android:text="@string/setting"
+        android:textColor="@color/black"
+        android:textSize="@dimen/primary_text_size"
+        app:drawableStartCompat="@drawable/back_arrow" />
+
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/black_theme"
+        style="@style/CombinedStyle" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/share_the_app"
+        app:drawableEndCompat="@drawable/share"
+        style="@style/AppTextStyleSetting"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/write_to_support"
+        app:drawableEndCompat="@drawable/support"
+        style="@style/AppTextStyleSetting"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/user_agreement"
+        app:drawableEndCompat="@drawable/light_mode"
+        style="@style/AppTextStyleSetting"/>
+
+</LinearLayout>
+
+
