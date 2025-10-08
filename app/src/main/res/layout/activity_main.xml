@@ -5,23 +5,25 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/yp_blue"
-    android:orientation="vertical"
-    android:padding="@dimen/standard_padding">
+    android:orientation="vertical">
 
     <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/app_name"
-        android:layout_gravity="start"
+        android:gravity="start"
+        android:paddingStart="16dp"
+        android:paddingTop="14dp"
         android:textColor="@color/white"
         android:textSize="@dimen/primary_text_size"
-        android:layout_marginBottom="16dp"/>
+        android:minHeight="56dp"/>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/search_button"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
+        android:layout_marginTop="24dp"
         style="@style/CustomMaterialButton"
         android:text="@string/search_button"
         app:icon="@drawable/vector"
@@ -32,6 +34,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
+        android:layout_marginTop="16dp"
         style="@style/CustomMaterialButton"
         android:text="@string/mediateca"
         app:icon="@drawable/mediateca"
@@ -42,6 +45,8 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="28dp"
         style="@style/CustomMaterialButton"
         android:text="@string/setting"
         app:icon="@drawable/setting"
