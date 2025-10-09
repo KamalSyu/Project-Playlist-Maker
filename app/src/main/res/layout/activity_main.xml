@@ -26,7 +26,7 @@
         android:layout_marginTop="24dp"
         style="@style/CustomMaterialButton"
         android:text="@string/search_button"
-        app:icon="@drawable/vector"
+        app:icon="@drawable/ic_vector_19"
         android:onClick="goToSearchActivity"/>
 
     <com.google.android.material.button.MaterialButton
@@ -37,7 +37,7 @@
         android:layout_marginTop="16dp"
         style="@style/CustomMaterialButton"
         android:text="@string/mediateca"
-        app:icon="@drawable/mediateca"
+        app:icon="@drawable/ic_mediateca_24"
         android:onClick="goToMediatekaActivity"/>
 
     <com.google.android.material.button.MaterialButton
@@ -49,7 +49,7 @@
         android:layout_marginBottom="28dp"
         style="@style/CustomMaterialButton"
         android:text="@string/setting"
-        app:icon="@drawable/setting"
+        app:icon="@drawable/ic_setting_24"
         android:onClick="goToSettingsActivity" />
 
 </LinearLayout>
