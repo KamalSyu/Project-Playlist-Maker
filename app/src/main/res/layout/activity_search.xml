@@ -10,13 +10,8 @@
 
     <TextView
         android:id="@+id/back"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="start"
         android:text="@string/back"
-        android:textColor="@color/black"
-        android:textSize="@dimen/primary_text_size"
-        android:gravity="center_vertical"
+        style="@style/TextStyleTopScreen"
         app:drawableStartCompat="@drawable/ic_back_arrow_48" />
 
 </LinearLayout>

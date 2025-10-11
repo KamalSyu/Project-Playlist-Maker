@@ -4,50 +4,38 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/yp_blue"
+    style="@style/BackgroundHomeScreen"
     android:orientation="vertical">
 
     <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
         android:text="@string/app_name"
-        android:gravity="start"
+        style="@style/TextStyleTopScreen"
         android:paddingStart="16dp"
         android:paddingTop="14dp"
         android:textColor="@color/white"
-        android:textSize="@dimen/primary_text_size"
-        android:minHeight="56dp"/>
+        android:gravity="start" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/search_button"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
         android:layout_marginTop="24dp"
-        style="@style/CustomMaterialButton"
+        style="@style/ButtonStyleHomeScreen"
         android:text="@string/search_button"
         app:icon="@drawable/ic_vector_19"
         android:onClick="goToSearchActivity"/>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/mediateca"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
         android:layout_marginTop="16dp"
-        style="@style/CustomMaterialButton"
+        style="@style/ButtonStyleHomeScreen"
         android:text="@string/mediateca"
         app:icon="@drawable/ic_mediateca_24"
         android:onClick="goToMediatekaActivity"/>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/setting"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
         android:layout_marginTop="16dp"
         android:layout_marginBottom="28dp"
-        style="@style/CustomMaterialButton"
+        style="@style/ButtonStyleHomeScreen"
         android:text="@string/setting"
         app:icon="@drawable/ic_setting_24"
         android:onClick="goToSettingsActivity" />
