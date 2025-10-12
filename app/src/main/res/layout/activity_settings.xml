@@ -2,37 +2,39 @@
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/BackgroundSetting"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    style="@style/BackgroundSetting"
-    android:orientation="vertical"
-    >
+    android:orientation="vertical">
 
     <TextView
         android:id="@+id/back"
-        android:text="@string/setting"
         style="@style/TextStyleTopScreen"
+        android:text="@string/setting"
         app:drawableStartCompat="@drawable/ic_back_arrow_48" />
 
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/switch_button"
-        android:text="@string/black_theme"
-        style="@style/TextStyleSetting" />
+        style="@style/TextStyleSetting"
+        android:text="@string/black_theme" />
 
     <TextView
+        android:id="@+id/btnShare"
+        style="@style/TextStyleSetting"
         android:text="@string/share_the_app"
-        app:drawableEndCompat="@drawable/ic_share_24"
-        style="@style/TextStyleSetting"/>
+        app:drawableEndCompat="@drawable/ic_share_24" />
 
     <TextView
+        android:id="@+id/supportButton"
+        style="@style/TextStyleSetting"
         android:text="@string/write_to_support"
-        app:drawableEndCompat="@drawable/ic_support_24"
-        style="@style/TextStyleSetting"/>
+        app:drawableEndCompat="@drawable/ic_support_24" />
 
     <TextView
+        android:id="@+id/userAgreementButton"
+        style="@style/TextStyleSetting"
         android:text="@string/user_agreement"
-        app:drawableEndCompat="@drawable/ic_light_mode_24"
-        style="@style/TextStyleSetting"/>
+        app:drawableEndCompat="@drawable/ic_light_mode_24" />
 
 </LinearLayout>
 

@@ -42,6 +42,7 @@
         <item name="android:fontFamily">@font/ys_display_regular</item>
         <item name="android:minHeight">61dp</item>
         <item name="android:elevation">0dp</item>
+        <item name="android:background">@drawable/tv_selector</item>
 
 
     </style>

@@ -12,4 +12,5 @@
     <color name="yp_green">#00D6C3</color>
     <color name="yp_wgreen">#76EAE0</color>
     <color name="gray">#AEAFB4</color>
+    <color name="colorPressed">#FFBB86FC</color> <!-- Цвет при нажатии -->
 </resources>
