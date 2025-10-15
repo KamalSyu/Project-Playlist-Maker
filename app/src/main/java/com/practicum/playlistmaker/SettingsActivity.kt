@@ -19,13 +19,6 @@ class SettingsActivity : AppCompatActivity() {
         setContentView(R.layout.activity_settings)
 
         findViewById<TextView>(R.id.back).setOnClickListener {
-            val intent = Intent(this, MainActivity::class.java)
-            //startActivity(intent) Для выхода с экрана стоит использовать функцию finish(),
-            // а не startActivity, что создаст новую активити и откроет её.
-            // Принципиальная разница заключается в том, что в твоём коде вместо
-            // возврата открывается и создаётся новый экран с новым состоянием,
-            // а при использовании finish() закрывается текущий экран и показывается
-            // предыдущий, который был открыт перед текущим.
             finish()
         }
 
@@ -43,34 +36,34 @@ class SettingsActivity : AppCompatActivity() {
             openUserAgreement()
         }
     }
-    private fun shareApp(){
-        val shareText = "Изучайте Android-разработку в Практикуме!" + "Перейдите по ссылке: https://practicum.yandex.ru/profile/android-developer/"
+    private fun shareApp() {
+        val shareText = getString(R.string.share_text)
         val intent = Intent(Intent.ACTION_SEND)
         intent.type = "text/plain"
         intent.putExtra(Intent.EXTRA_TEXT, shareText)
-        startActivity(Intent.createChooser(intent, "Поделиться с помощью"))
+        startActivity(Intent.createChooser(intent, getString(R.string.choose_app)))
     }
 
-    private fun sendEmail(){
+    private fun sendEmail() {
         val emailIntent = Intent(Intent.ACTION_SENDTO)
-        emailIntent.data = Uri.parse("mailto:{example@example.com}")
-        emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Сообщение приложения Playlist Maker")
-        emailIntent.putExtra(Intent.EXTRA_TEXT, "Спасибо за приложение!")
+        emailIntent.data = Uri.parse("mailto:" + getString(R.string.support_email))
+        emailIntent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.email_subject))
+        emailIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.email_text))
 
-        if(emailIntent.resolveActivity(packageManager) != null){
+        if (emailIntent.resolveActivity(packageManager) != null) {
             startActivity(emailIntent)
-        }else{
+        } else {
             Toast.makeText(this, "На устройстве не установлен почтовый клиент", Toast.LENGTH_SHORT).show()
         }
     }
 
-   private fun openUserAgreement(){
-       val url = "https://yandex.ru/legal/practicum_offer/ru/"
-       val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-       if(intent.resolveActivity(packageManager) != null){
-           startActivity(intent)
-       }else{
-           Toast.makeText(this, "На устройстве не найден браузер для открытия ссылки", Toast.LENGTH_SHORT).show()
-       }
-   }
+    private fun openUserAgreement() {
+        val url = getString(R.string.url_oferta)
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        if (intent.resolveActivity(packageManager) != null) {
+            startActivity(intent)
+        } else {
+            Toast.makeText(this, "На устройстве не найден браузер для открытия ссылки", Toast.LENGTH_SHORT).show()
+        }
+    }
 }

@@ -17,15 +17,14 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/search_button"
-        android:layout_marginTop="24dp"
         style="@style/ButtonStyleHomeScreen"
+        android:layout_marginTop="24dp"
         android:text="@string/search_button"
         app:icon="@drawable/ic_vector_19"
         android:onClick="goToSearchActivity"/>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/mediateca"
-        android:layout_marginTop="16dp"
         style="@style/ButtonStyleHomeScreen"
         android:text="@string/mediateca"
         app:icon="@drawable/ic_mediateca_24"
@@ -33,7 +32,6 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/setting"
-        android:layout_marginTop="16dp"
         android:layout_marginBottom="28dp"
         style="@style/ButtonStyleHomeScreen"
         android:text="@string/setting"

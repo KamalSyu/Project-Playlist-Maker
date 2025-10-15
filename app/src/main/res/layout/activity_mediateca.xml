@@ -4,13 +4,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    >
+    android:orientation="vertical">
 
     <TextView
         android:id="@+id/back"
-        android:text="@string/back"
         style="@style/TextStyleTopScreen"
+        android:text="@string/back"
         app:drawableStartCompat="@drawable/ic_back_arrow_48" />
 
 </LinearLayout>

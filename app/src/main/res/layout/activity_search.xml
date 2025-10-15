@@ -15,26 +15,22 @@
         app:drawableStartCompat="@drawable/ic_back_arrow_48"
         android:layout_marginBottom="8dp"/>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content">
 
         <EditText
             android:id="@+id/search_edit_text"
             style="@style/TextStyleSearch"
             android:drawableStart="@drawable/ic_search_16"
-            android:hint="@string/search"/>
+            android:hint="@string/search" />
 
         <ImageView
             android:id="@+id/reset_button"
             android:src="@drawable/ic_delete_vector_12"
-            app:layout_constraintEnd_toEndOf="@id/search_edit_text"
-            app:layout_constraintTop_toTopOf="@id/search_edit_text"
-            app:layout_constraintBottom_toBottomOf="@id/search_edit_text"
-            style="@style/ResetStyleButton"/>
-
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            android:layout_gravity="end|center_vertical"
+            style="@style/ResetStyleButton" />
+    </FrameLayout>
 
 </LinearLayout>
 
