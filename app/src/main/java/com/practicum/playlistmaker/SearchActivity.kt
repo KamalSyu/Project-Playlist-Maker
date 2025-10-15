@@ -12,9 +12,13 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.doOnTextChanged
 
 class SearchActivity : AppCompatActivity() {
 
+    companion object {
+        private const val SEARCH_QUERY_KEY = "search_query"
+    }
     private var searchQuery : String = ""
 
     @SuppressLint("MissingInflatedId")
@@ -36,31 +40,20 @@ class SearchActivity : AppCompatActivity() {
         }
 
 
-        searchEditText.addTextChangedListener(object : TextWatcher {
-
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-            }
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                resetButton.visibility = if (s?.isNotEmpty() == true) View.VISIBLE else View.GONE
-                searchQuery = s.toString()
-
-            }
-
-            override fun afterTextChanged(s: Editable?) {
-            }
-        })
-
+        searchEditText.doOnTextChanged { text, _, _, _ ->
+            resetButton.visibility = if (text?.isNotEmpty() == true) View.VISIBLE else View.GONE
+            searchQuery = text.toString()
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putString("search_query", searchQuery)
-    }
-    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
-        super.onRestoreInstanceState(savedInstanceState)
-        searchQuery = savedInstanceState.getString("search_query") ?: ""
-        findViewById<EditText>(R.id.search_edit_text).setText(searchQuery)
+        outState.putString(SEARCH_QUERY_KEY, searchQuery)
     }
 
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        searchQuery = savedInstanceState.getString(SEARCH_QUERY_KEY) ?: ""
+        findViewById<EditText>(R.id.search_edit_text).setText(searchQuery)
+    }
 }

@@ -13,8 +13,8 @@
     <string name="share_text">Изучайте Android-разработку в Практикуме! Перейдите по ссылке: https://practicum.yandex.ru/profile/android-developer/</string>
     <string name="choose_app">Поделиться с помощью</string>
     <string name="support_email">example@example.com</string>
-    <string name="email_subject">Сообщение приложения Playlist Maker</string>
-    <string name="email_text">Спасибо за приложение!</string>
+    <string name="email_subject"> Сообщение разработчикам и разработчицам приложения Playlist Maker</string>
+    <string name="email_text">Спасибо разработчикам и разработчицам за крутое приложение!</string>
     <string name="url_oferta">https://yandex.ru/legal/practicum_offer/ru/</string>
 
 </resources>

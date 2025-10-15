@@ -10,6 +10,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.net.toUri
 import com.google.android.material.button.MaterialButton
 
 class SettingsActivity : AppCompatActivity() {
@@ -36,6 +37,7 @@ class SettingsActivity : AppCompatActivity() {
             openUserAgreement()
         }
     }
+
     private fun shareApp() {
         val shareText = getString(R.string.share_text)
         val intent = Intent(Intent.ACTION_SEND)
@@ -46,24 +48,18 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun sendEmail() {
         val emailIntent = Intent(Intent.ACTION_SENDTO)
-        emailIntent.data = Uri.parse("mailto:" + getString(R.string.support_email))
+        emailIntent.data = "mailto:".toUri()
+        emailIntent.putExtra(Intent.EXTRA_EMAIL, arrayOf(getString(R.string.support_email)))
         emailIntent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.email_subject))
         emailIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.email_text))
 
-        if (emailIntent.resolveActivity(packageManager) != null) {
-            startActivity(emailIntent)
-        } else {
-            Toast.makeText(this, "На устройстве не установлен почтовый клиент", Toast.LENGTH_SHORT).show()
-        }
+        startActivity(emailIntent)
     }
+
 
     private fun openUserAgreement() {
         val url = getString(R.string.url_oferta)
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-        if (intent.resolveActivity(packageManager) != null) {
-            startActivity(intent)
-        } else {
-            Toast.makeText(this, "На устройстве не найден браузер для открытия ссылки", Toast.LENGTH_SHORT).show()
-        }
+        startActivity(intent)
     }
 }

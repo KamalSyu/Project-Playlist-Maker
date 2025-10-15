@@ -82,6 +82,7 @@
         <item name="maxLines">1</item>
         <item name="android:inputType">text</item>
         <item name="android:background">@drawable/button_background_search</item>
+        <item name="android:backgroundTint">@color/white</item>
         <item name="drawableTint">@color/yp_black</item>
         <item name="android:drawablePadding">8dp</item>
         <item name="android:textColorHint">@color/yp_black</item>
@@ -91,10 +92,10 @@
     <style name="ResetStyleButton" >
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:paddingEnd">12dp</item>
-        <item name="android:visibility">gone</item>
+        <item name="android:layout_marginEnd">28dp</item>
         <item name="android:elevation">0dp</item>
-
+        <item name="android:visibility">gone</item>
+        <item name="android:tint">@color/yp_black</item>
     </style>
 </resources>
 
