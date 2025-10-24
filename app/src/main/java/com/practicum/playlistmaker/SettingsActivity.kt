@@ -2,9 +2,15 @@ package com.practicum.playlistmaker
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.preference.PreferenceManager
+import android.widget.Switch
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.net.toUri
 import com.google.android.material.button.MaterialButton
 
 class SettingsActivity : AppCompatActivity() {
@@ -14,15 +20,46 @@ class SettingsActivity : AppCompatActivity() {
         setContentView(R.layout.activity_settings)
 
         findViewById<TextView>(R.id.back).setOnClickListener {
-            val intent = Intent(this, MainActivity::class.java)
-            //startActivity(intent) Для выхода с экрана стоит использовать функцию finish(),
-            // а не startActivity, что создаст новую активити и откроет её.
-            // Принципиальная разница заключается в том, что в твоём коде вместо
-            // возврата открывается и создаётся новый экран с новым состоянием,
-            // а при использовании finish() закрывается текущий экран и показывается
-            // предыдущий, который был открыт перед текущим.
             finish()
         }
 
+        val btnShare = findViewById<TextView>(R.id.btnShare)
+        btnShare.setOnClickListener {
+            shareApp()
+        }
+
+        val supportButton = findViewById<TextView>(R.id.supportButton)
+        supportButton.setOnClickListener {
+            sendEmail()
+        }
+        val userAgreementButton = findViewById<TextView>(R.id.userAgreementButton)
+        userAgreementButton.setOnClickListener {
+            openUserAgreement()
+        }
+    }
+
+    private fun shareApp() {
+        val shareText = getString(R.string.share_text)
+        val intent = Intent(Intent.ACTION_SEND)
+        intent.type = "text/plain"
+        intent.putExtra(Intent.EXTRA_TEXT, shareText)
+        startActivity(Intent.createChooser(intent, getString(R.string.choose_app)))
+    }
+
+    private fun sendEmail() {
+        val emailIntent = Intent(Intent.ACTION_SENDTO)
+        emailIntent.data = "mailto:".toUri()
+        emailIntent.putExtra(Intent.EXTRA_EMAIL, arrayOf(getString(R.string.support_email)))
+        emailIntent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.email_subject))
+        emailIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.email_text))
+
+        startActivity(emailIntent)
+    }
+
+
+    private fun openUserAgreement() {
+        val url = getString(R.string.url_oferta)
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        startActivity(intent)
     }
 }

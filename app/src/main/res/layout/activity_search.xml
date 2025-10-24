@@ -2,22 +2,36 @@
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/BackgroundSearch"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
-    android:orientation="vertical"
-    >
+    android:orientation="vertical">
 
     <TextView
         android:id="@+id/back"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="start"
-        android:text="@string/back"
-        android:textColor="@color/black"
-        android:textSize="@dimen/primary_text_size"
-        android:gravity="center_vertical"
+        style="@style/TextStyleTopScreen"
+        android:layout_marginBottom="8dp"
+        android:text="@string/search"
         app:drawableStartCompat="@drawable/ic_back_arrow_48" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <EditText
+            android:id="@+id/search_edit_text"
+            style="@style/TextStyleSearch"
+            android:drawableStart="@drawable/ic_search_16"
+            android:hint="@string/search" />
+
+        <ImageView
+            android:id="@+id/reset_button"
+            style="@style/ResetStyleButton"
+            android:layout_gravity="end|center_vertical"
+            android:src="@drawable/ic_delete_vector_12" />
+
+    </FrameLayout>
 
 </LinearLayout>
 
