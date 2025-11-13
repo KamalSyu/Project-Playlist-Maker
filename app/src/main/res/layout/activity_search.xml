@@ -17,13 +17,15 @@
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_marginBottom = "24dp">
 
         <EditText
             android:id="@+id/search_edit_text"
             style="@style/TextStyleSearch"
             android:drawableStart="@drawable/ic_search_16"
-            android:hint="@string/search" />
+            android:hint="@string/search"
+            />
 
         <ImageView
             android:id="@+id/reset_button"
@@ -32,6 +34,12 @@
             android:src="@drawable/ic_delete_vector_12" />
 
     </FrameLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
 
 </LinearLayout>
 

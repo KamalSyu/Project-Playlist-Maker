@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="61dp">
+
+    <ImageView
+        android:id="@+id/artwork_image"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:scaleType="centerCrop"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="13dp" />
+
+    <TextView
+        android:id="@+id/track_name"
+        style="@style/RecyclerTextViewStyleSearchName"
+        android:text="@string/track_name"
+        app:layout_constraintStart_toEndOf="@+id/artwork_image"
+        app:layout_constraintEnd_toStartOf="@+id/right_icon"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="14dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"/>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@+id/track_name"
+        app:layout_constraintStart_toStartOf="@+id/track_name"
+        app:layout_constraintEnd_toStartOf="@+id/right_icon"
+        android:layout_marginEnd="8dp">
+
+        <TextView
+            android:id="@+id/artist_name"
+            style="@style/RecyclerTextViewStyleSearchExecutor"
+            android:text="@string/executor"/>
+
+        <ImageView
+            android:id="@+id/point_image"
+            android:layout_width="13dp"
+            android:layout_height="13dp"
+            android:src="@drawable/ic_point_13"
+            app:tint="@color/for_point_search" />
+
+        <TextView
+            android:id="@+id/track_time"
+            style="@style/RecyclerTextViewStyleSearchExecutor"
+            android:text="@string/duration" />
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/right_icon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:scaleType="centerInside"
+        android:src="@drawable/ic_light_mode_24"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="18dp"
+        android:layout_marginRight="12dp"/>
+</androidx.constraintlayout.widget.ConstraintLayout>

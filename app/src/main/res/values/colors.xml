@@ -15,4 +15,8 @@
     <color name="colorPressed">#FFBB86FC</color>
     <color name="yp_light_gray">#E6E8EB</color>
     <color name="yp_text_gray">#AEAFB4</color>
+    <color name="without_black">#00000000</color>
+    <color name="for_point_search">#AEAFB4</color>
+
+
 </resources>
