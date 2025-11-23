@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <!-- Сообщение об ошибке -->
+<LinearLayout android:id="@+id/error_layout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingTop="86dp"
+    android:gravity="center"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+<ImageView
+    android:id="@+id/error_image"
+    style="@style/ErrorImageSearch"/>
+
+<TextView
+    android:id="@+id/error_text"
+    style="@style/ErrorSearch"
+    android:text="@string/error_occurred1" />
+
+<Button
+    android:id="@+id/refresh_button"
+    style="@style/ButtonStyleErrorSearch"
+    android:text="@string/update" />
+</LinearLayout>
+

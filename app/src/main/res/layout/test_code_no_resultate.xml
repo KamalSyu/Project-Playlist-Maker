@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Сообщение "Нет результатов" -->
+<LinearLayout android:id="@+id/no_results_layout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingTop="86dp"
+    android:gravity="center"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <ImageView
+        android:id="@+id/no_results_image"
+        style="@style/NoResultateImageSearch"/>
+
+    <TextView
+        android:id="@+id/no_results_text"
+        style="@style/ErrorSearch"
+        android:text="@string/no_results"/>
+
+</LinearLayout>
