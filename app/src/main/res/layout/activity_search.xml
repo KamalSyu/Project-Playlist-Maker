@@ -28,7 +28,8 @@
             android:drawableStart="@drawable/ic_search_16"
             android:hint="@string/search"
             android:imeOptions="actionDone"
-            android:singleLine="true" />
+            android:singleLine="true"
+            android:paddingEnd="40dp"/>
 
         <ImageView
             android:id="@+id/reset_button"
