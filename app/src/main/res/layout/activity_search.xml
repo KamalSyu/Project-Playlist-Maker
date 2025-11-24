@@ -81,7 +81,8 @@
         <Button
             android:id="@+id/refresh_button"
             style="@style/ButtonStyleErrorSearch"
-            android:text="@string/update" />
+            android:text="@string/update"
+            android:enabled="true"/>
     </LinearLayout>
 
     <!-- Список результатов поиска -->

@@ -4,6 +4,7 @@ import Track
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
@@ -19,89 +20,100 @@ import androidx.recyclerview.widget.RecyclerView
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
+
 class SearchActivity : AppCompatActivity() {
-    private val itunesServiceBaseUrl = "https://itunes.apple.com"
+    // Объявляем переменные для вьюшек
+    private lateinit var backTextView: TextView
+    private lateinit var searchEditText: EditText
+    private lateinit var resetButton: ImageView
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var noResultsLayout: LinearLayout
+    private lateinit var errorLayout: LinearLayout
+    private lateinit var updateButton: Button
+
+    // Другие переменные
+    private lateinit var adapter: TrackAdapter
+    private var allTracks: List<Track> = listOf()
+    private var filteredTracks: List<Track> = listOf()
+    private var searchQuery: String = ""
+    private var lastSearchQuery: String? = null
+    private var isLastSearchFailed: Boolean = false
+
+    companion object {
+        const val SEARCH_QUERY_KEY = "SEARCH_QUERY"
+    }
+
+        private val itunesServiceBaseUrl = "https://itunes.apple.com"
 
     val retrofit = Retrofit.Builder()
         .baseUrl(itunesServiceBaseUrl)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
+
     val itunesService = retrofit.create(ItunesService::class.java)
 
-    companion object {
-        private const val SEARCH_QUERY_KEY = "search_query"
-    }
-
-    private var searchQuery: String = ""
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var adapter: TrackAdapter
-
-    // Теперь нет локальной базы данных моковых данных. Все сохраняется в этой переменной
-    private var allTracks: List<Track> = emptyList()
-    private var filteredTracks: List<Track> = emptyList()
-
-    private var lastSearchQuery: String? = null
-    private var isLastSearchFailed = false
-
-    @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_search)
 
-        // Восстановление сохраненного состояния
+        // Инициализация вьюшек
+        backTextView = findViewById(R.id.back)
+        searchEditText = findViewById(R.id.search_edit_text)
+        resetButton = findViewById(R.id.reset_button)
+        recyclerView = findViewById(R.id.recyclerView)
+        noResultsLayout = findViewById(R.id.no_results_layout)
+        errorLayout = findViewById(R.id.error_layout)
+        updateButton = findViewById(R.id.refresh_button)
+
+        // Восстановление состояния поиска
         if (savedInstanceState != null) {
-            searchQuery = savedInstanceState.getString(SEARCH_QUERY_KEY) ?: ""
+            searchQuery = savedInstanceState.getString(SEARCH_QUERY_KEY, "")
         }
 
-        findViewById<TextView>(R.id.back).setOnClickListener { finish() }
+        // Настройка обработки кликов
+        backTextView.setOnClickListener { finish() }
 
-        val searchEditText = findViewById<EditText>(R.id.search_edit_text)
-        val resetButton = findViewById<ImageView>(R.id.reset_button)
-        recyclerView = findViewById(R.id.recyclerView)
-
-        adapter = TrackAdapter(emptyList()) // начально пустой список
-        recyclerView.layoutManager = LinearLayoutManager(this)
-        recyclerView.adapter = adapter
-
-        // Восстановление текста поиска
+        // Установка текста поиска
         searchEditText.setText(searchQuery)
 
+        // Обработка reset
         resetButton.setOnClickListener {
             searchEditText.setText("")
+            filteredTracks = listOf()
+            adapter.updateList(filteredTracks)
             val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.hideSoftInputFromWindow(searchEditText.windowToken, 0)
         }
 
+        // Обработка изменения текста
         searchEditText.doOnTextChanged { text, _, _, _ ->
-            resetButton.visibility = if (text?.isNotEmpty() == true) View.VISIBLE else View.GONE
+            resetButton.visibility = if (!text.isNullOrEmpty()) View.VISIBLE else View.GONE
             searchQuery = text.toString()
 
-            val query = searchQuery.lowercase()
+            val queryLower = searchQuery.lowercase()
 
-            // Фильтрация по текущим данным
-            filteredTracks = if (query.isEmpty()) {
-                emptyList()
+            // Фильтрация данных
+            filteredTracks = if (queryLower.isEmpty()) {
+                listOf()
             } else {
                 allTracks.filter {
-                    it.trackName.lowercase().contains(query) ||
-                            it.artistName.lowercase().contains(query)
+                    it.trackName.lowercase().contains(queryLower) || it.artistName.lowercase().contains(queryLower)
                 }
             }
             adapter.updateList(filteredTracks)
 
-            // Скрываем сообщения-заглушки при пустом поиске
-            if (query.isEmpty()) {
-                findViewById<LinearLayout>(R.id.no_results_layout).visibility = View.GONE
-                findViewById<LinearLayout>(R.id.error_layout).visibility = View.GONE
+            // Скрытие сообщений при пустом поиске
+            if (searchQuery.isEmpty()) {
+                noResultsLayout.visibility = View.GONE
+                errorLayout.visibility = View.GONE
             }
         }
 
-        // Обработка нажатия на кнопку Done
+        // Обработка кнопки "Готово" на клавиатуре
         searchEditText.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 performSearch(searchQuery)
 
-                // Скрываем клавиатуру
                 val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 imm.hideSoftInputFromWindow(searchEditText.windowToken, 0)
                 true
@@ -110,21 +122,31 @@ class SearchActivity : AppCompatActivity() {
             }
         }
 
-        // Обработка кнопки "Обновить"
-        val updateButton = findViewById<Button>(R.id.refresh_button)
-        updateButton.setOnClickListener {
-            if (isLastSearchFailed && lastSearchQuery != null) {
-                performSearch(lastSearchQuery!!)
-            }
-        }
+        // Инициализация адаптера
+        adapter = TrackAdapter(emptyList())
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        recyclerView.adapter = adapter
 
-        // Если есть сохраненный запрос, повторно запускаем поиск
+        // Если есть сохранённый запрос, делаем поиск
         if (searchQuery.isNotEmpty()) {
             performSearch(searchQuery)
+        }
+
+        // Обработка кнопки "Обновить"
+        updateButton.setOnClickListener {
+            Log.d("MyApp", "Кнопка Обновить нажата")
+            if (isLastSearchFailed && lastSearchQuery != null) {
+                Log.d("MyApp", "Выполняем повторный поиск: $lastSearchQuery")
+                performSearch(lastSearchQuery!!)
+            }else {
+                Log.d("MyApp", "Условие не выполнено: isLastSearchFailed = $isLastSearchFailed, lastSearchQuery = $lastSearchQuery")
+            }
+
         }
     }
 
     private fun performSearch(query: String) {
+        lastSearchQuery = query
         val call = itunesService.search(query)
         call.enqueue(object : retrofit2.Callback<SearchResponse> {
             override fun onResponse(
@@ -137,10 +159,11 @@ class SearchActivity : AppCompatActivity() {
                         allTracks = searchResponse.results
                         lastSearchQuery = query
                         isLastSearchFailed = false
+                        Log.d("MyApp", "Поиск успешен, lastSearchQuery: $lastSearchQuery, isLastSearchFailed: $isLastSearchFailed")
 
                         val filterQuery = searchQuery.lowercase()
                         filteredTracks = if (filterQuery.isEmpty()) {
-                            emptyList()
+                            listOf()
                         } else {
                             allTracks.filter {
                                 it.trackName.lowercase().contains(filterQuery) ||
@@ -151,26 +174,27 @@ class SearchActivity : AppCompatActivity() {
 
                         // Проверка на пустой результат
                         if (searchResponse.results.isEmpty()) {
-                            findViewById<LinearLayout>(R.id.no_results_layout).visibility = View.VISIBLE
-                            findViewById<LinearLayout>(R.id.error_layout).visibility = View.GONE
+                            noResultsLayout.visibility = View.VISIBLE
+                            errorLayout.visibility = View.GONE
                         } else {
-                            findViewById<LinearLayout>(R.id.no_results_layout).visibility = View.GONE
-                            findViewById<LinearLayout>(R.id.error_layout).visibility = View.GONE
+                            noResultsLayout.visibility = View.GONE
+                            errorLayout.visibility = View.GONE
                         }
                     }
                 } else {
                     // Ошибка сервера
                     isLastSearchFailed = true
-                    findViewById<LinearLayout>(R.id.error_layout).visibility = View.VISIBLE
-                    findViewById<LinearLayout>(R.id.no_results_layout).visibility = View.GONE
+                    Log.d("MyApp", "Ошибка сервера, isLastSearchFailed: $isLastSearchFailed")
+                    errorLayout.visibility = View.VISIBLE
+                    noResultsLayout.visibility = View.GONE
                 }
             }
 
             override fun onFailure(call: retrofit2.Call<SearchResponse>, t: Throwable) {
-                // Ошибка сети или другой сбой
+                // Ошибка сети или сбой
                 isLastSearchFailed = true
-                findViewById<LinearLayout>(R.id.error_layout).visibility = View.VISIBLE
-                findViewById<LinearLayout>(R.id.no_results_layout).visibility = View.GONE
+                errorLayout.visibility = View.VISIBLE
+                noResultsLayout.visibility = View.GONE
             }
         })
     }
@@ -182,8 +206,8 @@ class SearchActivity : AppCompatActivity() {
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
-        searchQuery = savedInstanceState.getString(SEARCH_QUERY_KEY) ?: ""
-        findViewById<EditText>(R.id.search_edit_text).setText(searchQuery)
+        searchQuery = savedInstanceState.getString(SEARCH_QUERY_KEY, "")
+        searchEditText.setText(searchQuery)
         if (searchQuery.isNotEmpty()) {
             performSearch(searchQuery)
         }

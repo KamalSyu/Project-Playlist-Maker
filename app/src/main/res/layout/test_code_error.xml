@@ -9,16 +9,16 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
 <ImageView
-    android:id="@+id/error_image"
+    android:id="@+id/error_image7"
     style="@style/ErrorImageSearch"/>
 
 <TextView
-    android:id="@+id/error_text"
+    android:id="@+id/error_text7"
     style="@style/ErrorSearch"
     android:text="@string/error_occurred1" />
 
 <Button
-    android:id="@+id/refresh_button"
+    android:id="@+id/refresh_button7"
     style="@style/ButtonStyleErrorSearch"
     android:text="@string/update" />
 </LinearLayout>
