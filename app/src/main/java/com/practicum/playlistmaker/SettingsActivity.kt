@@ -4,14 +4,9 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.preference.PreferenceManager
-import android.widget.Switch
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.net.toUri
-import com.google.android.material.button.MaterialButton
 
 class SettingsActivity : AppCompatActivity() {
     @SuppressLint("MissingInflatedId")

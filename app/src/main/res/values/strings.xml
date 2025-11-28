@@ -19,5 +19,9 @@
     <string name="track_name">Название</string>
     <string name="executor">Исполнитель</string>
     <string name="duration">3:35</string>
+    <string name="update">Обновить</string>
+    <string name="no_results">Ничего не нашлось</string>
+    <string name="error_occurred1">Проблемы со связью\n\nЗагрузка не удалась. Проверьте\nподключение к интернету</string>
+
 
 </resources>

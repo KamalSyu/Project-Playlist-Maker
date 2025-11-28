@@ -1,14 +1,13 @@
-import android.view.LayoutInflater
-import android.view.RoundedCorner
 import android.view.View
-import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.practicum.playlistmaker.R
-import com.practicum.playlistmaker.Track
+import java.text.SimpleDateFormat
+import java.util.Locale
+
 
 class TrackViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     private val artworkImageView: ImageView = itemView.findViewById(R.id.artwork_image)
@@ -19,7 +18,10 @@ class TrackViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     fun bind(track: Track) {
         trackNameTextView.text = track.trackName
         artistNameTextView.text = track.artistName
-        trackTimeTextView.text = track.trackTime
+        //trackTimeTextView.text = track.trackTime
+        val trackTimeFormatted = SimpleDateFormat("mm:ss", Locale.getDefault()).format(track.trackTimeMillis)
+        trackTimeTextView.text = trackTimeFormatted
+
 
         // Загрузка изображения с Glide
         Glide.with(itemView.context)

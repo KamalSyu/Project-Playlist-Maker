@@ -131,5 +131,54 @@
 
     </style>
 
+    <style name="ErrorSearch" parent="Widget.MaterialComponents.TextView">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textSize">@dimen/error_text_size</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:fontFamily">@font/ys_display_medium</item>
+        <item name="android:textFontWeight">400</item>
+        <item name="android:layout_marginTop">20dp</item>
+        <item name="android:paddingLeft">24dp</item>
+        <item name="android:paddingRight">24dp</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="NoResultateImageSearch" >
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/ic_no_results_dark_mode_120</item>
+    </style>
+
+    <style name="ErrorImageSearch" >
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/ic_error_dark_mode_120</item>
+    </style>
+
+    <style name="ButtonStyleErrorSearch" parent="Widget.MaterialComponents.Button.UnelevatedButton">
+        <item name="backgroundTint">@color/white</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <!-- <item name="android:background">@drawable/button_background</item>-->
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textSize">@dimen/standard_padding</item>
+        <item name="android:textColor">@color/yp_black</item>
+        <item name="android:layout_marginLeft">134dp</item>
+        <item name="android:layout_marginRight">135dp</item>
+        <item name="android:layout_marginTop">24dp</item>
+        <item name="cornerRadius">54dp</item>
+        <item name="android:fontFamily">@font/ys_display_medium</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:elevation">0dp</item>
+        <item name="android:textFontWeight">500</item>
+
+        <!-- Отступы для текста внутри кнопки -->
+        <item name="android:paddingLeft">14dp</item>
+        <item name="android:paddingRight">14dp</item>
+        <item name="android:paddingTop">10dp</item>
+        <item name="android:paddingBottom">10dp</item>
+    </style>
 </resources>
 
