@@ -1,7 +1,6 @@
 package com.practicum.playlistmaker
 
 import Track
-import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -122,8 +121,10 @@ class SearchActivity : AppCompatActivity() {
             }
         }
 
-        // Инициализация адаптера
-        adapter = TrackAdapter(emptyList())
+        // Инициализация адаптера с обработчиком клика
+        adapter = TrackAdapter(emptyList()) { track ->
+            saveTrackToHistory(track)
+        }
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = adapter
 
@@ -143,6 +144,36 @@ class SearchActivity : AppCompatActivity() {
             }
 
         }
+
+        // Устанавливаем слушатель изменения фокуса для searchEditText
+        searchEditText.onFocusChangeListener = View.OnFocusChangeListener { view, hasFocus ->
+            if (!hasFocus && searchEditText.text.isEmpty()) {
+                showSearchHistory() // Показываем историю поиска, если нет фокуса и текст пуст
+            } else {
+                hideSearchHistory() // Скрываем историю поиска в остальных случаях
+            }
+        }
+    }
+
+    private fun saveTrackToHistory(track: Track) {
+        // Создаем экземпляр класса SearchHistory, передавая ему SharedPreferences для сохранения истории поиска
+        val searchHistory = SearchHistory(getSharedPreferences("search_history_preferences", Context.MODE_PRIVATE))
+        // Сохраняем трек в историю поиска
+        searchHistory.addTrackToHistory(track)
+    }
+
+    private fun showSearchHistory() {
+        // Получаем RecyclerView, который используется для отображения истории поиска
+        val searchHistoryContainer = findViewById<RecyclerView>(R.id.search_history_recycler_view)
+        // Делаем RecyclerView видимым, чтобы показать историю поиска
+        searchHistoryContainer.visibility = View.VISIBLE
+    }
+
+    private fun hideSearchHistory() {
+        // Получаем RecyclerView, который используется для отображения истории поиска
+        val searchHistoryContainer = findViewById<RecyclerView>(R.id.search_history_recycler_view)
+        // Скрываем RecyclerView, чтобы скрыть историю поиска
+        searchHistoryContainer.visibility = View.GONE
     }
 
     private fun performSearch(query: String) {

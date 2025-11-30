@@ -4,9 +4,11 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
+import com.google.android.material.switchmaterial.SwitchMaterial
 
 class SettingsActivity : AppCompatActivity() {
     @SuppressLint("MissingInflatedId")
@@ -31,6 +33,14 @@ class SettingsActivity : AppCompatActivity() {
         userAgreementButton.setOnClickListener {
             openUserAgreement()
         }
+
+        val themeSwitcher = findViewById<SwitchMaterial>(R.id.switch_button)
+        // Добавляем слушатель на изменение состояния
+        themeSwitcher.setOnCheckedChangeListener { switcher, checked ->
+            (applicationContext as App).switchTheme(checked)
+        }
+
+
     }
 
     private fun shareApp() {

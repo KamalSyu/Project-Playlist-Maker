@@ -44,6 +44,7 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation (libs.androidx.core.ktx.v190)
     implementation (libs.material.v180)
+    implementation(libs.core)
     testImplementation(libs.junit)
     implementation (libs.material.v161)
     implementation (libs.glide)
