@@ -3,6 +3,8 @@ package com.practicum.playlistmaker
 import Track
 import android.content.Context
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.EditorInfo
@@ -16,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doOnTextChanged
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.practicum.playlistmaker.Constants.Companion.SEARCH_QUERY_KEY
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -29,6 +32,13 @@ class SearchActivity : AppCompatActivity() {
     private lateinit var noResultsLayout: LinearLayout
     private lateinit var errorLayout: LinearLayout
     private lateinit var updateButton: Button
+    private lateinit var hintMessage: TextView
+    private lateinit var searchHistory: SearchHistory
+    private lateinit var historyRecyclerView: RecyclerView
+    private var trackList = listOf<Track>()
+    private lateinit var clearHistoryButton: Button
+
+
 
     // Другие переменные
     private lateinit var adapter: TrackAdapter
@@ -38,11 +48,12 @@ class SearchActivity : AppCompatActivity() {
     private var lastSearchQuery: String? = null
     private var isLastSearchFailed: Boolean = false
 
+
     companion object {
         const val SEARCH_QUERY_KEY = "SEARCH_QUERY"
     }
 
-        private val itunesServiceBaseUrl = "https://itunes.apple.com"
+    private val itunesServiceBaseUrl = "https://itunes.apple.com"
 
     val retrofit = Retrofit.Builder()
         .baseUrl(itunesServiceBaseUrl)
@@ -63,6 +74,10 @@ class SearchActivity : AppCompatActivity() {
         noResultsLayout = findViewById(R.id.no_results_layout)
         errorLayout = findViewById(R.id.error_layout)
         updateButton = findViewById(R.id.refresh_button)
+        hintMessage = findViewById(R.id.searchHint)
+        historyRecyclerView = findViewById(R.id.history_recycler_view)
+        clearHistoryButton = findViewById(R.id.clear_history_button)
+
 
         // Восстановление состояния поиска
         if (savedInstanceState != null) {
@@ -96,7 +111,8 @@ class SearchActivity : AppCompatActivity() {
                 listOf()
             } else {
                 allTracks.filter {
-                    it.trackName.lowercase().contains(queryLower) || it.artistName.lowercase().contains(queryLower)
+                    it.trackName.lowercase().contains(queryLower) || it.artistName.lowercase()
+                        .contains(queryLower)
                 }
             }
             adapter.updateList(filteredTracks)
@@ -107,7 +123,6 @@ class SearchActivity : AppCompatActivity() {
                 errorLayout.visibility = View.GONE
             }
         }
-
         // Обработка кнопки "Готово" на клавиатуре
         searchEditText.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
@@ -121,9 +136,10 @@ class SearchActivity : AppCompatActivity() {
             }
         }
 
+
         // Инициализация адаптера с обработчиком клика
         adapter = TrackAdapter(emptyList()) { track ->
-            saveTrackToHistory(track)
+//            saveTrackToHistory(track)
         }
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = adapter
@@ -144,37 +160,58 @@ class SearchActivity : AppCompatActivity() {
             }
 
         }
-
-        // Устанавливаем слушатель изменения фокуса для searchEditText
-        searchEditText.onFocusChangeListener = View.OnFocusChangeListener { view, hasFocus ->
-            if (!hasFocus && searchEditText.text.isEmpty()) {
-                showSearchHistory() // Показываем историю поиска, если нет фокуса и текст пуст
-            } else {
-                hideSearchHistory() // Скрываем историю поиска в остальных случаях
-            }
+        //Устанавливаем слушатель изменения фокуса для отображения подсказки
+        searchEditText.setOnFocusChangeListener { view, hasFocus ->
+            hintMessage.visibility = if (hasFocus && searchEditText.text.isEmpty()) View.VISIBLE else View.GONE
         }
+
+        // Слушатель отслеживает изменения текста и управляет видимостью подсказки
+        searchEditText.addTextChangedListener(object : TextWatcher {
+            // Создаём анонимный объект, реализующий интерфейс TextWatcher
+
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                // Этот метод вызывается перед тем, как текст изменится. В данном случае он пуст.
+            }
+
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                // Этот метод вызывается, когда текст изменяется. Здесь проверяется, должен ли отображаться hintMessage.
+                hintMessage.visibility = if (searchEditText.hasFocus() && p0?.isEmpty() == true) View.VISIBLE else View.GONE
+                // Если searchField имеет фокус и текст в нём пустой, то hintMessage становится видимым, иначе - невидимым.
+            }
+
+            override fun afterTextChanged(p0: Editable?) {
+                // Этот метод вызывается после того, как текст изменился. В данном случае он тоже пуст.
+            }
+        })
+
+        searchHistory = SearchHistory(this)
+
+        // Инициализация адаптера
+        adapter = TrackAdapter(trackList) { track ->
+            Log.d("SearchActivity", "Трек был кликнут: ${track.trackName}")
+            // Обработка клика по треку
+            searchHistory.addTrack(track)
+        }
+        adapter.updateList(searchHistory.getHistory())
+        adapter.notifyDataSetChanged() // Обновление адаптера
+
+        recyclerView.adapter = adapter
+        recyclerView.layoutManager = LinearLayoutManager(this)
+
+        clearHistoryButton.setOnClickListener {
+            searchHistory.clearHistory()
+            adapter.updateList(searchHistory.getHistory())
+            adapter.notifyDataSetChanged()
+        }
+        val historyAdapter = TrackAdapter(searchHistory.getHistory()) { track ->
+            Log.d("SearchActivity", "Трек из истории был кликнут: ${track.trackName}")
+        }
+        historyRecyclerView.layoutManager = LinearLayoutManager(this)
+        historyRecyclerView.adapter = historyAdapter
+
+
     }
 
-    private fun saveTrackToHistory(track: Track) {
-        // Создаем экземпляр класса SearchHistory, передавая ему SharedPreferences для сохранения истории поиска
-        val searchHistory = SearchHistory(getSharedPreferences("search_history_preferences", Context.MODE_PRIVATE))
-        // Сохраняем трек в историю поиска
-        searchHistory.addTrackToHistory(track)
-    }
-
-    private fun showSearchHistory() {
-        // Получаем RecyclerView, который используется для отображения истории поиска
-        val searchHistoryContainer = findViewById<RecyclerView>(R.id.search_history_recycler_view)
-        // Делаем RecyclerView видимым, чтобы показать историю поиска
-        searchHistoryContainer.visibility = View.VISIBLE
-    }
-
-    private fun hideSearchHistory() {
-        // Получаем RecyclerView, который используется для отображения истории поиска
-        val searchHistoryContainer = findViewById<RecyclerView>(R.id.search_history_recycler_view)
-        // Скрываем RecyclerView, чтобы скрыть историю поиска
-        searchHistoryContainer.visibility = View.GONE
-    }
 
     private fun performSearch(query: String) {
         lastSearchQuery = query

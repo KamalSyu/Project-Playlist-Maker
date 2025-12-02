@@ -7,24 +7,26 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 
 class TrackAdapter(private var tracks: List<Track>,
-                   private val onClickListener: (Track) -> Unit
+                   private val onTrackClick: (Track) -> Unit  // лямбда для обработки клика
 ) : RecyclerView.Adapter<TrackViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TrackViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_track, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_track, parent, false)
         return TrackViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: TrackViewHolder, position: Int) {
-        holder.bind(tracks[position])
-        holder.itemView.setOnClickListener { onClickListener(tracks[position]) }
+        val track = tracks[position]
+        holder.bind(track)
+        holder.itemView.setOnClickListener {
+            onTrackClick(track) // вызываем лямбду с текущим треком
+        }
     }
-
     override fun getItemCount(): Int = tracks.size
 
     fun updateList(newTracks: List<Track>) {
         tracks = newTracks
         notifyDataSetChanged()
     }
+
 }
