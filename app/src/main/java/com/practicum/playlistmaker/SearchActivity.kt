@@ -18,7 +18,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doOnTextChanged
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.practicum.playlistmaker.Constants.Companion.SEARCH_QUERY_KEY
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -37,6 +36,7 @@ class SearchActivity : AppCompatActivity() {
     private lateinit var historyRecyclerView: RecyclerView
     private var trackList = listOf<Track>()
     private lateinit var clearHistoryButton: Button
+    private lateinit var historyTitle: TextView
 
 
 
@@ -77,6 +77,8 @@ class SearchActivity : AppCompatActivity() {
         hintMessage = findViewById(R.id.searchHint)
         historyRecyclerView = findViewById(R.id.history_recycler_view)
         clearHistoryButton = findViewById(R.id.clear_history_button)
+        historyTitle = findViewById(R.id.history_title)
+
 
 
         // Восстановление состояния поиска
@@ -121,8 +123,13 @@ class SearchActivity : AppCompatActivity() {
             if (searchQuery.isEmpty()) {
                 noResultsLayout.visibility = View.GONE
                 errorLayout.visibility = View.GONE
+                historyRecyclerView.visibility = View.VISIBLE // Показываем историю поиска
+            } else {
+                historyRecyclerView.visibility = View.GONE // Скрываем историю поиска
             }
         }
+
+
         // Обработка кнопки "Готово" на клавиатуре
         searchEditText.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
@@ -135,14 +142,6 @@ class SearchActivity : AppCompatActivity() {
                 false
             }
         }
-
-
-        // Инициализация адаптера с обработчиком клика
-        adapter = TrackAdapter(emptyList()) { track ->
-//            saveTrackToHistory(track)
-        }
-        recyclerView.layoutManager = LinearLayoutManager(this)
-        recyclerView.adapter = adapter
 
         // Если есть сохранённый запрос, делаем поиск
         if (searchQuery.isNotEmpty()) {
@@ -185,12 +184,8 @@ class SearchActivity : AppCompatActivity() {
         })
 
         searchHistory = SearchHistory(this)
-
         // Инициализация адаптера
         adapter = TrackAdapter(trackList) { track ->
-            Log.d("SearchActivity", "Трек был кликнут: ${track.trackName}")
-            // Обработка клика по треку
-            searchHistory.addTrack(track)
         }
         adapter.updateList(searchHistory.getHistory())
         adapter.notifyDataSetChanged() // Обновление адаптера
@@ -198,19 +193,36 @@ class SearchActivity : AppCompatActivity() {
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(this)
 
-        clearHistoryButton.setOnClickListener {
-            searchHistory.clearHistory()
-            adapter.updateList(searchHistory.getHistory())
-            adapter.notifyDataSetChanged()
-        }
         val historyAdapter = TrackAdapter(searchHistory.getHistory()) { track ->
-            Log.d("SearchActivity", "Трек из истории был кликнут: ${track.trackName}")
+        }
+        // После того, как вы создали свой adapter
+        adapter.setOnItemClickListener { track ->
+            // Добавляем трек в историю поиска
+            searchHistory.addTrack(track)
+            // Обновляем список истории и уведомляем адаптер
+            historyAdapter.updateList(searchHistory.getHistory())
+            historyAdapter.notifyDataSetChanged()
         }
         historyRecyclerView.layoutManager = LinearLayoutManager(this)
         historyRecyclerView.adapter = historyAdapter
 
+        clearHistoryButton.setOnClickListener {
+            searchHistory.clearHistory()
+            historyAdapter.updateList(searchHistory.getHistory())
+            historyAdapter.notifyDataSetChanged()
+        }
 
     }
+    override fun onResume() {
+        super.onResume()
+        // Обновляем видимость historyRecyclerView при возобновлении активности
+        if (searchQuery.isEmpty()) {
+            historyRecyclerView.visibility = View.VISIBLE
+        } else {
+            historyRecyclerView.visibility = View.GONE
+        }
+    }
+
 
 
     private fun performSearch(query: String) {
@@ -228,6 +240,7 @@ class SearchActivity : AppCompatActivity() {
                         lastSearchQuery = query
                         isLastSearchFailed = false
                         Log.d("MyApp", "Поиск успешен, lastSearchQuery: $lastSearchQuery, isLastSearchFailed: $isLastSearchFailed")
+
 
                         val filterQuery = searchQuery.lowercase()
                         filteredTracks = if (filterQuery.isEmpty()) {

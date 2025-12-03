@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 
 class TrackAdapter(private var tracks: List<Track>,
-                   private val onTrackClick: (Track) -> Unit  // лямбда для обработки клика
+                   private var onTrackClick: (Track) -> Unit  // лямбда для обработки клика
 ) : RecyclerView.Adapter<TrackViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TrackViewHolder {
@@ -29,4 +29,7 @@ class TrackAdapter(private var tracks: List<Track>,
         notifyDataSetChanged()
     }
 
+    fun setOnItemClickListener(listener: (Track) -> Unit) {
+        this.onTrackClick = listener
+    }
 }
