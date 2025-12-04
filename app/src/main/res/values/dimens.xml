@@ -7,6 +7,8 @@
     <dimen name="standard_padding">14dp</dimen>
     <dimen name="minHeight">61dp</dimen>
     <dimen name="error_text_size">19sp</dimen>
+    <dimen name="history_text_size">19sp</dimen>
+
 
     "
 </resources>

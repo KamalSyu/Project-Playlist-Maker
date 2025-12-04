@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/search_history_layout"
+    android:id="@+id/search_history_layouttt"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:visibility="visible"
@@ -10,27 +10,19 @@
 
     <TextView
         android:id="@+id/history_title"
-        android:text="Вы искали"
-        android:textSize="18sp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:paddingLeft="16dp"
-        android:paddingRight="16dp"
-        android:paddingTop="24dp"
-        android:paddingBottom="8dp"
-        android:textColor="#000000"
+        android:text="@string/you_were_looking_for"
+        style="@style/HistorySearch"
         />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/history_recycler_view"
         android:layout_width="match_parent"
-        android:layout_height="71dp"
+        android:layout_height="match_parent"
         android:nestedScrollingEnabled="false"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
     <Button
         android:id="@+id/clear_history_button"
-        android:text="Очистить историю"
+        android:text="@string/clear_the_history"
         style="@style/ButtonHistorySearch"/>
 </LinearLayout>

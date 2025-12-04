@@ -31,7 +31,5 @@ class TrackViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             .transform(RoundedCorners(2))
             .into(artworkImageView)
 
-
-
     }
 }

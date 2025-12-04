@@ -16,6 +16,11 @@ class SettingsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
 
+        // Получаем сохранённое состояние переключателя
+        val preferences = getSharedPreferences("SettingsPref", MODE_PRIVATE)
+        val isDarkMode = preferences.getBoolean("isDarkMode", false)
+
+
         findViewById<TextView>(R.id.back).setOnClickListener {
             finish()
         }
@@ -35,9 +40,15 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         val themeSwitcher = findViewById<SwitchMaterial>(R.id.switch_button)
+        themeSwitcher.isChecked = isDarkMode // Устанавливаем состояние переключателя
+
         // Добавляем слушатель на изменение состояния
         themeSwitcher.setOnCheckedChangeListener { switcher, checked ->
             (applicationContext as App).switchTheme(checked)
+            with(preferences.edit()) {
+                putBoolean("isDarkMode", checked)
+                apply()
+            }
         }
 
 

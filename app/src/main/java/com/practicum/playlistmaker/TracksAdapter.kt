@@ -31,5 +31,6 @@ class TrackAdapter(private var tracks: List<Track>,
 
     fun setOnItemClickListener(listener: (Track) -> Unit) {
         this.onTrackClick = listener
+
     }
 }
