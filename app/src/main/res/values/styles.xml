@@ -217,13 +217,8 @@
         <item name="android:textFontWeight">500</item>
         <item name="android:layout_marginBottom">8dp</item>
         <item name="android:gravity">center</item>
+        <item name="android:letterSpacing">0</item>
 
-
-        <!-- Отступы для текста внутри кнопки -->
-        <item name="android:paddingLeft">16dp</item>
-        <item name="android:paddingRight">16dp</item>
-        <item name="android:paddingTop">18dp</item>
-        <item name="android:paddingBottom">12dp</item>
     </style>
 
     <style name="SearchHint" parent="Widget.MaterialComponents.TextView">

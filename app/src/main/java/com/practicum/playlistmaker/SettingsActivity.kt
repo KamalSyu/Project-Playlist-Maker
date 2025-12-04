@@ -50,8 +50,6 @@ class SettingsActivity : AppCompatActivity() {
                 apply()
             }
         }
-
-
     }
 
     private fun shareApp() {

@@ -142,16 +142,11 @@ class SearchActivity : AppCompatActivity() {
             performSearch(searchQuery)
         }
 
-        // Инициализация истории поиска и проверка на наличие сохранённой истории
-       // searchHistory = SearchHistory(this)
-        //val history = searchHistory.getHistory()
-
         // Обработка кнопки "Обновить"
         updateButton.setOnClickListener {
             if (isLastSearchFailed && lastSearchQuery != null) {
                 performSearch(lastSearchQuery!!)
             }
-
         }
 
         searchHistory = SearchHistory(this)
@@ -164,7 +159,7 @@ class SearchActivity : AppCompatActivity() {
 
         historyAdapter = TrackAdapter(searchHistory.getHistory()) { track ->
         }
-        // После того, как  создали свой adapter
+
         adapter.setOnItemClickListener { track ->
             // Добавляем трек в историю поиска
             searchHistory.addTrack(track)
@@ -192,28 +187,19 @@ class SearchActivity : AppCompatActivity() {
 
         // Слушатель отслеживает изменения текста и управляет видимостью подсказки
         searchEditText.addTextChangedListener(object : TextWatcher {
-            // Создаём анонимный объект, реализующий интерфейс TextWatcher
 
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                // Этот метод вызывается перед тем, как текст изменится. В данном случае он пуст.
             }
-
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                // Этот метод вызывается, когда текст изменяется. Здесь проверяется, должен ли отображаться hintMessage.
                 hintMessage.visibility =
                     if (searchEditText.hasFocus() && p0?.isEmpty() == true) View.VISIBLE else View.GONE
-                // Если searchField имеет фокус и текст в нём пустой, то hintMessage становится видимым, иначе - невидимым.
                 historyRecyclerViewKit.visibility =
                     if (searchEditText.hasFocus() && p0?.isEmpty() == true && searchHistory.getHistory().isNotEmpty()) View.VISIBLE else View.GONE
             }
 
             override fun afterTextChanged(p0: Editable?) {
-                // Этот метод вызывается после того, как текст изменился. В данном случае он тоже пуст.
             }
         })
-
-
-
     }
 
     override fun onResume() {
@@ -226,9 +212,6 @@ class SearchActivity : AppCompatActivity() {
         }
     }
 
-    // Поиск треков по заданному запросу query.
-    // Он отправляет запрос к сервису iTunes и обрабатывает ответ,
-    // обновляя список треков в адаптере и отображая соответствующие сообщения об отсутствии результатов или об ошибке.
     private fun performSearch(query: String) {
         lastSearchQuery = query // Сохраняем текущий запрос поиска
         val call = itunesService.search(query) // Делаем запрос к сервису iTunes для поиска
@@ -283,18 +266,14 @@ class SearchActivity : AppCompatActivity() {
         })
     }
 
-    //Метод сохраняет текущее состояние приложения, в частности, текущий запрос поиска searchQuery, в Bundle.
-    // Это необходимо для того, чтобы при изменении конфигурации состояние приложения могло быть восстановлено.
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putString(
             SEARCH_QUERY_KEY,
             searchQuery
-        ) // Сохраняем текущий запрос поиска в Bundle
+        )
     }
 
-    // Этот метод восстанавливает сохранённое состояние приложения из Bundle.
-    // Он извлекает сохранённый запрос поиска и, если он не пустой, выполняет поиск по этому запросу.
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         searchQuery = savedInstanceState.getString(
@@ -306,5 +285,4 @@ class SearchActivity : AppCompatActivity() {
             performSearch(searchQuery) // Если есть сохранённый запрос, выполняем поиск
         }
     }
-
 }
