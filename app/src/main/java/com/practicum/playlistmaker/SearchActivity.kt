@@ -81,13 +81,13 @@ class SearchActivity : AppCompatActivity() {
         }
 
         // Настройка обработки кликов.
-        backTextView.setOnClickListener { finish() } //при нажатии на элемент, связанный с backTextView, приложение или экран будут закрыты,вернётся к предыдущему экрану.
+        backTextView.setOnClickListener { finish() }
 
         // Установка текста поиска
         searchEditText.setText(searchQuery)
 
         // Обработка reset
-        resetButton.setOnClickListener { // Происходит сброс состояния поиска: очищаются поле ввода и список отфильтрованных треко́в, а также скрывается клавиатура.
+        resetButton.setOnClickListener {
             searchEditText.setText("")
             filteredTracks = listOf()
             adapter.updateList(filteredTracks)
@@ -97,16 +97,11 @@ class SearchActivity : AppCompatActivity() {
 
         // Обработка изменения текста
         searchEditText.doOnTextChanged { text, _, _, _ ->
-            // При каждом изменении текста в searchEditText выполняется блок кода внутри фигурных скобок.
 
             resetButton.visibility = if (!text.isNullOrEmpty()) View.VISIBLE else View.GONE
-            // Если текст в searchEditText не пустой, то кнопка сброса (resetButton) становится видимой, иначе — скрытой.
-
             searchQuery = text.toString()
-            // Текущее значение текста в searchEditText сохраняется в переменную searchQuery.
 
             val queryLower = searchQuery.lowercase()
-            // Строка searchQuery преобразуется в нижний регистр и сохраняется в новую переменную queryLower.
 
             // Фильтрация данных
             filteredTracks = if (queryLower.isEmpty()) {
@@ -117,24 +112,17 @@ class SearchActivity : AppCompatActivity() {
                         .contains(queryLower)
                 }
             }
-            // Если queryLower пустая, filteredTracks устанавливается как пустой список.
-            // Иначе происходит фильтрация списка allTracks: выбираются треки, в названии или имени исполнителя которых содержится queryLower (без учёта регистра).
 
-            adapter.updateList(filteredTracks)
-            // Обновляется список в адаптере с отфильтрованными треками.
+            adapter.updateList(filteredTracks)  // Обновляется список в адаптере с отфильтрованными треками.
 
             // Скрытие сообщений при пустом поиске
             if (searchQuery.isEmpty()) {
                 noResultsLayout.visibility = View.GONE
                 errorLayout.visibility = View.GONE
-//                historyRecyclerViewKit.visibility = View.VISIBLE // Показываем историю поиска
             } else {
-                historyRecyclerViewKit.visibility = View.GONE // Скрываем историю поиска
+                historyRecyclerViewKit.visibility = View.GONE
             }
-            // Если searchQuery пустая, скрываются сообщения об отсутствии результатов и об ошибке, а также показывается история поиска.
-            // Иначе история поиска скрывается.
         }
-
 
         // Обработка кнопки "Готово" на клавиатуре
         searchEditText.setOnEditorActionListener { _, actionId, _ ->
