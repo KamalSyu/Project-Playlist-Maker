@@ -51,6 +51,8 @@
         <item name="android:elevation">0dp</item>
         <item name="android:drawableTint">@color/white</item>
         <item name="android:textFontWeight">400</item>
+        <item name="thumbTint">@color/yp_blue</item>
+        <item name="trackTint">@drawable/switch_selector</item>
 
 
     </style>

@@ -38,7 +38,6 @@ class SearchActivity : AppCompatActivity() {
     private lateinit var historyRecyclerView: RecyclerView
     private var trackList = listOf<Track>()
     private lateinit var clearHistoryButton: Button
-    private lateinit var historyTitle: TextView
     private lateinit var historyRecyclerViewKit: LinearLayout
 
     // Другие переменные
@@ -128,7 +127,7 @@ class SearchActivity : AppCompatActivity() {
             if (searchQuery.isEmpty()) {
                 noResultsLayout.visibility = View.GONE
                 errorLayout.visibility = View.GONE
-                historyRecyclerViewKit.visibility = View.VISIBLE // Показываем историю поиска
+//                historyRecyclerViewKit.visibility = View.VISIBLE // Показываем историю поиска
             } else {
                 historyRecyclerViewKit.visibility = View.GONE // Скрываем историю поиска
             }
@@ -166,10 +165,41 @@ class SearchActivity : AppCompatActivity() {
             }
 
         }
+
+        searchHistory = SearchHistory(this)
+        // Инициализация адаптера
+        adapter = TrackAdapter(trackList) { track ->
+        }
+        adapter.updateList(trackList)
+        recyclerView.adapter = adapter
+        recyclerView.layoutManager = LinearLayoutManager(this)
+
+        historyAdapter = TrackAdapter(searchHistory.getHistory()) { track ->
+        }
+        // После того, как  создали свой adapter
+        adapter.setOnItemClickListener { track ->
+            // Добавляем трек в историю поиска
+            searchHistory.addTrack(track)
+            // Обновляем список истории и уведомляем адаптер
+            historyAdapter.updateList(searchHistory.getHistory())
+        }
+        historyRecyclerView.layoutManager = LinearLayoutManager(this)
+        historyRecyclerView.adapter = historyAdapter
+
+        clearHistoryButton.setOnClickListener {
+            searchHistory.clearHistory()
+            historyAdapter.updateList(searchHistory.getHistory())
+            if (searchHistory.getHistory().isEmpty()) {
+                historyRecyclerViewKit.visibility = View.GONE
+            }
+        }
+
         //Устанавливаем слушатель изменения фокуса для отображения подсказки
         searchEditText.setOnFocusChangeListener { view, hasFocus ->
             hintMessage.visibility =
                 if (hasFocus && searchEditText.text.isEmpty()) View.VISIBLE else View.GONE
+            historyRecyclerViewKit.visibility =
+                if(hasFocus && searchEditText.text.isEmpty() && searchHistory.getHistory().isNotEmpty()) View.VISIBLE else View.GONE
         }
 
         // Слушатель отслеживает изменения текста и управляет видимостью подсказки
@@ -185,6 +215,8 @@ class SearchActivity : AppCompatActivity() {
                 hintMessage.visibility =
                     if (searchEditText.hasFocus() && p0?.isEmpty() == true) View.VISIBLE else View.GONE
                 // Если searchField имеет фокус и текст в нём пустой, то hintMessage становится видимым, иначе - невидимым.
+                historyRecyclerViewKit.visibility =
+                    if (searchEditText.hasFocus() && p0?.isEmpty() == true && searchHistory.getHistory().isNotEmpty()) View.VISIBLE else View.GONE
             }
 
             override fun afterTextChanged(p0: Editable?) {
@@ -192,30 +224,6 @@ class SearchActivity : AppCompatActivity() {
             }
         })
 
-        searchHistory = SearchHistory(this)
-        // Инициализация адаптера
-        adapter = TrackAdapter(trackList) { track ->
-        }
-        adapter.updateList(trackList)
-        recyclerView.adapter = adapter
-        recyclerView.layoutManager = LinearLayoutManager(this)
-
-         historyAdapter = TrackAdapter(searchHistory.getHistory()) { track ->
-        }
-        // После того, как  создали свой adapter
-        adapter.setOnItemClickListener { track ->
-            // Добавляем трек в историю поиска
-            searchHistory.addTrack(track)
-            // Обновляем список истории и уведомляем адаптер
-            historyAdapter.updateList(searchHistory.getHistory())
-        }
-        historyRecyclerView.layoutManager = LinearLayoutManager(this)
-        historyRecyclerView.adapter = historyAdapter
-
-        clearHistoryButton.setOnClickListener {
-            searchHistory.clearHistory()
-            historyAdapter.updateList(searchHistory.getHistory())
-        }
 
 
     }
