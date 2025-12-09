@@ -12,6 +12,11 @@
         android:text="@string/back"
         app:drawableStartCompat="@drawable/ic_back_arrow_48" />
 
+    <!-- Список результатов поиска -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewMediateca"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
 </LinearLayout>
-
-
