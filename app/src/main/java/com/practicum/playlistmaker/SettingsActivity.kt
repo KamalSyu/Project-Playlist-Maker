@@ -4,15 +4,22 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
+import com.google.android.material.switchmaterial.SwitchMaterial
 
 class SettingsActivity : AppCompatActivity() {
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
+
+        // Получаем сохранённое состояние переключателя
+        val preferences = getSharedPreferences("SettingsPref", MODE_PRIVATE)
+        val isDarkMode = preferences.getBoolean("isDarkMode", false)
+
 
         findViewById<TextView>(R.id.back).setOnClickListener {
             finish()
@@ -30,6 +37,18 @@ class SettingsActivity : AppCompatActivity() {
         val userAgreementButton = findViewById<TextView>(R.id.userAgreementButton)
         userAgreementButton.setOnClickListener {
             openUserAgreement()
+        }
+
+        val themeSwitcher = findViewById<SwitchMaterial>(R.id.switch_button)
+        themeSwitcher.isChecked = isDarkMode // Устанавливаем состояние переключателя
+
+        // Добавляем слушатель на изменение состояния
+        themeSwitcher.setOnCheckedChangeListener { switcher, checked ->
+            (applicationContext as App).switchTheme(checked)
+            with(preferences.edit()) {
+                putBoolean("isDarkMode", checked)
+                apply()
+            }
         }
     }
 

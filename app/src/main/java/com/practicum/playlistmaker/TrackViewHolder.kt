@@ -22,7 +22,6 @@ class TrackViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val trackTimeFormatted = SimpleDateFormat("mm:ss", Locale.getDefault()).format(track.trackTimeMillis)
         trackTimeTextView.text = trackTimeFormatted
 
-
         // Загрузка изображения с Glide
         Glide.with(itemView.context)
             .load(track.artworkUrl100)
@@ -31,5 +30,6 @@ class TrackViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             .centerCrop()
             .transform(RoundedCorners(2))
             .into(artworkImageView)
+
     }
 }

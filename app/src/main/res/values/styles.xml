@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+
     <style name="BackgroundHomeScreen">
         <item name="android:background">@color/yp_blue</item>
     </style>
@@ -50,6 +51,8 @@
         <item name="android:elevation">0dp</item>
         <item name="android:textFontWeight">400</item>
         <item name="android:background">@drawable/tv_selector</item>
+<!--        <item name="thumbTint">@color/yp_blue</item>-->
+<!--        <item name="trackTint">@drawable/switch_selector</item>-->
     </style>
 
     <style name="TextStyleSearch">
@@ -177,6 +180,61 @@
         <item name="android:paddingTop">10dp</item>
         <item name="android:paddingBottom">10dp</item>
     </style>
+
+
+    <style name="ButtonHistorySearch" parent="Widget.MaterialComponents.Button.UnelevatedButton">
+        <item name="backgroundTint">@color/yp_black</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textSize">@dimen/standard_padding</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:layout_marginLeft">106dp</item>
+        <item name="android:layout_marginRight">106dp</item>
+        <item name="android:layout_marginTop">24dp</item>
+        <item name="cornerRadius">54dp</item>
+        <item name="android:fontFamily">@font/ys_display_medium</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:elevation">0dp</item>
+        <item name="android:textFontWeight">500</item>
+        <item name="android:singleLine">true</item>
+
+        <!-- Отступы для текста внутри кнопки -->
+        <item name="android:paddingLeft">14dp</item>
+        <item name="android:paddingRight">14dp</item>
+        <item name="android:paddingTop">10dp</item>
+        <item name="android:paddingBottom">10dp</item>
+    </style>
+
+    <style name="HistorySearch" parent="Widget.MaterialComponents.TextView">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">52dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textSize">@dimen/history_text_size</item>
+        <item name="android:textColor">@color/yp_black</item>
+        <item name="android:fontFamily">@font/ys_display_medium</item>
+        <item name="android:textFontWeight">500</item>
+        <item name="android:layout_marginBottom">8dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:letterSpacing">0</item>
+
+    </style>
+
+    <style name="SearchHint" parent="Widget.MaterialComponents.TextView">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textSize">@dimen/small_text_size</item>
+        <item name="android:textColor">@color/yp_black</item>
+        <item name="android:fontFamily">@font/ys_display_regular</item>
+        <item name="android:textFontWeight">500</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textAlignment">center</item>
+        <item name="android:paddingLeft">8dp</item>
+        <item name="android:paddingRight">8dp</item>
+    </style>
+
 </resources>
 
 

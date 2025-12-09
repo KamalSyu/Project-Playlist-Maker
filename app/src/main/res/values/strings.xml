@@ -22,6 +22,11 @@
     <string name="update">Обновить</string>
     <string name="no_results">Ничего не нашлось</string>
     <string name="error_occurred1">Проблемы со связью\n\nЗагрузка не удалась. Проверьте\nподключение к интернету</string>
+    <string name="you_were_looking_for">Вы искали</string>
+    <string name="clear_the_history">Очистить историю</string>
+    <string name="search_hint">Вводите название песни или имя исполнителя на английском языке</string>
+
+
 
 
 </resources>

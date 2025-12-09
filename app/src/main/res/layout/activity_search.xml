@@ -2,7 +2,6 @@
 <!-- Основной макет экрана поиска с улучшенной читаемостью и структурой -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     style="@style/BackgroundSearch"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -22,14 +21,27 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp">
 
-        <EditText
-            android:id="@+id/search_edit_text"
-            style="@style/TextStyleSearch"
-            android:drawableStart="@drawable/ic_search_16"
-            android:hint="@string/search"
-            android:imeOptions="actionDone"
-            android:singleLine="true"
-            android:paddingEnd="40dp"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <EditText
+                android:id="@+id/search_edit_text"
+                style="@style/TextStyleSearch"
+                android:drawableStart="@drawable/ic_search_16"
+                android:hint="@string/search"
+                android:imeOptions="actionDone"
+                android:singleLine="true"
+                android:paddingEnd="40dp" />
+
+            <TextView
+                android:id="@+id/searchHint"
+                android:padding="16dp"
+                style="@style/SearchHint"
+                android:text="@string/search_hint"
+                android:visibility="gone" />
+        </LinearLayout>
 
         <ImageView
             android:id="@+id/reset_button"
@@ -85,14 +97,38 @@
             android:enabled="true"/>
     </LinearLayout>
 
+    <!-- История поиска  -->
+    <LinearLayout android:id="@+id/search_history_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        xmlns:android="http://schemas.android.com/apk/res/android">
+        >
+        <TextView
+            android:id="@+id/history_title"
+            android:text="@string/you_were_looking_for"
+            style="@style/HistorySearch"
+            />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/history_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+        <Button
+            android:id="@+id/clear_history_button"
+            android:text="@string/clear_the_history"
+            style="@style/ButtonHistorySearch"/>
+        </LinearLayout>
+
     <!-- Список результатов поиска -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
-
-
 
 
 </LinearLayout>
