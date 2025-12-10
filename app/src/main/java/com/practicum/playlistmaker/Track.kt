@@ -21,4 +21,8 @@ class Track: Serializable {
     }
 
     constructor(trackName: String, artistName: String, trackTimeMillis: Long, artworkUrl100: String) : this(0, trackName, artistName, trackTimeMillis, artworkUrl100)
+
+    fun getHighQualityArtworkUrl(): String {
+        return artworkUrl100.replaceAfterLast("/", "512x512bb.jpg")
+    }
 }

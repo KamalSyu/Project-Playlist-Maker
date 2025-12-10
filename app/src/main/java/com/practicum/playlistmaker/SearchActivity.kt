@@ -20,6 +20,7 @@ import androidx.core.widget.doOnTextChanged
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.Constants.Companion.SEARCH_QUERY_KEY
+import com.practicum.playlistmaker.Constants.Companion.VIEW_TYPE_TRACK
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -153,7 +154,7 @@ class SearchActivity : AppCompatActivity() {
         searchHistory = SearchHistory(this)
 
 // Инициализация адаптера для списка треков
-        adapter = TrackAdapter(trackList) { track ->
+        adapter = TrackAdapter(trackList, VIEW_TYPE_TRACK) { track ->
             // Добавляем трек в историю поиска
             searchHistory.addTrack(track)
             // Обновляем список истории и уведомляем адаптер
@@ -168,7 +169,7 @@ class SearchActivity : AppCompatActivity() {
         recyclerView.layoutManager = LinearLayoutManager(this)
 
 // Инициализация адаптера для истории поиска
-        historyAdapter = TrackAdapter(searchHistory.getHistory()) { track ->
+        historyAdapter = TrackAdapter(searchHistory.getHistory(), VIEW_TYPE_TRACK) { track ->
             // При клике на элемент истории также перенаправляем на экран "Аудиоплеер"
             val intent = Intent(this, MediatekaActivity::class.java)
             intent.putExtra("track", track)

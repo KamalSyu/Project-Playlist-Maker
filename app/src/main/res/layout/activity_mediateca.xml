@@ -9,8 +9,8 @@
     <TextView
         android:id="@+id/back"
         style="@style/TextStyleTopScreen"
-        android:text="@string/back"
-        app:drawableStartCompat="@drawable/ic_back_arrow_48" />
+        app:drawableStartCompat="@drawable/ic_back_arrow_48"
+        android:layout_marginBottom="26dp"/>
 
     <!-- Список результатов поиска -->
     <androidx.recyclerview.widget.RecyclerView

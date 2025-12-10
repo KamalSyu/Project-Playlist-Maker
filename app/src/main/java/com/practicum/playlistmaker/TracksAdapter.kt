@@ -10,7 +10,10 @@ import com.practicum.playlistmaker.Constants.Companion.VIEW_TYPE_ALBUM
 import com.practicum.playlistmaker.Constants.Companion.VIEW_TYPE_TRACK
 
 
-class TrackAdapter(private var tracks: List<Track>, private var onTrackClick: (Track) -> Unit) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class TrackAdapter(private var tracks: List<Track>,
+                   private val viewType: Int,
+                   private var onTrackClick: (Track) -> Unit)
+    : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
 
 //    override fun getItemViewType(position: Int): Int {
@@ -19,7 +22,7 @@ class TrackAdapter(private var tracks: List<Track>, private var onTrackClick: (T
 //    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        return when (viewType) {
+        return when (this.viewType) {
             VIEW_TYPE_TRACK -> {
                 val view = LayoutInflater.from(parent.context).inflate(R.layout.item_track, parent, false)
                 TrackViewHolder(view)
@@ -36,8 +39,12 @@ class TrackAdapter(private var tracks: List<Track>, private var onTrackClick: (T
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val track = tracks[position]
         when (holder) {
-            is TrackViewHolder -> holder.bind(track)
-            is AlbumViewHolder -> holder.bind(track)
+            is TrackViewHolder -> {
+                holder.bind(track)
+            }
+            is AlbumViewHolder -> {
+                holder.bind(track)
+            }
         }
         holder.itemView.setOnClickListener {
             onTrackClick(track) // вызываем лямбду с текущим треком
