@@ -160,7 +160,7 @@ class SearchActivity : AppCompatActivity() {
             // Обновляем список истории и уведомляем адаптер
             historyAdapter.updateList(searchHistory.getHistory())
             // Перенаправляем на экран "Аудиоплеер"
-            val intent = Intent(this, MediatekaActivity::class.java)
+            val intent = Intent(this, AudioPlayer::class.java)
             intent.putExtra("track", track)
             startActivity(intent)
         }
@@ -171,7 +171,7 @@ class SearchActivity : AppCompatActivity() {
 // Инициализация адаптера для истории поиска
         historyAdapter = TrackAdapter(searchHistory.getHistory(), VIEW_TYPE_TRACK) { track ->
             // При клике на элемент истории также перенаправляем на экран "Аудиоплеер"
-            val intent = Intent(this, MediatekaActivity::class.java)
+            val intent = Intent(this, AudioPlayer::class.java)
             intent.putExtra("track", track)
             startActivity(intent)
         }
@@ -187,33 +187,7 @@ class SearchActivity : AppCompatActivity() {
             }
         }
 
-//        searchHistory = SearchHistory(this)
-//        // Инициализация адаптера
-//        adapter = TrackAdapter(trackList) { track ->
-//        }
-//        adapter.updateList(trackList)
-//        recyclerView.adapter = adapter
-//        recyclerView.layoutManager = LinearLayoutManager(this)
-//
-//        historyAdapter = TrackAdapter(searchHistory.getHistory()) { track ->
-//        }
-//
-//        adapter.setOnItemClickListener { track ->
-//            // Добавляем трек в историю поиска
-//            searchHistory.addTrack(track)
-//            // Обновляем список истории и уведомляем адаптер
-//            historyAdapter.updateList(searchHistory.getHistory())
-//        }
-//        historyRecyclerView.layoutManager = LinearLayoutManager(this)
-//        historyRecyclerView.adapter = historyAdapter
-//
-//        clearHistoryButton.setOnClickListener {
-//            searchHistory.clearHistory()
-//            historyAdapter.updateList(searchHistory.getHistory())
-//            if (searchHistory.getHistory().isEmpty()) {
-//                historyRecyclerViewKit.visibility = View.GONE
-//            }
-//        }
+
 
         //Устанавливаем слушатель изменения фокуса для отображения подсказки
         searchEditText.setOnFocusChangeListener { view, hasFocus ->

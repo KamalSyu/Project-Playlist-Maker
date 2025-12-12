@@ -9,14 +9,7 @@
     <TextView
         android:id="@+id/back"
         style="@style/TextStyleTopScreen"
-        app:drawableStartCompat="@drawable/ic_back_arrow_48"
-        android:layout_marginBottom="26dp"/>
-
-    <!-- Список результатов поиска -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewMediateca"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+        android:text="@string/back"
+        app:drawableStartCompat="@drawable/ic_back_arrow_48" />
 
 </LinearLayout>

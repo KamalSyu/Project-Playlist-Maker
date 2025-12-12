@@ -6,9 +6,8 @@ class Track: Serializable {
     var artistName: String
     var trackTimeMillis: Long
     var artworkUrl100: String
-    // Новые поля
-    var collectionName: String? = null
     var releaseDate: String? = null
+    var collectionName: String? = null
     var primaryGenreName: String? = null
     var country: String? = null
 
