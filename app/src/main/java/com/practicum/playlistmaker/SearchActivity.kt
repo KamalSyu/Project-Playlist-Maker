@@ -2,6 +2,7 @@ package com.practicum.playlistmaker
 
 import Track
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -19,6 +20,7 @@ import androidx.core.widget.doOnTextChanged
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.Constants.Companion.SEARCH_QUERY_KEY
+import com.practicum.playlistmaker.Constants.Companion.VIEW_TYPE_TRACK
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -150,22 +152,30 @@ class SearchActivity : AppCompatActivity() {
         }
 
         searchHistory = SearchHistory(this)
-        // Инициализация адаптера
-        adapter = TrackAdapter(trackList) { track ->
+
+// Инициализация адаптера для списка треков
+        adapter = TrackAdapter(trackList, VIEW_TYPE_TRACK) { track ->
+            // Добавляем трек в историю поиска
+            searchHistory.addTrack(track)
+            // Обновляем список истории и уведомляем адаптер
+            historyAdapter.updateList(searchHistory.getHistory())
+            // Перенаправляем на экран "Аудиоплеер"
+            val intent = Intent(this, AudioPlayer::class.java)
+            intent.putExtra("track", track)
+            startActivity(intent)
         }
         adapter.updateList(trackList)
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(this)
 
-        historyAdapter = TrackAdapter(searchHistory.getHistory()) { track ->
+// Инициализация адаптера для истории поиска
+        historyAdapter = TrackAdapter(searchHistory.getHistory(), VIEW_TYPE_TRACK) { track ->
+            // При клике на элемент истории также перенаправляем на экран "Аудиоплеер"
+            val intent = Intent(this, AudioPlayer::class.java)
+            intent.putExtra("track", track)
+            startActivity(intent)
         }
 
-        adapter.setOnItemClickListener { track ->
-            // Добавляем трек в историю поиска
-            searchHistory.addTrack(track)
-            // Обновляем список истории и уведомляем адаптер
-            historyAdapter.updateList(searchHistory.getHistory())
-        }
         historyRecyclerView.layoutManager = LinearLayoutManager(this)
         historyRecyclerView.adapter = historyAdapter
 
@@ -176,6 +186,8 @@ class SearchActivity : AppCompatActivity() {
                 historyRecyclerViewKit.visibility = View.GONE
             }
         }
+
+
 
         //Устанавливаем слушатель изменения фокуса для отображения подсказки
         searchEditText.setOnFocusChangeListener { view, hasFocus ->
@@ -200,6 +212,7 @@ class SearchActivity : AppCompatActivity() {
             override fun afterTextChanged(p0: Editable?) {
             }
         })
+
     }
 
     override fun onResume() {

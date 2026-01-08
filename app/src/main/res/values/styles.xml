@@ -235,6 +235,117 @@
         <item name="android:paddingRight">8dp</item>
     </style>
 
+    <style name="TextAudioPlayerLeft" parent="Widget.MaterialComponents.TextView">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">32dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textSize">@dimen/mediateca_text_size</item>
+        <item name="android:textColor">@color/yp_text_gray</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:fontFamily">@font/ys_display_regular</item>
+
+        <item name="android:elevation">0dp</item>
+        <item name="android:textFontWeight">400</item>
+    </style>
+
+    <style name="TextAudioPlayer" parent="Widget.MaterialComponents.TextView">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">32dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textSize">@dimen/mediateca_text_size</item>
+        <item name="android:textColor">@color/yp_black</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:fontFamily">@font/ys_display_regular</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:elevation">0dp</item>
+        <item name="android:textFontWeight">400</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:gravity">end|center_vertical</item>
+    </style>
+
+    <style name="AudioPlayerTextTrackName" parent="Widget.MaterialComponents.TextView">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textSize">@dimen/primary_text_size</item>
+        <item name="android:textColor">@color/yp_black</item>
+        <item name="android:fontFamily">@font/ys_display_medium</item>
+        <item name="android:elevation">0dp</item>
+        <item name="android:textFontWeight">400</item>
+        <item name="android:layout_marginTop">24dp</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
+    <style name="AudoPlayerTextArtistName" parent="Widget.MaterialComponents.TextView">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textSize">@dimen/standard_padding</item>
+        <item name="android:textColor">@color/yp_black</item>
+        <item name="android:fontFamily">@font/ys_display_medium</item>
+        <item name="android:elevation">0dp</item>
+        <item name="android:textFontWeight">400</item>
+        <item name="android:layout_marginTop">12dp</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
+    <style name="AudoPlayerPlayButton" parent="Widget.MaterialComponents.Button.UnelevatedButton">
+        <item name="backgroundTint">@null</item>
+        <item name="android:layout_width">100dp</item>
+        <item name="android:layout_height">100dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:layout_marginStart">130dp</item>
+        <item name="android:layout_marginEnd">130dp</item>
+        <item name="android:layout_marginTop">30dp</item>
+        <item name="android:background">@drawable/ic_play_button</item>
+    </style>
+
+    <style name="AudoPlayerLikeButton" parent="Widget.MaterialComponents.Button.UnelevatedButton">
+        <item name="backgroundTint">@null</item>
+        <item name="android:layout_width">51dp</item>
+        <item name="android:layout_height">51dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:layout_marginTop">54dp</item>
+        <item name="android:background">@drawable/ic_button_like</item>
+
+    </style>
+
+    <style name="AudioPlayerPluseButton" parent="Widget.MaterialComponents.Button.UnelevatedButton">
+        <item name="backgroundTint">@null</item>
+        <item name="android:layout_width">51dp</item>
+        <item name="android:layout_height">51dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:layout_marginTop">54dp</item>
+        <item name="android:background">@drawable/ic_button_plus</item>
+    </style>
+
+    <style name="MediatecaTime" parent="Widget.MaterialComponents.TextView">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textSize">@dimen/standard_padding</item>
+        <item name="android:textColor">@color/yp_black</item>
+        <item name="android:fontFamily">@font/ys_display_medium</item>
+        <item name="android:elevation">0dp</item>
+        <item name="android:textFontWeight">500</item>
+        <item name="android:layout_marginTop">4dp</item>
+    </style>
+
+    <style name="AlbumImageViewStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">24dp</item>
+        <item name="android:layout_marginEnd">24dp</item>
+        <item name="android:layout_marginTop">0dp</item>
+        <item name="android:scaleType">centerCrop</item>
+    </style>
 </resources>
 
 
