@@ -57,6 +57,3 @@ class TrackAdapter(private var tracks: List<Track>,
 
     }
 }
-
-
-

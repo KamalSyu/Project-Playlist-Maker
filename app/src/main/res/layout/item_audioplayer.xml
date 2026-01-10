@@ -43,7 +43,8 @@
                 style="@style/AudoPlayerPlayButton"
                 app:layout_constraintTop_toBottomOf="@id/textArtistName"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+                app:layout_constraintEnd_toEndOf="parent"
+                android:enabled="false"/>
 
             <Button
                 android:id="@+id/ic_button_plus"

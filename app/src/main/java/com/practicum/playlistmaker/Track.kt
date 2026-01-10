@@ -1,3 +1,4 @@
+
 import java.io.Serializable
 
 class Track: Serializable {
@@ -10,16 +11,19 @@ class Track: Serializable {
     var collectionName: String? = null
     var primaryGenreName: String? = null
     var country: String? = null
+    var previewUrl: String? = null // Добавляем новое поле
 
-    constructor(trackId: Int, trackName: String, artistName: String, trackTimeMillis: Long, artworkUrl100: String) {
+
+    constructor(trackId: Int, trackName: String, artistName: String, trackTimeMillis: Long, artworkUrl100: String, previewUrl: String?) {
         this.trackId = trackId
         this.trackName = trackName
         this.artistName = artistName
         this.trackTimeMillis = trackTimeMillis
         this.artworkUrl100 = artworkUrl100
+        this.previewUrl = previewUrl
     }
 
-    constructor(trackName: String, artistName: String, trackTimeMillis: Long, artworkUrl100: String) : this(0, trackName, artistName, trackTimeMillis, artworkUrl100)
+    constructor(trackName: String, artistName: String, trackTimeMillis: Long, artworkUrl100: String) : this(0, trackName, artistName, trackTimeMillis, artworkUrl100, null)
 
     fun getHighQualityArtworkUrl(): String {
         return artworkUrl100.replaceAfterLast("/", "512x512bb.jpg")

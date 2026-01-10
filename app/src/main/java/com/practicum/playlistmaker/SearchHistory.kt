@@ -36,7 +36,6 @@ class SearchHistory(private val context: Context) {
 
     // Добавить трек в историю
     fun addTrack(track: Track) {
-        Log.d("SearchHistory", "Добавляем трек: ${track.trackName}")
         val history = getHistory()
         // Проверка уникальности по trackId
         val existsIndex = history.indexOfFirst { it.trackId == track.trackId }

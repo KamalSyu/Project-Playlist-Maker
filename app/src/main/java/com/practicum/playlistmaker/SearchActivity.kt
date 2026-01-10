@@ -14,6 +14,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doOnTextChanged
@@ -23,6 +24,11 @@ import com.practicum.playlistmaker.Constants.Companion.SEARCH_QUERY_KEY
 import com.practicum.playlistmaker.Constants.Companion.VIEW_TYPE_TRACK
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import kotlinx.coroutines.*
+import kotlin.coroutines.CoroutineContext
+import android.os.Handler
+import android.os.Looper
+
 
 
 class SearchActivity : AppCompatActivity() {
@@ -41,6 +47,11 @@ class SearchActivity : AppCompatActivity() {
     private var trackList = listOf<Track>()
     private lateinit var clearHistoryButton: Button
     private lateinit var historyRecyclerViewKit: LinearLayout
+    private lateinit var progressBar: ProgressBar
+    private val handler = Handler(Looper.getMainLooper())
+    private var searchRunnable: Runnable = Runnable {
+        performSearch(searchEditText.text.toString())
+    }
 
     // Другие переменные
     private lateinit var adapter: TrackAdapter
@@ -50,6 +61,8 @@ class SearchActivity : AppCompatActivity() {
     private var lastSearchQuery: String? = null
     private var isLastSearchFailed: Boolean = false
     private lateinit var historyAdapter: TrackAdapter
+    private var debounceJob: Job? = null
+    private val debounceDelay = 1000L // задержка в 1 секунду
 
     private val itunesServiceBaseUrl = "https://itunes.apple.com"
 
@@ -76,6 +89,7 @@ class SearchActivity : AppCompatActivity() {
         historyRecyclerView = findViewById(R.id.history_recycler_view)
         historyRecyclerViewKit = findViewById(R.id.search_history_layout)
         clearHistoryButton = findViewById(R.id.clear_history_button)
+        progressBar = findViewById(R.id.progressBar)
 
         // Восстановление состояния поиска
         if (savedInstanceState != null) {
@@ -121,8 +135,6 @@ class SearchActivity : AppCompatActivity() {
             if (searchQuery.isEmpty()) {
                 noResultsLayout.visibility = View.GONE
                 errorLayout.visibility = View.GONE
-            } else {
-                historyRecyclerViewKit.visibility = View.GONE
             }
         }
 
@@ -155,14 +167,16 @@ class SearchActivity : AppCompatActivity() {
 
 // Инициализация адаптера для списка треков
         adapter = TrackAdapter(trackList, VIEW_TYPE_TRACK) { track ->
-            // Добавляем трек в историю поиска
-            searchHistory.addTrack(track)
-            // Обновляем список истории и уведомляем адаптер
-            historyAdapter.updateList(searchHistory.getHistory())
-            // Перенаправляем на экран "Аудиоплеер"
-            val intent = Intent(this, AudioPlayer::class.java)
-            intent.putExtra("track", track)
-            startActivity(intent)
+            clickDebounce {
+                // Добавляем трек в историю поиска
+                searchHistory.addTrack(track)
+                // Обновляем список истории и уведомляем адаптер
+                historyAdapter.updateList(searchHistory.getHistory())
+                // Перенаправляем на экран "Аудиоплеер"
+                val intent = Intent(this, AudioPlayer::class.java)
+                intent.putExtra("track", track)
+                startActivity(intent)
+            }
         }
         adapter.updateList(trackList)
         recyclerView.adapter = adapter
@@ -203,6 +217,7 @@ class SearchActivity : AppCompatActivity() {
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
             }
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                searchDebounce() // Вызываем debounce при изменении текста
                 hintMessage.visibility =
                     if (searchEditText.hasFocus() && p0?.isEmpty() == true) View.VISIBLE else View.GONE
                 historyRecyclerViewKit.visibility =
@@ -220,12 +235,21 @@ class SearchActivity : AppCompatActivity() {
         // Обновляем видимость historyRecyclerView при возобновлении активности
         if (searchQuery.isEmpty()) {
             historyRecyclerView.visibility = View.VISIBLE
+
         } else {
             historyRecyclerView.visibility = View.GONE
         }
+        historyAdapter.updateList(searchHistory.getHistory())
+
     }
 
     private fun performSearch(query: String) {
+        // Скрытие элементов интерфейса и показ ProgressBar
+        recyclerView.visibility = View.GONE
+        noResultsLayout.visibility = View.GONE
+        errorLayout.visibility = View.GONE
+        progressBar.visibility = View.VISIBLE
+
         lastSearchQuery = query // Сохраняем текущий запрос поиска
         val call = itunesService.search(query) // Делаем запрос к сервису iTunes для поиска
         call.enqueue(object : retrofit2.Callback<SearchResponse> {
@@ -268,6 +292,12 @@ class SearchActivity : AppCompatActivity() {
                     errorLayout.visibility = View.VISIBLE // Показываем сообщение об ошибке
                     noResultsLayout.visibility = View.GONE
                 }
+                progressBar.visibility = View.GONE
+                if (filteredTracks.isNotEmpty()) {
+                    recyclerView.visibility = View.VISIBLE
+                } else {
+                    noResultsLayout.visibility = View.VISIBLE
+                }
             }
 
             override fun onFailure(call: retrofit2.Call<SearchResponse>, t: Throwable) {
@@ -275,6 +305,7 @@ class SearchActivity : AppCompatActivity() {
                 isLastSearchFailed = true
                 errorLayout.visibility = View.VISIBLE // Показываем сообщение об ошибке
                 noResultsLayout.visibility = View.GONE
+                progressBar.visibility = View.GONE
             }
         })
     }
@@ -296,6 +327,19 @@ class SearchActivity : AppCompatActivity() {
         searchEditText.setText(searchQuery)
         if (searchQuery.isNotEmpty()) {
             performSearch(searchQuery) // Если есть сохранённый запрос, выполняем поиск
+        }
+    }
+    private fun clickDebounce(action: () -> Unit) {
+        debounceJob?.cancel() // отменяем предыдущую задачу, если она есть
+        debounceJob = GlobalScope.launch {
+            delay(debounceDelay)
+            action()
+        }
+    }
+    private fun searchDebounce() {
+        if (searchEditText.text.isNotEmpty()) {
+            handler.removeCallbacks(searchRunnable)
+            handler.postDelayed(searchRunnable, 2000) // Задержка в 2 секунды
         }
     }
 }

@@ -24,14 +24,24 @@ class AlbumViewHolder (itemView: View) : RecyclerView.ViewHolder(itemView) {
     private val dateFormatter = DateFormatter()
 
     fun bind(track: Track) {
+
+        // Выносим форматирование времени в отдельную переменную
+        val formattedTrackTime = SimpleDateFormat("mm:ss", Locale.getDefault()).format(track.trackTimeMillis)
+
         textTrackName.text = track.trackName
         textArtistName.text = track.artistName
-        timeTextView.text = SimpleDateFormat("mm:ss", Locale.getDefault()).format(track.trackTimeMillis)
-        trackTimeMillisTextView.text = SimpleDateFormat("mm:ss", Locale.getDefault()).format(track.trackTimeMillis)
+        timeTextView.text = formattedTrackTime
+        trackTimeMillisTextView.text = formattedTrackTime
         releaseDateTextView.text = dateFormatter.formatReleaseDate(track.releaseDate)
         collectionNameTextView.text = track.collectionName
         primaryGenreNameTextView.text = track.primaryGenreName
         countryTextView.text = track.country
+
+        // Определяем радиус скругления в пикселях
+        val cornerRadiusDp = 8 // Значение в dp
+        val density = itemView.context.resources.displayMetrics.density
+        val cornerRadiusPx = (cornerRadiusDp * density).toInt()
+
 
         // Загрузка изображения с Glide
         Glide.with(itemView.context)
@@ -39,7 +49,7 @@ class AlbumViewHolder (itemView: View) : RecyclerView.ViewHolder(itemView) {
             .placeholder(R.drawable.ic_placeholder_312)
             .error(R.drawable.ic_placeholder_312)
             .centerCrop()
-            .transform(RoundedCorners(8))
+            .transform(RoundedCorners(cornerRadiusPx))
             .into(albumImageView)
     }
 }
