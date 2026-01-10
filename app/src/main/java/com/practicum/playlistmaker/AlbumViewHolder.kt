@@ -12,7 +12,7 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class AlbumViewHolder (itemView: View) : RecyclerView.ViewHolder(itemView) {
+class AlbumViewHolder (itemView: View, private val onClickListener: (Track) -> Unit) : RecyclerView.ViewHolder(itemView) {
     private val albumImageView: ImageView = itemView.findViewById(R.id.album)
     private val textTrackName: TextView = itemView.findViewById(R.id.textTrackName)
     private val  textArtistName: TextView = itemView.findViewById(R.id.textArtistName)
@@ -26,7 +26,7 @@ class AlbumViewHolder (itemView: View) : RecyclerView.ViewHolder(itemView) {
     private val play: ImageButton = itemView.findViewById(R.id.ic_play_button)
 
 
-    fun bind(track: Track, onClickListener: (Track) -> Unit) {
+    fun bind(track: Track) {
 
         // Выносим форматирование времени в отдельную переменную
         val formattedTrackTime = SimpleDateFormat("mm:ss", Locale.getDefault()).format(track.trackTimeMillis)

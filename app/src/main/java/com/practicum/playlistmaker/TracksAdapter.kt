@@ -24,7 +24,7 @@ class TrackAdapter(private var tracks: List<Track>,
             }
             VIEW_TYPE_ALBUM -> {
                 val view = LayoutInflater.from(parent.context).inflate(R.layout.item_audioplayer, parent, false)
-                return AlbumViewHolder(view)
+                return AlbumViewHolder(view,  onTrackClick)
             }
             else -> throw IllegalArgumentException("Invalid view type")
         }
@@ -39,7 +39,7 @@ class TrackAdapter(private var tracks: List<Track>,
             }
 
             is AlbumViewHolder -> {
-                holder.bind(track, onClickListener)
+                holder.bind(track)
             }
         }
         holder.itemView.setOnClickListener {

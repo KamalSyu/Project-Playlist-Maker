@@ -25,8 +25,6 @@ class AudioPlayer: AppCompatActivity()  {
     private lateinit var recyclerView: RecyclerView
     private var mediaPlayer = MediaPlayer()
     private var playerState = STATE_DEFAULT
-    private lateinit var play: ImageButton
-
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -78,15 +76,16 @@ class AudioPlayer: AppCompatActivity()  {
 
     private fun startPlayer() {
         mediaPlayer.start()
-        play.setImageResource(R.drawable.ic_play_button)
+        // Обновляем UI для отображения состояния воспроизведения
         playerState = STATE_PLAYING
     }
 
     private fun pausePlayer() {
         mediaPlayer.pause()
-        play.setImageResource(R.drawable.ic_pause_button)
+        // Обновляем UI для отображения состояния паузы
         playerState = STATE_PAUSED
     }
+
     private fun preparePlayer(url: String?) {
         if (url.isNullOrEmpty()) return
         mediaPlayer.reset()
@@ -96,28 +95,16 @@ class AudioPlayer: AppCompatActivity()  {
 
             // Добавляем слушатель для события готовности
             mediaPlayer.setOnPreparedListener {
-                play.isEnabled = true
                 playerState = STATE_PREPARED
             }
 
             // Добавляем слушатель для события завершения воспроизведения
             mediaPlayer.setOnCompletionListener {
                 // Меняем иконку на кнопке воспроизведения
-                play.setImageResource(R.drawable.ic_play_button)
                 playerState = STATE_PREPARED
             }
         } catch (e: IOException) {
             e.printStackTrace()
-        }
-    }
-    private fun playbackControl() {
-        when(playerState) {
-            STATE_PLAYING -> {
-                pausePlayer()
-            }
-            STATE_PREPARED, STATE_PAUSED -> {
-                startPlayer()
-            }
         }
     }
 }
