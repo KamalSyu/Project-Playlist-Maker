@@ -3,6 +3,7 @@ package com.practicum.playlistmaker
 import Track
 import android.view.View
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -22,8 +23,10 @@ class AlbumViewHolder (itemView: View) : RecyclerView.ViewHolder(itemView) {
     private val primaryGenreNameTextView: TextView = itemView.findViewById(R.id.primaryGenreName)
     private val countryTextView: TextView = itemView.findViewById(R.id.country)
     private val dateFormatter = DateFormatter()
+    private val play: ImageButton = itemView.findViewById(R.id.ic_play_button)
 
-    fun bind(track: Track) {
+
+    fun bind(track: Track, onClickListener: (Track) -> Unit) {
 
         // Выносим форматирование времени в отдельную переменную
         val formattedTrackTime = SimpleDateFormat("mm:ss", Locale.getDefault()).format(track.trackTimeMillis)
@@ -42,6 +45,9 @@ class AlbumViewHolder (itemView: View) : RecyclerView.ViewHolder(itemView) {
         val density = itemView.context.resources.displayMetrics.density
         val cornerRadiusPx = (cornerRadiusDp * density).toInt()
 
+        play.setOnClickListener {
+            onClickListener(track)
+        }
 
         // Загрузка изображения с Glide
         Glide.with(itemView.context)

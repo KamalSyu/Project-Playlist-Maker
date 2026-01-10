@@ -166,7 +166,7 @@ class SearchActivity : AppCompatActivity() {
         searchHistory = SearchHistory(this)
 
 // Инициализация адаптера для списка треков
-        adapter = TrackAdapter(trackList, VIEW_TYPE_TRACK) { track ->
+        adapter = TrackAdapter(trackList, VIEW_TYPE_TRACK, { track ->
             clickDebounce {
                 // Добавляем трек в историю поиска
                 searchHistory.addTrack(track)
@@ -177,18 +177,21 @@ class SearchActivity : AppCompatActivity() {
                 intent.putExtra("track", track)
                 startActivity(intent)
             }
-        }
+        }, { track ->
+        })
+
         adapter.updateList(trackList)
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(this)
 
 // Инициализация адаптера для истории поиска
-        historyAdapter = TrackAdapter(searchHistory.getHistory(), VIEW_TYPE_TRACK) { track ->
+        historyAdapter = TrackAdapter(searchHistory.getHistory(), VIEW_TYPE_TRACK, { track ->
             // При клике на элемент истории также перенаправляем на экран "Аудиоплеер"
             val intent = Intent(this, AudioPlayer::class.java)
             intent.putExtra("track", track)
             startActivity(intent)
-        }
+        }, { track ->
+        })
 
         historyRecyclerView.layoutManager = LinearLayoutManager(this)
         historyRecyclerView.adapter = historyAdapter

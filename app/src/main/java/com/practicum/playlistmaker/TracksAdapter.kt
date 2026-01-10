@@ -11,7 +11,9 @@ import com.practicum.playlistmaker.Constants.Companion.VIEW_TYPE_TRACK
 
 class TrackAdapter(private var tracks: List<Track>,
                    private val viewType: Int,
-                   private var onTrackClick: (Track) -> Unit)
+                   private var onTrackClick: (Track) -> Unit,
+                   private var onClickListener: (Track) -> Unit)
+
     : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -22,7 +24,7 @@ class TrackAdapter(private var tracks: List<Track>,
             }
             VIEW_TYPE_ALBUM -> {
                 val view = LayoutInflater.from(parent.context).inflate(R.layout.item_audioplayer, parent, false)
-                AlbumViewHolder(view)
+                return AlbumViewHolder(view)
             }
             else -> throw IllegalArgumentException("Invalid view type")
         }
@@ -35,8 +37,9 @@ class TrackAdapter(private var tracks: List<Track>,
             is TrackViewHolder -> {
                 holder.bind(track)
             }
+
             is AlbumViewHolder -> {
-                holder.bind(track)
+                holder.bind(track, onClickListener)
             }
         }
         holder.itemView.setOnClickListener {

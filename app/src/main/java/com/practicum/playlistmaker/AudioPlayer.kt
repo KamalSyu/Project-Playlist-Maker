@@ -6,6 +6,7 @@ import android.annotation.SuppressLint
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
@@ -24,6 +25,8 @@ class AudioPlayer: AppCompatActivity()  {
     private lateinit var recyclerView: RecyclerView
     private var mediaPlayer = MediaPlayer()
     private var playerState = STATE_DEFAULT
+    private lateinit var play: ImageButton
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,16 +53,39 @@ class AudioPlayer: AppCompatActivity()  {
         val track = intent.getSerializableExtra("track") as Track
         val trackList = ArrayList<Track>().apply { add(track) } // Добавляем трек в список
 
-        val adapter = TrackAdapter(trackList, VIEW_TYPE_ALBUM) { track ->
-            playTrack(track.previewUrl)
-
-        }
+        val adapter = TrackAdapter(trackList, VIEW_TYPE_ALBUM, { track ->
+            // Логика обработки клика по треку
+        }, { track ->
+            preparePlayer(track.previewUrl)
+            startPlayer()
+        })
         recyclerView.adapter = adapter
-
 
         findViewById<TextView>(R.id.back).setOnClickListener {
             finish()
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        pausePlayer()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mediaPlayer.release()
+    }
+
+    private fun startPlayer() {
+        mediaPlayer.start()
+        play.setImageResource(R.drawable.ic_play_button)
+        playerState = STATE_PLAYING
+    }
+
+    private fun pausePlayer() {
+        mediaPlayer.pause()
+        play.setImageResource(R.drawable.ic_pause_button)
+        playerState = STATE_PAUSED
     }
     private fun preparePlayer(url: String?) {
         if (url.isNullOrEmpty()) return
@@ -67,40 +93,32 @@ class AudioPlayer: AppCompatActivity()  {
         try {
             mediaPlayer.setDataSource(url)
             mediaPlayer.prepareAsync()
+
+            // Добавляем слушатель для события готовности
+            mediaPlayer.setOnPreparedListener {
+                play.isEnabled = true
+                playerState = STATE_PREPARED
+            }
+
+            // Добавляем слушатель для события завершения воспроизведения
+            mediaPlayer.setOnCompletionListener {
+                // Меняем иконку на кнопке воспроизведения
+                play.setImageResource(R.drawable.ic_play_button)
+                playerState = STATE_PREPARED
+            }
         } catch (e: IOException) {
             e.printStackTrace()
         }
     }
-    // Функция воспроизведения трека
-    private fun playTrack(previewUrl: String?) {
-        if (previewUrl.isNullOrEmpty()) return
-
-        when (playerState) {
-            STATE_DEFAULT -> {
-                preparePlayer(previewUrl)
-            }
-            STATE_PREPARED -> {
-                mediaPlayer.start()
-                playerState = STATE_PLAYING
-            }
-            STATE_PAUSED -> {
-                mediaPlayer.start()
-                playerState = STATE_PLAYING
-            }
+    private fun playbackControl() {
+        when(playerState) {
             STATE_PLAYING -> {
-                mediaPlayer.pause()
-                playerState = STATE_PAUSED
+                pausePlayer()
+            }
+            STATE_PREPARED, STATE_PAUSED -> {
+                startPlayer()
             }
         }
     }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        if (mediaPlayer.isPlaying) {
-            mediaPlayer.stop()
-        }
-        mediaPlayer.release()
-    }
-
 }
 

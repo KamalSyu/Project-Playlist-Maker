@@ -304,7 +304,7 @@
         <item name="android:layout_marginStart">130dp</item>
         <item name="android:layout_marginEnd">130dp</item>
         <item name="android:layout_marginTop">30dp</item>
-        <item name="android:background">@drawable/ic_play_button</item>
+<!--        <item name="android:background">@drawable/ic_play_button</item>-->
     </style>
 
     <style name="AudoPlayerLikeButton" parent="Widget.MaterialComponents.Button.UnelevatedButton">
