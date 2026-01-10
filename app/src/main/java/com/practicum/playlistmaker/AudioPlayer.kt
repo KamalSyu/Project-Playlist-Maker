@@ -53,10 +53,16 @@ class AudioPlayer: AppCompatActivity()  {
 
         val adapter = TrackAdapter(trackList, VIEW_TYPE_ALBUM, { track ->
             // Логика обработки клика по треку
-        }, { track ->
             preparePlayer(track.previewUrl)
             startPlayer()
+        }, { track ->
+            if (playerState == STATE_PLAYING) {
+                pausePlayer()
+            } else {
+                startPlayer()
+            }
         })
+
         recyclerView.adapter = adapter
 
         findViewById<TextView>(R.id.back).setOnClickListener {
@@ -78,12 +84,16 @@ class AudioPlayer: AppCompatActivity()  {
         mediaPlayer.start()
         // Обновляем UI для отображения состояния воспроизведения
         playerState = STATE_PLAYING
+        findViewById<ImageButton>(R.id.ic_play_button).setImageResource(R.drawable.ic_pause_button)
+
     }
 
     private fun pausePlayer() {
         mediaPlayer.pause()
         // Обновляем UI для отображения состояния паузы
         playerState = STATE_PAUSED
+        findViewById<ImageButton>(R.id.ic_play_button).setImageResource(R.drawable.ic_play_button)
+
     }
 
     private fun preparePlayer(url: String?) {
