@@ -1,6 +1,7 @@
 package com.practicum.playlistmaker
 
 import Track
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
@@ -12,7 +13,13 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class AlbumViewHolder (itemView: View, private val onClickListener: (Track) -> Unit) : RecyclerView.ViewHolder(itemView) {
+class AlbumViewHolder (
+    itemView: View,
+    private val onClickListener: (Track) -> Unit,
+    private val onPlayButtonClick: (Track) -> Unit  // добавляем новый параметр
+) : RecyclerView.ViewHolder(itemView) {
+
+
     private val albumImageView: ImageView = itemView.findViewById(R.id.album)
     private val textTrackName: TextView = itemView.findViewById(R.id.textTrackName)
     private val  textArtistName: TextView = itemView.findViewById(R.id.textArtistName)
@@ -22,11 +29,13 @@ class AlbumViewHolder (itemView: View, private val onClickListener: (Track) -> U
     private val releaseDateTextView: TextView = itemView.findViewById(R.id.releaseDate)
     private val primaryGenreNameTextView: TextView = itemView.findViewById(R.id.primaryGenreName)
     private val countryTextView: TextView = itemView.findViewById(R.id.country)
-    private val dateFormatter = DateFormatter()
     private val play: ImageButton = itemView.findViewById(R.id.ic_play_button)
 
+    private val dateFormatter = DateFormatter()
+    private var isPlaying = false  // локальное состояние для иконки
 
-    fun bind(track: Track) {
+    fun bind(track: Track, isPlaying: Boolean) {
+        this.isPlaying = isPlaying
 
         // Выносим форматирование времени в отдельную переменную
         val formattedTrackTime = SimpleDateFormat("mm:ss", Locale.getDefault()).format(track.trackTimeMillis)
@@ -45,9 +54,6 @@ class AlbumViewHolder (itemView: View, private val onClickListener: (Track) -> U
         val density = itemView.context.resources.displayMetrics.density
         val cornerRadiusPx = (cornerRadiusDp * density).toInt()
 
-        play.setOnClickListener {
-            onClickListener(track)
-        }
 
         // Загрузка изображения с Glide
         Glide.with(itemView.context)
@@ -57,5 +63,25 @@ class AlbumViewHolder (itemView: View, private val onClickListener: (Track) -> U
             .centerCrop()
             .transform(RoundedCorners(cornerRadiusPx))
             .into(albumImageView)
+
+        // Обновление иконки кнопки
+        updatePlayButtonState(isPlaying)
+        setupClickListeners(track)
+
+    }
+
+    private fun setupClickListeners(track: Track) {
+        Log.d("AlbumViewHolder", "setupClickListeners called")
+
+        itemView.setOnClickListener { onClickListener(track) }
+        play.setOnClickListener { Log.d("AlbumViewHolder", "Play button clicked")
+            onPlayButtonClick(track) }
+    }
+
+    fun updatePlayButtonState(isPlaying: Boolean) {
+        play.setImageResource(
+            if (isPlaying) R.drawable.ic_pause_button
+            else R.drawable.ic_play_button
+        )
     }
 }

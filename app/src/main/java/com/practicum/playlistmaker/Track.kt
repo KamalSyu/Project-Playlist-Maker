@@ -1,4 +1,5 @@
 
+import android.util.Log
 import java.io.Serializable
 
 class Track: Serializable {
@@ -11,7 +12,7 @@ class Track: Serializable {
     var collectionName: String? = null
     var primaryGenreName: String? = null
     var country: String? = null
-    var previewUrl: String? = null // Добавляем новое поле
+    var previewUrl: String? = null
 
 
     constructor(trackId: Int, trackName: String, artistName: String, trackTimeMillis: Long, artworkUrl100: String, previewUrl: String?) {

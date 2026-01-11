@@ -15,6 +15,8 @@ class TrackAdapter(private var tracks: List<Track>,
                    private var onClickPlayButton: (Track) -> Unit
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
+    private var isPlaying = false
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return when (this.viewType) {
             VIEW_TYPE_TRACK -> {
@@ -23,12 +25,11 @@ class TrackAdapter(private var tracks: List<Track>,
             }
             VIEW_TYPE_ALBUM -> {
                 val view = LayoutInflater.from(parent.context).inflate(R.layout.item_audioplayer, parent, false)
-                AlbumViewHolder(view, onClickPlayButton)
+                AlbumViewHolder(view, onTrackClick, onClickPlayButton)  // передаём обе лямбды
             }
             else -> throw IllegalArgumentException("Invalid view type")
         }
     }
-
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val track = tracks[position]
@@ -38,7 +39,7 @@ class TrackAdapter(private var tracks: List<Track>,
             }
 
             is AlbumViewHolder -> {
-                holder.bind(track)
+                holder.bind(track, isPlaying)
             }
         }
         holder.itemView.setOnClickListener {
@@ -56,6 +57,11 @@ class TrackAdapter(private var tracks: List<Track>,
 
     fun setOnItemClickListener(listener: (Track) -> Unit) {
         this.onTrackClick = listener
+        notifyDataSetChanged()  // чтобы обновить все элементы с новым обработчиком
+    }
 
+    fun notifyDataSetChangedWithState(isPlaying: Boolean) {
+        this.isPlaying = isPlaying
+        notifyDataSetChanged()
     }
 }
