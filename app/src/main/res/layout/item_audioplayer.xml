@@ -61,7 +61,6 @@
             <TextView
                 android:id="@+id/timeTextView"
                 style="@style/MediatecaTime"
-                android:text="0:30"
                 android:gravity="center"
                 app:layout_constraintStart_toStartOf="@id/ic_play_button"
                 app:layout_constraintEnd_toEndOf="@id/ic_play_button"

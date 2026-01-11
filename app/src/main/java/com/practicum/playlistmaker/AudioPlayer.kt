@@ -2,18 +2,16 @@
 package com.practicum.playlistmaker
 
 import Track
-import android.annotation.SuppressLint
 import android.media.MediaPlayer
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
-import android.widget.Button
-import android.widget.ImageButton
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.Constants.Companion.VIEW_TYPE_ALBUM
-import java.io.IOException
 
 class AudioPlayer : AppCompatActivity() {
 
@@ -28,6 +26,8 @@ class AudioPlayer : AppCompatActivity() {
     private lateinit var mediaPlayer: MediaPlayer
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: TrackAdapter
+    private val handler = Handler(Looper.getMainLooper())
+    private var updateRunnable: Runnable? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,6 +55,7 @@ class AudioPlayer : AppCompatActivity() {
             finish()
         }
     }
+
 
     override fun onPause() {
         super.onPause()
@@ -90,17 +91,20 @@ class AudioPlayer : AppCompatActivity() {
                 playerState = STATE_PREPARED
                 startPlayer()  // автоматически начинает воспроизведение
                 refreshAdapter()
+                startUpdatingTime()  // Запускаем обновление времени
             }
 
             mediaPlayer.setOnCompletionListener {
                 playerState = STATE_PREPARED
                 refreshAdapter()
+                stopUpdatingTime()  // Останавливаем обновление
             }
 
             mediaPlayer.setOnErrorListener { mp, what, extra ->
                 Log.e("AudioPlayer", "Prepare error: what=$what, extra=$extra")
                 playerState = STATE_DEFAULT
                 refreshAdapter()
+                stopUpdatingTime()  // Останавливаем обновление
                 true
             }
 
@@ -115,22 +119,40 @@ class AudioPlayer : AppCompatActivity() {
         mediaPlayer.start()
         playerState = STATE_PLAYING
         refreshAdapter()
+        startUpdatingTime()  // Начинаем обновление времени
     }
 
     private fun pausePlayer() {
         mediaPlayer.pause()
         playerState = STATE_PAUSED
         refreshAdapter()
+        stopUpdatingTime()  // Останавливаем обновление
     }
 
     private fun refreshAdapter() {
-        adapter.notifyDataSetChangedWithState(playerState == STATE_PLAYING)
+        // Передаём текущее время воспроизведения (в мс)
+        adapter.notifyDataSetChangedWithState(
+            playerState == STATE_PLAYING,
+            mediaPlayer.currentPosition.toLong()
+        )
+    }
+    private fun startUpdatingTime() {
+        updateRunnable = Runnable {
+            if (playerState == STATE_PLAYING) {
+                refreshAdapter()  // Обновляем адаптер каждую секунду
+                handler.postDelayed(updateRunnable!!, 1000)
+            }
+        }
+        handler.post(updateRunnable!!)
+    }
+
+    private fun stopUpdatingTime() {
+        handler.removeCallbacks(updateRunnable!!)
+        updateRunnable = null
     }
 }
 
-
-//class AudioPlayer: AppCompatActivity()  {
-//    @SuppressLint("MissingInflatedId")
+//class AudioPlayer : AppCompatActivity() {
 //
 //    companion object {
 //        private const val STATE_DEFAULT = 0
@@ -140,9 +162,9 @@ class AudioPlayer : AppCompatActivity() {
 //    }
 //
 //    private var playerState = STATE_DEFAULT
-//    private var mediaPlayer = MediaPlayer()
-//
+//    private lateinit var mediaPlayer: MediaPlayer
 //    private lateinit var recyclerView: RecyclerView
+//    private lateinit var adapter: TrackAdapter
 //
 //
 //    override fun onCreate(savedInstanceState: Bundle?) {
@@ -150,40 +172,21 @@ class AudioPlayer : AppCompatActivity() {
 //        setContentView(R.layout.activity_audioplayer)
 //
 //        recyclerView = findViewById(R.id.recyclerViewAudioPlayer)
-//
+//        val layoutManager = LinearLayoutManager(this)
+//        recyclerView.layoutManager = layoutManager
 //        mediaPlayer = MediaPlayer()
 //
-//        mediaPlayer.setOnPreparedListener {
-//            // После подготовки автоматически начинаем воспроизведение
-//            mediaPlayer.start()
-//            playerState = STATE_PLAYING
-//            // Обновите UI при необходимости
-//        }
-//
-//        mediaPlayer.setOnCompletionListener {
-//            // Когда трек завершен, обновляем состояние
-//            playerState = STATE_PREPARED
-//            // Обновите UI при необходимости
-//        }
 //
 //        val track = intent.getSerializableExtra("track") as Track
 //        val trackList = ArrayList<Track>().apply { add(track) } // Добавляем трек в список
 //
-//        val adapter = TrackAdapter(trackList, VIEW_TYPE_ALBUM, { track ->
-//            Log.d("AudioPlayer", "Clicked track with previewUrl: ${track.previewUrl}")
-//
-//            // Логика обработки клика по треку
-//            preparePlayer(track.previewUrl)
-//            startPlayer()
+//        adapter = TrackAdapter(trackList, VIEW_TYPE_ALBUM, { track ->
 //        }, { track ->
-//            if (playerState == STATE_PLAYING) {
-//                pausePlayer()
-//            } else {
-//                startPlayer()
-//            }
+//            playbackControl(track) // Вызов метода для управления воспроизведением
 //        })
-//
 //        recyclerView.adapter = adapter
+//
+//        refreshAdapter()
 //
 //        findViewById<TextView>(R.id.back).setOnClickListener {
 //            finish()
@@ -193,6 +196,7 @@ class AudioPlayer : AppCompatActivity() {
 //    override fun onPause() {
 //        super.onPause()
 //        pausePlayer()
+//        refreshAdapter()
 //    }
 //
 //    override fun onDestroy() {
@@ -200,52 +204,64 @@ class AudioPlayer : AppCompatActivity() {
 //        mediaPlayer.release()
 //    }
 //
-//    private fun startPlayer() {
-//        try {
-//            mediaPlayer.start()
-//            // Обновляем UI для отображения состояния воспроизведения
-//            playerState = STATE_PLAYING
-//            findViewById<ImageButton>(R.id.ic_play_button).setImageResource(R.drawable.ic_pause_button)
-//        } catch (e: Exception) {
-//            Log.e("AudioPlayer", "Error starting player", e)
-//        }
-//    }
-//
-//    private fun pausePlayer() {
-//        try {
-//            mediaPlayer.pause()
-//            // Обновляем UI для отображения состояния паузы
-//            playerState = STATE_PAUSED
-//            findViewById<ImageButton>(R.id.ic_play_button).setImageResource(R.drawable.ic_play_button)
-//        } catch (e: Exception) {
-//            Log.e("AudioPlayer", "Error pausing player", e)
+//    private fun playbackControl(track: Track) {
+//        when (playerState) {
+//            STATE_PLAYING -> pausePlayer()
+//            STATE_PREPARED, STATE_PAUSED -> startPlayer()
+//            else -> preparePlayer(track.previewUrl)
 //        }
 //    }
 //
 //    private fun preparePlayer(url: String?) {
-//        Log.d("AudioPlayer", "Preparing player with URL: $url")
-//        if (url.isNullOrEmpty()) return
-//        mediaPlayer.reset()
+//        if (url.isNullOrEmpty()) {
+//            Log.e("AudioPlayer", "URL is null or empty")
+//            return
+//        }
+//
 //        try {
+//            mediaPlayer.reset()
 //            mediaPlayer.setDataSource(url)
 //            mediaPlayer.prepareAsync()
 //
-//            // Добавляем слушатель для события готовности
 //            mediaPlayer.setOnPreparedListener {
 //                playerState = STATE_PREPARED
-//                startPlayer() // Начинаем воспроизведение после подготовки
+//                startPlayer()  // автоматически начинает воспроизведение
+//                refreshAdapter()
 //            }
 //
-//            // Добавляем слушатель для события завершения воспроизведения
 //            mediaPlayer.setOnCompletionListener {
-//                // Меняем иконку на кнопке воспроизведения
 //                playerState = STATE_PREPARED
+//                refreshAdapter()
 //            }
-//        } catch (e: IOException) {
-//            e.printStackTrace()
-//            Log.e("AudioPlayer", "Error setting data source: $url", e)
 //
+//            mediaPlayer.setOnErrorListener { mp, what, extra ->
+//                Log.e("AudioPlayer", "Prepare error: what=$what, extra=$extra")
+//                playerState = STATE_DEFAULT
+//                refreshAdapter()
+//                true
+//            }
+//
+//        } catch (e: Exception) {
+//            Log.e("AudioPlayer", "Failed to prepare player", e)
+//            playerState = STATE_DEFAULT
+//            refreshAdapter()
 //        }
+//    }
+//
+//    private fun startPlayer() {
+//        mediaPlayer.start()
+//        playerState = STATE_PLAYING
+//        refreshAdapter()
+//    }
+//
+//    private fun pausePlayer() {
+//        mediaPlayer.pause()
+//        playerState = STATE_PAUSED
+//        refreshAdapter()
+//    }
+//
+//    private fun refreshAdapter() {
+//        adapter.notifyDataSetChangedWithState(playerState == STATE_PLAYING)
 //    }
 //}
 
