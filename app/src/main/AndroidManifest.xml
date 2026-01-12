@@ -31,7 +31,6 @@
         <activity android:name=".SettingsActivity" />
         <activity android:name=".SearchActivity" />
         <activity android:name=".MediatekaActivity" />
-        <activity android:name=".AudioPlayer" />
 
     </application>
 

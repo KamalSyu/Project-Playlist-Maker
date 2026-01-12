@@ -1,15 +1,9 @@
-import java.io.Serializable
-
-class Track: Serializable {
+class Track {
     val trackId: Int
     var trackName: String
     var artistName: String
     var trackTimeMillis: Long
     var artworkUrl100: String
-    var releaseDate: String? = null
-    var collectionName: String? = null
-    var primaryGenreName: String? = null
-    var country: String? = null
 
     constructor(trackId: Int, trackName: String, artistName: String, trackTimeMillis: Long, artworkUrl100: String) {
         this.trackId = trackId
@@ -20,8 +14,5 @@ class Track: Serializable {
     }
 
     constructor(trackName: String, artistName: String, trackTimeMillis: Long, artworkUrl100: String) : this(0, trackName, artistName, trackTimeMillis, artworkUrl100)
-
-    fun getHighQualityArtworkUrl(): String {
-        return artworkUrl100.replaceAfterLast("/", "512x512bb.jpg")
-    }
 }
+

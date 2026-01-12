@@ -18,6 +18,7 @@
     <com.google.android.material.button.MaterialButton
         android:id="@+id/search_button"
         style="@style/ButtonStyleHomeScreen"
+        android:layout_marginTop="24dp"
         android:text="@string/search_button"
         app:icon="@drawable/ic_vector_19"
         android:onClick="goToSearchActivity"/>

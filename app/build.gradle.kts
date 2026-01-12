@@ -50,7 +50,6 @@ dependencies {
     implementation (libs.glide)
     implementation (libs.retrofit)
     implementation (libs.converter.gson)
-    implementation (libs.androidx.constraintlayout.v200)
     annotationProcessor (libs.compiler)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
