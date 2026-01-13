@@ -1,9 +1,7 @@
 package com.practicum.playlistmaker
 
-import com.practicum.playlistmaker.Track
 import android.util.Log
 import android.view.View
-import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
@@ -16,7 +14,7 @@ import java.util.Locale
 class AlbumViewHolder (
     itemView: View,
     private val onClickListener: (Track) -> Unit,
-    private val onPlayButtonClick: (Track) -> Unit  // добавляем новый параметр
+    private val onPlayButtonClick: (Track) -> Unit
 ) : RecyclerView.ViewHolder(itemView) {
 
 
@@ -52,7 +50,7 @@ class AlbumViewHolder (
         countryTextView.text = track.country
 
         // Определяем радиус скругления в пикселях
-        val cornerRadiusDp = 8 // Значение в dp
+        val cornerRadiusDp = 8
         val density = itemView.context.resources.displayMetrics.density
         val cornerRadiusPx = (cornerRadiusDp * density).toInt()
 
@@ -73,8 +71,6 @@ class AlbumViewHolder (
     }
 
     private fun setupClickListeners(track: Track) {
-        Log.d("AlbumViewHolder", "setupClickListeners called")
-
         itemView.setOnClickListener { onClickListener(track) }
         play.setOnClickListener { Log.d("AlbumViewHolder", "Play button clicked")
             onPlayButtonClick(track) }

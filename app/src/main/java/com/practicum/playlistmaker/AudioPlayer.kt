@@ -6,7 +6,6 @@ import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -40,7 +39,6 @@ class AudioPlayer : AppCompatActivity() {
 
         val track = intent.getParcelableExtra<Track>("track")
             ?: throw IllegalArgumentException("Track cannot be null")
-//        val trackList = ArrayList<Track>().apply { add(track) }
         val trackList = mutableListOf(track)
 
         adapter = TrackAdapter(trackList, VIEW_TYPE_ALBUM, { track ->
@@ -52,35 +50,30 @@ class AudioPlayer : AppCompatActivity() {
         refreshAdapter()
 
         findViewById<TextView>(R.id.back).setOnClickListener {
-            stopPlaybackAndFinish()  // Новый метод — гарантированно останавливает и закрывает
+            stopPlaybackAndFinish()
         }
     }
 
     override fun onPause() {
         super.onPause()
-        // Не останавливаем плеер здесь — пусть работает в фоне (если нужно)
-        // Но обновляем UI
         refreshAdapter()
     }
 
     override fun onStop() {
         super.onStop()
-        // При уходе с экрана — останавливаем воспроизведение
         stopPlayback()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        releasePlayer()  // Гарантированное освобождение
+        releasePlayer()
     }
 
-    // Основной метод для кнопки «назад»
     private fun stopPlaybackAndFinish() {
         stopPlayback()
-        finish()  // Закрываем Activity
+        finish()
     }
 
-    // Останавливает воспроизведение и освобождает ресурсы
     private fun stopPlayback() {
         if (mediaPlayer.isPlaying) {
             mediaPlayer.stop()
@@ -90,7 +83,6 @@ class AudioPlayer : AppCompatActivity() {
         stopUpdatingTime()
     }
 
-    // Полностью освобождает MediaPlayer
     private fun releasePlayer() {
         mediaPlayer.reset()
         mediaPlayer.release()
@@ -106,7 +98,6 @@ class AudioPlayer : AppCompatActivity() {
 
     private fun preparePlayer(url: String?) {
         if (url.isNullOrEmpty()) {
-            Log.e("AudioPlayer", "URL is null or empty")
             return
         }
 
@@ -130,7 +121,6 @@ class AudioPlayer : AppCompatActivity() {
             }
 
             mediaPlayer.setOnErrorListener { mp, what, extra ->
-                Log.e("AudioPlayer", "Prepare error: what=$what, extra=$extra")
                 playerState = STATE_DEFAULT
                 refreshAdapter()
                 stopUpdatingTime()
@@ -138,7 +128,6 @@ class AudioPlayer : AppCompatActivity() {
             }
 
         } catch (e: Exception) {
-            Log.e("AudioPlayer", "Failed to prepare player", e)
             playerState = STATE_DEFAULT
             refreshAdapter()
         }
