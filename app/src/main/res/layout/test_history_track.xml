@@ -15,7 +15,7 @@
         />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/history_recycler_view"
+        android:id="@+id/history_recycler_view1"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:nestedScrollingEnabled="false"
@@ -25,4 +25,6 @@
         android:id="@+id/clear_history_button"
         android:text="@string/clear_the_history"
         style="@style/ButtonHistorySearch"/>
+
+
 </LinearLayout>

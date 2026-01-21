@@ -18,6 +18,7 @@
     <color name="yp_text_gray">#AEAFB4</color>
     <color name="without_black">#00000000</color>
     <color name="for_point_search">#AEAFB4</color>
+    <color name="progressbar_blue">#3772E7</color>
 
 
 </resources>
