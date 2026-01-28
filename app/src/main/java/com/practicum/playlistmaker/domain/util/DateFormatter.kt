@@ -1,0 +1,35 @@
+package com.practicum.playlistmaker.presentation.util
+
+import android.util.Log
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.TimeZone
+
+
+/**
+ * Форматирует дату релиза трека из ISO‑8601 в формат "yyyy".
+ * Используется для отображения года релиза в UI.
+ */
+class DateFormatter {
+    private val inputFormat: SimpleDateFormat by lazy {
+        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).apply {
+            timeZone = TimeZone.getTimeZone("UTC")
+        }
+    }
+
+    private val outputFormat: SimpleDateFormat by lazy {
+        SimpleDateFormat("yyyy", Locale.US)
+    }
+
+    fun formatReleaseDate(releaseDateString: String?): String {
+        if (releaseDateString == null) return "-"
+
+        return try {
+            val date = inputFormat.parse(releaseDateString) ?: return "-"  // Если parse вернул null — сразу возвращаем "-"
+            outputFormat.format(date)                                     // Теперь date — не nullable
+        } catch (e: Exception) {
+            Log.w("DateFormatter", "Failed to parse release date: $releaseDateString", e)
+            "-"
+        }
+    }
+}
