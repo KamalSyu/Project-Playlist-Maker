@@ -9,7 +9,11 @@ class SearchTracksUseCase @Inject constructor (private val itunesRepository: Itu
     suspend operator fun invoke(query: String): Result<List<Track>> {
         return try {
             val response = itunesRepository.search(query)
-            Result.success(response.results)
+            if (response.results.isEmpty()) {
+                Result.success(emptyList()) // Явно возвращаем пустой список
+            } else {
+                Result.success(response.results)
+            }
         } catch (e: Exception) {
             Result.failure(e)
         }

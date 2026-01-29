@@ -10,20 +10,20 @@ class HistoryRepositoryImpl(
 ) : HistoryRepository {
 
     override suspend fun addTrack(track: Track) {
-        with(sharedPreferences.edit()) {
-            putString(track.trackId.toString(), Gson().toJson(track))
-            apply()
+        val history = getHistory().toMutableList()
+        history.removeIf { it.trackId == track.trackId }
+        history.add(0, track)
+        if (history.size > 10) {
+            history.subList(10, history.size).clear()
         }
+        sharedPreferences.edit()
+            .putString("history", Gson().toJson(history))
+            .apply()
     }
 
     override suspend fun getHistory(): List<Track> {
-        return sharedPreferences.all.mapNotNull { entry ->
-            try {
-                Gson().fromJson(entry.value.toString(), Track::class.java)
-            } catch (e: Exception) {
-                null
-            }
-        }.filterNotNull()
+        val json = sharedPreferences.getString("history", "[]")
+        return Gson().fromJson(json, Array<Track>::class.java).toList()
     }
 
     override suspend fun clearHistory() {

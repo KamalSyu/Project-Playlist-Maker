@@ -1,6 +1,7 @@
 package com.practicum.playlistmaker.presentation.viewholder
 
 import android.view.View
+import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
@@ -9,6 +10,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.domain.model.Track
+import com.practicum.playlistmaker.domain.usecase.FormatTrackDurationUseCase
 import com.practicum.playlistmaker.presentation.util.DateFormatter
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -17,7 +19,9 @@ import java.util.Locale
 class AlbumViewHolder(
     itemView: View,
     private val onClickListener: (Track) -> Unit,
-    private val onPlayButtonClick: (Track) -> Unit
+    private val onPlayButtonClick: (Track) -> Unit,
+    private val onAddToPlaylistClick: (Track) -> Unit,
+    private val onFavoriteClick: (Track) -> Unit
 ) : RecyclerView.ViewHolder(itemView) {
 
     private val albumImageView: ImageView = itemView.findViewById(R.id.album)
@@ -30,31 +34,39 @@ class AlbumViewHolder(
     private val primaryGenreNameTextView: TextView = itemView.findViewById(R.id.primaryGenreName)
     private val countryTextView: TextView = itemView.findViewById(R.id.country)
     private val playButton: ImageButton = itemView.findViewById(R.id.ic_play_button)
+    private val plusButton: Button = itemView.findViewById(R.id.ic_button_plus)
+    private val likeButton: Button = itemView.findViewById(R.id.ic_button_like)
+
+
 
     private val dateFormatter = DateFormatter()
+    private val formatDurationUseCase = FormatTrackDurationUseCase()
 
-    fun bind(track: Track, isPlaying: Boolean, currentTimeMillis: Long = 0) {
+
+    fun bind(
+        track: Track,
+        isPlaying: Boolean,
+        currentTimeMillis: Long = 0,
+        onTrackClick: (Track) -> Unit,
+        onPlayButtonClick: (Track) -> Unit,
+        onAddToPlaylistClick: (Track) -> Unit,
+        onFavoriteClick: (Track) -> Unit
+    )    {
         textTrackName.text = track.trackName
         textArtistName.text = track.artistName
 
-
         // Время воспроизведения
-        if (currentTimeMillis > 0) {
-            val formattedCurrent = SimpleDateFormat("mm:ss", Locale.getDefault())
-                .format(currentTimeMillis)
-            timeTextView.text = formattedCurrent
+        val formattedCurrent = if (currentTimeMillis > 0) {
+            SimpleDateFormat("mm:ss", Locale.getDefault()).format(currentTimeMillis)
         } else {
-            timeTextView.text = ""
+            "00:00"
         }
+        timeTextView.text = formattedCurrent
 
-        // Длительность трека
-        if (track.trackTimeMillis != null) {
-            val formattedTrack = SimpleDateFormat("mm:ss", Locale.getDefault())
-                .format(track.trackTimeMillis)
-            trackTimeMillisTextView.text = formattedTrack
-        } else {
-            trackTimeMillisTextView.text = ""
-        }
+        // Длительность трека (используем FormatTrackDurationUseCase)
+        trackTimeMillisTextView.text = track.trackTimeMillis?.let {
+            formatDurationUseCase.invoke(it)
+        } ?: ""
 
         releaseDateTextView.text = dateFormatter.formatReleaseDate(track.releaseDate)
         collectionNameTextView.text = track.collectionName
@@ -63,24 +75,38 @@ class AlbumViewHolder(
 
         // Загрузка изображения
         val cornerRadiusPx = (8 * itemView.resources.displayMetrics.density).toInt()
-        Glide.with(itemView.context)
-            .load(track.getHighQualityArtworkUrl())
-            .placeholder(R.drawable.ic_placeholder_312)
-            .error(R.drawable.ic_placeholder_312)
-            .centerCrop()
-            .transform(RoundedCorners(cornerRadiusPx))
-            .into(albumImageView)
-
+        if (track.artworkUrl100 != null) {
+            Glide.with(itemView.context)
+                .load(track.getHighQualityArtworkUrl())
+                .placeholder(R.drawable.ic_placeholder_312)
+                .error(R.drawable.ic_placeholder_312)
+                .centerCrop()
+                .transform(RoundedCorners(cornerRadiusPx))
+                .into(albumImageView)
+        } else {
+            albumImageView.setImageResource(R.drawable.ic_placeholder_312)
+        }
         // Обновляем иконку кнопки плей/пауза
         updatePlayButtonState(isPlaying)
 
         // Настраиваем клики
-        setupClickListeners(track)
+        setupClickListeners(track, onTrackClick, onPlayButtonClick, onAddToPlaylistClick, onFavoriteClick)
     }
 
-    private fun setupClickListeners(track: Track) {
-        itemView.setOnClickListener { onClickListener(track) }
+    private fun setupClickListeners(
+        track: Track,
+        onTrackClick: (Track) -> Unit,
+        onPlayButtonClick: (Track) -> Unit,
+        onAddToPlaylistClick: (Track) -> Unit,
+        onFavoriteClick: (Track) -> Unit
+    ) {
+        itemView.setOnClickListener { onTrackClick(track) }
+
         playButton.setOnClickListener { onPlayButtonClick(track) }
+
+        plusButton.setOnClickListener{ onAddToPlaylistClick(track)}
+
+        likeButton.setOnClickListener{onFavoriteClick(track)}
     }
 
     fun updatePlayButtonState(isPlaying: Boolean) {

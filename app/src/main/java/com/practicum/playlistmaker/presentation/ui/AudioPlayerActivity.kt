@@ -3,6 +3,8 @@ package com.practicum.playlistmaker.presentation.ui
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -16,7 +18,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-
 @AndroidEntryPoint
 class AudioPlayerActivity : AppCompatActivity() {
 
@@ -27,7 +28,7 @@ class AudioPlayerActivity : AppCompatActivity() {
     @Inject lateinit var getCurrentPositionUseCase: GetCurrentPositionUseCase
 
 
-    private lateinit var recyclerView: RecyclerView
+    private lateinit var recyclerViewAudioPlayer: RecyclerView
     private lateinit var adapter: TrackAdapter
     private val handler = Handler(Looper.getMainLooper())
     private var updateRunnable: Runnable? = null
@@ -37,37 +38,58 @@ class AudioPlayerActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_audioplayer)
 
-        // Получение трека из Intent
-        val track = intent.getParcelableExtra<Track>("track")
+        val track = savedInstanceState?.getParcelable<Track>("track")
+            ?: intent.getParcelableExtra<Track>("track")
             ?: throw IllegalArgumentException("Track cannot be null")
+        isPlaying = savedInstanceState?.getBoolean("isPlaying") ?: false
 
+        setupRecyclerView(track)
+        if (savedInstanceState == null) {
+            prepareAndPlay(track)
+        } else {
+            updateUI()  // Обновляем UI с текущим isPlaying
+            if (isPlaying) startPolling() else stopPolling()
+        }
+        val backButton = findViewById<TextView>(R.id.back)
 
-        // Настройка RecyclerView
-        recyclerView = findViewById(R.id.recyclerViewAudioPlayer)
-        recyclerView.layoutManager = LinearLayoutManager(this)
-        adapter = TrackAdapter(
-            listOf(track),
-            VIEW_TYPE_ALBUM,
-            { /* onClick не используется */ },
-            { togglePlayback() }  // Обработчик кнопки воспроизведения
-        )
-        recyclerView.adapter = adapter
-
-        // Подготовка плеера к воспроизведению
-        prepareAndPlay(track)
+        backButton.setOnClickListener {
+            onBackPressed()
+        }
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putParcelable("track", intent.getParcelableExtra<Track>("track"))
+        outState.putBoolean("isPlaying", isPlaying)
+    }
+
+    private fun setupRecyclerView(track: Track) {
+        recyclerViewAudioPlayer = findViewById(R.id.recyclerViewAudioPlayer)
+
+        recyclerViewAudioPlayer.layoutManager = LinearLayoutManager(this)
+
+        adapter = TrackAdapter(
+            tracks = listOf(track),
+            viewType = VIEW_TYPE_ALBUM,
+            onTrackClick = { },
+            onClickPlayButton = { togglePlayback() },
+            onAddToPlaylist = { },
+            onFavorite = {}
+        )
+        recyclerViewAudioPlayer.adapter = adapter
+
+        Log.d("AudioPlayerActivity", "RecyclerView инициализирован с адаптером")
+    }
     private fun prepareAndPlay(track: Track) {
         lifecycleScope.launch {
             try {
-                preparePlaybackUseCase(track.previewUrl)  // invoke()
+                preparePlaybackUseCase(track.previewUrl)
                 isPlaying = true
                 updateUI()
                 startPolling()
             } catch (e: Exception) {
                 isPlaying = false
                 updateUI()
-                // Можно показать ошибку пользователю
             }
         }
     }
@@ -85,7 +107,6 @@ class AudioPlayerActivity : AppCompatActivity() {
                 isPlaying = false
                 updateUI()
                 stopPolling()
-                // Обработка ошибки
             }
         }
     }
@@ -114,16 +135,28 @@ class AudioPlayerActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        stopPolling()  // Останавливаем обновление UI
+        stopPolling()
     }
 
     override fun onStop() {
         super.onStop()
-        lifecycleScope.launch { stopPlaybackUseCase() }  // Останавливаем воспроизведение
+        lifecycleScope.launch { stopPlaybackUseCase() }
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        stopPolling()
+    }
+
+    override fun onBackPressed() {
+        stopPlaybackAndCleanup()
+        super.onBackPressed()
+    }
+
+    private fun stopPlaybackAndCleanup() {
+        lifecycleScope.launch {
+            stopPlaybackUseCase()
+        }
         stopPolling()
     }
 }

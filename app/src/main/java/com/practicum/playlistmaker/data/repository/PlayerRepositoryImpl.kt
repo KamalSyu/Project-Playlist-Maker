@@ -9,7 +9,7 @@ class PlayerRepositoryImpl : PlayerRepository {
     override suspend fun prepare(url: String?) {
         mediaPlayer = MediaPlayer().apply {
             setDataSource(url)
-            prepare() // prepare() вместо prepareAsync() для простоты (можно заменить)
+            prepare()
         }
     }
 

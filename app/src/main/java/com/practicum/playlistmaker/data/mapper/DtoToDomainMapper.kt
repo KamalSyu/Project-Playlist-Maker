@@ -13,7 +13,6 @@ fun SearchResponseDTO.toDomain(): SearchResponse {
 }
 fun TrackDTO.toDomain(): Track {
     return Track(
-        trackId = 0,
         trackName = this.trackName,
         artistName = this.artistName,
         trackTimeMillis = this.trackTimeMillis,
