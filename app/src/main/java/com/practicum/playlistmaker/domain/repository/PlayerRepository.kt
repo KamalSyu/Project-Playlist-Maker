@@ -5,6 +5,9 @@ interface PlayerRepository {
     suspend fun play()
     suspend fun pause()
     suspend fun stop()
+    suspend fun reset()
     fun isPlaying(): Boolean
     fun getCurrentPosition(): Long
+    fun setOnCompletionListener(listener: () -> Unit)
+
 }

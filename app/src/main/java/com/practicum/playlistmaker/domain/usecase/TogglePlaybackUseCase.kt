@@ -6,12 +6,13 @@ import javax.inject.Inject
 class TogglePlaybackUseCase @Inject constructor (private val playerRepository: PlayerRepository) {
     suspend operator fun invoke(): Result<Boolean> {
         return try {
-            if (playerRepository.isPlaying()) {
-                playerRepository.pause()
-            } else {
+            if (!playerRepository.isPlaying()) {
                 playerRepository.play()
+                Result.success(true)
+            } else {
+                playerRepository.pause()
+                Result.success(false)
             }
-            Result.success(playerRepository.isPlaying())
         } catch (e: Exception) {
             Result.failure(e)
         }

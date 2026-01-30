@@ -5,12 +5,15 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.R
+import com.practicum.playlistmaker.data.repository.PlayerRepositoryImpl
 import com.practicum.playlistmaker.domain.model.Track
+import com.practicum.playlistmaker.domain.repository.PlayerRepository
 import com.practicum.playlistmaker.domain.usecase.*
 import com.practicum.playlistmaker.presentation.adapter.TrackAdapter
 import com.practicum.playlistmaker.presentation.util.Constants.Companion.VIEW_TYPE_ALBUM
@@ -29,6 +32,7 @@ class AudioPlayerActivity : AppCompatActivity() {
 
 
     private lateinit var recyclerViewAudioPlayer: RecyclerView
+    private lateinit var playerRepository: PlayerRepository
     private lateinit var adapter: TrackAdapter
     private val handler = Handler(Looper.getMainLooper())
     private var updateRunnable: Runnable? = null
@@ -37,6 +41,8 @@ class AudioPlayerActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_audioplayer)
+
+        playerRepository = PlayerRepositoryImpl()
 
         val track = savedInstanceState?.getParcelable<Track>("track")
             ?: intent.getParcelableExtra<Track>("track")
@@ -50,6 +56,9 @@ class AudioPlayerActivity : AppCompatActivity() {
             updateUI()  // Обновляем UI с текущим isPlaying
             if (isPlaying) startPolling() else stopPolling()
         }
+
+        setupPlaybackListener()
+
         val backButton = findViewById<TextView>(R.id.back)
 
         backButton.setOnClickListener {
@@ -82,16 +91,25 @@ class AudioPlayerActivity : AppCompatActivity() {
     }
     private fun prepareAndPlay(track: Track) {
         lifecycleScope.launch {
-            try {
+            try {// Проверяем наличие previewUrl
+                if (track.previewUrl.isNullOrBlank()) {
+                    showError("Отрывок недоступен")
+                    return@launch
+                }
                 preparePlaybackUseCase(track.previewUrl)
-                isPlaying = true
                 updateUI()
                 startPolling()
             } catch (e: Exception) {
                 isPlaying = false
                 updateUI()
+                showError("Не удалось воспроизвести отрывок")
             }
         }
+    }
+    // Метод для отображения ошибки (можно заменить на диалог/Snackbar)
+    private fun showError(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        Log.e("AudioPlayerActivity", "Ошибка воспроизведения: $message")
     }
 
     private fun togglePlayback() {
@@ -113,8 +131,8 @@ class AudioPlayerActivity : AppCompatActivity() {
 
     private fun updateUI() {
         lifecycleScope.launch {
-            val position = getCurrentPositionUseCase()
-            adapter.notifyDataSetChangedWithState(isPlaying, position)
+            val currentPosition = getCurrentPositionUseCase()
+            adapter.notifyDataSetChangedWithState(isPlaying, currentPosition)
         }
     }
 
@@ -127,6 +145,22 @@ class AudioPlayerActivity : AppCompatActivity() {
         }
         handler.post(updateRunnable!!)
     }
+    private fun setupPlaybackListener() {
+        lifecycleScope.launch {
+            playerRepository.setOnCompletionListener {
+                lifecycleScope.launch {
+//                    playerRepository.reset()
+                    isPlaying = false
+                    updateUI()
+//                    adapter.notifyDataSetChangedWithState(isPlaying, 0)
+                    stopPolling()
+                    playerRepository.reset()
+
+                }
+            }
+        }
+    }
+
 
     private fun stopPolling() {
         updateRunnable?.let { handler.removeCallbacks(it) }
@@ -146,6 +180,9 @@ class AudioPlayerActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         stopPolling()
+        lifecycleScope.launch {
+            playerRepository.setOnCompletionListener {}  // Обнуляем слушатель
+        }
     }
 
     override fun onBackPressed() {

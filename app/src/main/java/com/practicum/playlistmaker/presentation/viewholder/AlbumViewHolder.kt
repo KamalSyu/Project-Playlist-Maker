@@ -54,12 +54,17 @@ class AlbumViewHolder(
     )    {
         textTrackName.text = track.trackName
         textArtistName.text = track.artistName
+        releaseDateTextView.text = dateFormatter.formatReleaseDate(track.releaseDate)
+        collectionNameTextView.text = track.collectionName
+        primaryGenreNameTextView.text = track.primaryGenreName
+        countryTextView.text = track.country
 
-        // Время воспроизведения
+//        val formattedCurrent = SimpleDateFormat("mm:ss", Locale.getDefault()).format(currentTimeMillis)
+//        timeTextView.text = formattedCurrent
         val formattedCurrent = if (currentTimeMillis > 0) {
             SimpleDateFormat("mm:ss", Locale.getDefault()).format(currentTimeMillis)
         } else {
-            "00:00"
+            "00:00"  // явный сброс
         }
         timeTextView.text = formattedCurrent
 
@@ -67,12 +72,6 @@ class AlbumViewHolder(
         trackTimeMillisTextView.text = track.trackTimeMillis?.let {
             formatDurationUseCase.invoke(it)
         } ?: ""
-
-        releaseDateTextView.text = dateFormatter.formatReleaseDate(track.releaseDate)
-        collectionNameTextView.text = track.collectionName
-        primaryGenreNameTextView.text = track.primaryGenreName
-        countryTextView.text = track.country
-
         // Загрузка изображения
         val cornerRadiusPx = (8 * itemView.resources.displayMetrics.density).toInt()
         if (track.artworkUrl100 != null) {
