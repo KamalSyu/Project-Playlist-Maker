@@ -3,16 +3,21 @@ package com.practicum.playlistmaker.di
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
+import android.preference.PreferenceManager
+import com.google.gson.Gson
+import com.practicum.playlistmaker.data.mapper.DtoMapper
 import com.practicum.playlistmaker.data.network.ItunesApi
 import com.practicum.playlistmaker.data.repository.HistoryRepositoryImpl
 import com.practicum.playlistmaker.data.repository.ItunesRepositoryImpl
 import com.practicum.playlistmaker.data.repository.PlayerRepositoryImpl
 import com.practicum.playlistmaker.data.repository.SettingsRepositoryImpl
+import com.practicum.playlistmaker.domain.factory.TrackFactory
 import com.practicum.playlistmaker.domain.repository.*
 import com.practicum.playlistmaker.domain.usecase.*
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -22,25 +27,27 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
-    // Контекст приложения
+    // 1. Базовые зависимости (Context, SharedPreferences, Gson)
     @Provides
     @Singleton
-    fun provideContext(app: Application): Context = app
+    fun provideContext(@ApplicationContext app: Application): Context = app
 
-
-    // SharedPreferences
     @Provides
     @Singleton
-    fun provideSharedPreferences(context: Context): SharedPreferences {
-        return context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+    fun provideSharedPreferences(@ApplicationContext context: Context): SharedPreferences {
+        return PreferenceManager.getDefaultSharedPreferences(context)
     }
 
-    // Retrofit для работы с iTunes API
+    @Provides
+    @Singleton
+    fun provideGson(): Gson = Gson()
+
+    // 2. Сетевые компоненты (Retrofit, API)
     @Provides
     @Singleton
     fun provideRetrofit(): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("https://itunes.apple.com/") // Обратите внимание: возможно, нужен "https://"
+            .baseUrl("https://itunes.apple.com/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
@@ -51,16 +58,21 @@ object AppModule {
         return retrofit.create(ItunesApi::class.java)
     }
 
-    // Репозитории
+    // 3. Репозитории (реализуют интерфейсы из domain)
     @Provides
     @Singleton
-    fun provideItunesRepository(api: ItunesApi): ItunesRepository {
-        return ItunesRepositoryImpl(api)
+    fun provideItunesRepository(
+        api: ItunesApi,
+        dtoMapper: DtoMapper
+    ): ItunesRepository {
+        return ItunesRepositoryImpl(api, dtoMapper)
     }
 
     @Provides
     @Singleton
-    fun provideHistoryRepository(sharedPreferences: SharedPreferences): HistoryRepository {
+    fun provideHistoryRepository(
+        sharedPreferences: SharedPreferences
+    ): HistoryRepository {
         return HistoryRepositoryImpl(sharedPreferences)
     }
 
@@ -72,11 +84,26 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideSettingsRepository(sharedPreferences: SharedPreferences): SettingsRepository {
+    fun provideSettingsRepository(
+        sharedPreferences: SharedPreferences
+    ): SettingsRepository {
         return SettingsRepositoryImpl(sharedPreferences)
     }
 
-    // UseCaseCreator — центральный класс для создания UseCase
+    // 4. Mapper и вспомогательные сервисы
+    @Provides
+    @Singleton
+    fun provideDtoMapper(trackFactory: TrackFactory): DtoMapper {
+        return DtoMapper(trackFactory)
+    }
+
+    @Provides
+    @Singleton
+    fun provideTrackFactory(): TrackFactory {
+        return TrackFactory()
+    }
+
+    // 5. UseCaseCreator (ЕДИНСТВЕННЫЙ провайдер для Use Cases)
     @Provides
     @Singleton
     fun provideUseCaseCreator(
@@ -85,35 +112,39 @@ object AppModule {
         playerRepository: PlayerRepository,
         settingsRepository: SettingsRepository
     ): UseCaseCreator {
-        return UseCaseCreator(itunesRepository, historyRepository, playerRepository, settingsRepository)
-    }
-
-    // Провайдеры для UseCase (через UseCaseCreator)
-    @Provides
-    fun provideSearchTracksUseCase(useCaseCreator: UseCaseCreator): SearchTracksUseCase {
-        return useCaseCreator.createSearchTracksUseCase()
-    }
-
-    @Provides
-    fun provideAddTrackToHistoryUseCase(useCaseCreator: UseCaseCreator): AddTrackToHistoryUseCase {
-        return useCaseCreator.createAddTrackToHistoryUseCase()
-    }
-
-
-    @Provides
-    fun provideGetSearchHistoryUseCase(
-        useCaseCreator: UseCaseCreator
-    ): GetSearchHistoryUseCase {
-        return useCaseCreator.createGetSearchHistoryUseCase()
+        return UseCaseCreator(
+            itunesRepository = itunesRepository,
+            historyRepository = historyRepository,
+            playerRepository = playerRepository,
+            settingsRepository = settingsRepository
+        )
     }
 
     @Provides
-    fun provideClearSearchHistoryUseCase(useCaseCreator: UseCaseCreator): ClearSearchHistoryUseCase {
-        return useCaseCreator.createClearSearchHistoryUseCase()
+    @Singleton
+    fun provideSwitchThemeUseCase(
+        settingsRepository: SettingsRepository
+    ): SwitchThemeUseCase {
+        return SwitchThemeUseCase(settingsRepository)
     }
 
     @Provides
-    fun provideFilterTracksUseCase(useCaseCreator: UseCaseCreator): FilterTracksUseCase {
-        return useCaseCreator.createFilterTracksUseCase()
+    @Singleton
+    fun provideGetThemeStateUseCase(
+        settingsRepository: SettingsRepository
+    ): GetThemeStateUseCase {
+        return GetThemeStateUseCase(settingsRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideShareAppUseCase(): ShareAppUseCase {
+        return ShareAppUseCase()
+    }
+
+    @Provides
+    @Singleton
+    fun provideSendSupportEmailUseCase(): SendSupportEmailUseCase {
+        return SendSupportEmailUseCase()
     }
 }

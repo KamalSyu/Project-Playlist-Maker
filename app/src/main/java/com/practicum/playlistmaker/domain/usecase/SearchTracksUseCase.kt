@@ -4,9 +4,10 @@ import com.practicum.playlistmaker.domain.model.Track
 import com.practicum.playlistmaker.domain.repository.ItunesRepository
 import javax.inject.Inject
 
-class SearchTracksUseCase @Inject constructor (private val itunesRepository: ItunesRepository) {
+class SearchTracksUseCase @Inject constructor (
+    private val itunesRepository: ItunesRepository) : SearchTracksUseCaseContract  {
 
-    suspend operator fun invoke(query: String): Result<List<Track>> {
+    override suspend operator fun invoke(query: String): Result<List<Track>> {
         return try {
             val response = itunesRepository.search(query)
             if (response.results.isEmpty()) {

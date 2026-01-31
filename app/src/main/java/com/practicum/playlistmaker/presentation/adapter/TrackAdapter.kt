@@ -65,6 +65,9 @@ class TrackAdapter(
             holder.hidePlayingState()
         }
     }
+    fun setOnPlayButtonClickListener(listener: (Track) -> Unit) {
+        this.onClickPlayButton = listener
+    }
 
     private fun bindAlbumViewHolder(holder: AlbumViewHolder, track: Track, position: Int) {
         holder.bind(
@@ -72,7 +75,9 @@ class TrackAdapter(
             isPlaying = isPlaying,
             currentTimeMillis = currentTimeMillis,
             onTrackClick = onTrackClick,
-            onPlayButtonClick = onClickPlayButton,
+            onPlayButtonClick = {
+                onClickPlayButton(track) // Вызываем внешний слушатель
+            },
             onAddToPlaylistClick = onAddToPlaylist,
             onFavoriteClick = onFavorite
         )

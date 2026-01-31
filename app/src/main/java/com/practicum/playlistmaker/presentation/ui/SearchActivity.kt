@@ -12,30 +12,32 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.domain.model.Track
-import com.practicum.playlistmaker.domain.usecase.AddTrackToHistoryUseCase
-import com.practicum.playlistmaker.domain.usecase.ClearSearchHistoryUseCase
-import com.practicum.playlistmaker.domain.usecase.FilterTracksUseCase
-import com.practicum.playlistmaker.domain.usecase.GetSearchHistoryUseCase
-import com.practicum.playlistmaker.domain.usecase.SearchTracksUseCase
-import com.practicum.playlistmaker.domain.usecase.UseCaseCreator
 import com.practicum.playlistmaker.presentation.adapter.TrackAdapter
+import com.practicum.playlistmaker.presentation.parcel.ParcelableTrack
+import com.practicum.playlistmaker.presentation.parcel.toParcelable
 import com.practicum.playlistmaker.presentation.util.Constants.Companion.SEARCH_QUERY_KEY
 import com.practicum.playlistmaker.presentation.util.Constants.Companion.VIEW_TYPE_TRACK
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import android.view.inputmethod.InputMethodManager
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import javax.inject.Inject
+import android.view.inputmethod.InputMethodManager
+import com.practicum.playlistmaker.domain.usecase.AddTrackToHistoryUseCaseContract
+import com.practicum.playlistmaker.domain.usecase.ClearSearchHistoryUseCaseContract
+import com.practicum.playlistmaker.domain.usecase.FilterTracksUseCaseContract
+import com.practicum.playlistmaker.domain.usecase.GetSearchHistoryUseCaseContract
+import com.practicum.playlistmaker.domain.usecase.SearchTracksUseCaseContract
+import com.practicum.playlistmaker.domain.usecase.UseCaseCreator
+import kotlinx.coroutines.Job
+
 
 @AndroidEntryPoint
 class SearchActivity : AppCompatActivity() {
 
-    @Inject lateinit var searchTracksUseCase: SearchTracksUseCase
-    @Inject lateinit var addTrackToHistoryUseCase: AddTrackToHistoryUseCase
-    @Inject lateinit var getSearchHistoryUseCase: GetSearchHistoryUseCase
-    @Inject lateinit var clearSearchHistoryUseCase: ClearSearchHistoryUseCase
-    @Inject lateinit var filterTracksUseCase: FilterTracksUseCase
+
+    @Inject
+    lateinit var useCaseCreator: UseCaseCreator
+
 
     // Вьюшки
     private lateinit var backTextView: TextView
@@ -64,9 +66,25 @@ class SearchActivity : AppCompatActivity() {
     private var isLastSearchFailed: Boolean = false
 
 
+    // Use Cases через Creator
+    private lateinit var searchTracksUseCase: SearchTracksUseCaseContract
+    private lateinit var addTrackToHistoryUseCase: AddTrackToHistoryUseCaseContract
+    private lateinit var getSearchHistoryUseCase: GetSearchHistoryUseCaseContract
+    private lateinit var clearSearchHistoryUseCase: ClearSearchHistoryUseCaseContract
+    private lateinit var filterTracksUseCase: FilterTracksUseCaseContract
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_search)
+
+        // Инициализация Use Cases через Creator
+        searchTracksUseCase = useCaseCreator.createSearchTracksUseCase()
+        addTrackToHistoryUseCase = useCaseCreator.createAddTrackToHistoryUseCase()
+        getSearchHistoryUseCase = useCaseCreator.createGetSearchHistoryUseCase()
+        clearSearchHistoryUseCase = useCaseCreator.createClearSearchHistoryUseCase()
+        filterTracksUseCase = useCaseCreator.createFilterTracksUseCase()
+
 
         initViews()
         setupClickListeners()
@@ -98,6 +116,8 @@ class SearchActivity : AppCompatActivity() {
         )
         recyclerView.adapter = tracksAdapter
         recyclerView.layoutManager = LinearLayoutManager(this)
+
+
         historyAdapter = TrackAdapter(
             tracks = emptyList(),
             viewType = VIEW_TYPE_TRACK,
@@ -109,8 +129,7 @@ class SearchActivity : AppCompatActivity() {
     }
 
     private fun setupClickListeners() {
-        backTextView.setOnClickListener {
-            finish() }
+        backTextView.setOnClickListener { finish() }
         resetButton.setOnClickListener {
             searchEditText.setText("")
             updateTracksList(emptyList())
@@ -131,6 +150,7 @@ class SearchActivity : AppCompatActivity() {
 
     private fun setupTextWatchers() {
         var searchJob: Job? = null
+
 
         searchEditText.doOnTextChanged { text, _, _, _ ->
             val query = text?.toString()?.trim() ?: ""
@@ -159,7 +179,7 @@ class SearchActivity : AppCompatActivity() {
             }
         }
 
-        // Обработчик фокуса (как было)
+        // Обработчик фокуса
         searchEditText.setOnFocusChangeListener { _, hasFocus ->
             updateHintVisibility(hasFocus && searchEditText.text.isEmpty())
             updateHistoryVisibility()
@@ -172,13 +192,9 @@ class SearchActivity : AppCompatActivity() {
             searchEditText.setText(searchQuery)
             if (searchQuery.isNotEmpty()) performSearch(searchQuery)
         }
-
     }
 
     private fun loadHistory() {
-        if (!::getSearchHistoryUseCase.isInitialized) {
-            return
-        }
         lifecycleScope.launch {
             val history = getSearchHistoryUseCase()
             historyAdapter.updateList(history)
@@ -227,7 +243,11 @@ class SearchActivity : AppCompatActivity() {
 
     private fun openAudioPlayer(track: Track) {
         val intent = Intent(this, AudioPlayerActivity::class.java)
-        intent.putExtra("track", track)
+
+        // Конвертируем Track в ParcelableTrack перед передачей
+        val parcelableTrack = track.toParcelable()
+        intent.putExtra("track", parcelableTrack)
+
         startActivity(intent)
     }
 
@@ -256,7 +276,6 @@ class SearchActivity : AppCompatActivity() {
         hintMessage.visibility = if (show) View.VISIBLE else View.GONE
     }
 
-
     private fun updateHistoryVisibility() {
         val isEmptyQuery = searchEditText.text.isEmpty()
         val hasFocus = searchEditText.hasFocus()
@@ -268,7 +287,6 @@ class SearchActivity : AppCompatActivity() {
             View.GONE
         }
     }
-
 
     private fun hideKeyboard() {
         val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager

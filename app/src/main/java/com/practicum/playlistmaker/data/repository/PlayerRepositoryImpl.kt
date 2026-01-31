@@ -4,12 +4,16 @@ import android.media.MediaPlayer
 import com.practicum.playlistmaker.domain.repository.PlayerRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Singleton
+
 /**
  * Реализация репозитория для управления воспроизведением аудио.
  * Обеспечивает взаимодействие с MediaPlayer через контракт PlayerRepository.
  */
+@Singleton
 
-class PlayerRepositoryImpl : PlayerRepository {
+class PlayerRepositoryImpl @Inject constructor(): PlayerRepository {
 
     private var mediaPlayer: MediaPlayer? = null // Экземпляр MediaPlayer для работы с аудио
     private var completionListener: (() -> Unit)? = null  // Слушатель завершения воспроизведения

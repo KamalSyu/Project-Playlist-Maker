@@ -3,8 +3,11 @@ package com.practicum.playlistmaker.presentation.ui
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.graphics.drawable.DrawableCompat.applyTheme
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.domain.usecase.*
@@ -26,20 +29,39 @@ class SettingsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
 
-        themeSwitcher = findViewById(R.id.switch_button)
-
-        // Устанавливаем текущее состояние темы
-        themeSwitcher.isChecked = getThemeStateUseCase()
-
         findViewById<View>(R.id.back).setOnClickListener { finish() }
         findViewById<View>(R.id.btnShare).setOnClickListener { shareApp() }
         findViewById<View>(R.id.supportButton).setOnClickListener { sendEmail() }
         findViewById<View>(R.id.userAgreementButton).setOnClickListener { openUserAgreement() }
 
+        themeSwitcher = findViewById(R.id.switch_button)
+
+        val isDarkMode = getThemeStateUseCase()
+        themeSwitcher.isChecked = isDarkMode
+
+        applyTheme(isDarkMode)
+
         themeSwitcher.setOnCheckedChangeListener { _, isChecked ->
+            Log.d("Theme", "Switch changed to: $isChecked")
+
+            // Сохраняем новую тему
             switchThemeUseCase(isChecked)
+            // Немедленно применяем к текущей активности
+            applyTheme(isChecked)
+            // Пересоздаём для полного обновления интерфейса
+            recreate()
         }
     }
+    // Метод для применения темы
+    private fun applyTheme(isDarkMode: Boolean) {
+        val mode = if (isDarkMode) {
+            AppCompatDelegate.MODE_NIGHT_YES
+        } else {
+            AppCompatDelegate.MODE_NIGHT_NO
+        }
+        AppCompatDelegate.setDefaultNightMode(mode)
+    }
+
 
     private fun shareApp() {
         val shareText = shareAppUseCase()
