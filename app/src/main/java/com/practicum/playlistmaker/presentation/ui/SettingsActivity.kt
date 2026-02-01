@@ -3,25 +3,16 @@ package com.practicum.playlistmaker.presentation.ui
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.graphics.drawable.DrawableCompat.applyTheme
 import com.google.android.material.switchmaterial.SwitchMaterial
+import com.practicum.playlistmaker.App
 import com.practicum.playlistmaker.R
-import com.practicum.playlistmaker.domain.usecase.*
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
+
 
 @AndroidEntryPoint
 class SettingsActivity : AppCompatActivity() {
-
-    // Внедряем UseCase через Hilt
-    @Inject lateinit var switchThemeUseCase: SwitchThemeUseCase
-    @Inject lateinit var getThemeStateUseCase: GetThemeStateUseCase
-    @Inject lateinit var shareAppUseCase: ShareAppUseCase
-    @Inject lateinit var sendSupportEmailUseCase: SendSupportEmailUseCase
 
     private lateinit var themeSwitcher: SwitchMaterial
 
@@ -29,42 +20,30 @@ class SettingsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
 
+        themeSwitcher = findViewById(R.id.switch_button)
+
+        // Получаем текущее состояние темы через UseCase (из SharedPreferences)
+        val isDarkMode = (application as App).getThemeStateUseCase()
+        themeSwitcher.isChecked = isDarkMode
+
+        // Обработчик переключения темы
+        themeSwitcher.setOnCheckedChangeListener { _, isChecked ->
+            // Передаём управление в App для сохранения и применения темы
+            (application as App).switchTheme(isChecked)
+            // Пересоздаём Activity, чтобы тема применилась немедленно
+            recreate()
+        }
+
+        // Обработчики остальных кнопок
         findViewById<View>(R.id.back).setOnClickListener { finish() }
         findViewById<View>(R.id.btnShare).setOnClickListener { shareApp() }
         findViewById<View>(R.id.supportButton).setOnClickListener { sendEmail() }
         findViewById<View>(R.id.userAgreementButton).setOnClickListener { openUserAgreement() }
-
-        themeSwitcher = findViewById(R.id.switch_button)
-
-        val isDarkMode = getThemeStateUseCase()
-        themeSwitcher.isChecked = isDarkMode
-
-        applyTheme(isDarkMode)
-
-        themeSwitcher.setOnCheckedChangeListener { _, isChecked ->
-            Log.d("Theme", "Switch changed to: $isChecked")
-
-            // Сохраняем новую тему
-            switchThemeUseCase(isChecked)
-            // Немедленно применяем к текущей активности
-            applyTheme(isChecked)
-            // Пересоздаём для полного обновления интерфейса
-            recreate()
-        }
-    }
-    // Метод для применения темы
-    private fun applyTheme(isDarkMode: Boolean) {
-        val mode = if (isDarkMode) {
-            AppCompatDelegate.MODE_NIGHT_YES
-        } else {
-            AppCompatDelegate.MODE_NIGHT_NO
-        }
-        AppCompatDelegate.setDefaultNightMode(mode)
     }
 
-
+    // Методы shareApp, sendEmail, openUserAgreement (без изменений)
     private fun shareApp() {
-        val shareText = shareAppUseCase()
+        val shareText = "Скачайте приложение: https://example.com/playlistmaker"
         val intent = Intent(Intent.ACTION_SEND)
         intent.type = "text/plain"
         intent.putExtra(Intent.EXTRA_TEXT, shareText)
@@ -72,7 +51,11 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun sendEmail() {
-        val data = sendSupportEmailUseCase()
+        val data = SupportEmailIntentData(
+            email = "support@example.com",
+            subject = "Вопрос по приложению Playlist Maker",
+            body = "Здравствуйте! У меня возникла проблема..."
+        )
         val intent = Intent(Intent.ACTION_SENDTO)
         intent.data = Uri.parse("mailto:")
         intent.putExtra(Intent.EXTRA_EMAIL, arrayOf(data.email))
@@ -87,3 +70,10 @@ class SettingsActivity : AppCompatActivity() {
         startActivity(intent)
     }
 }
+
+// Data-класс для данных письма (внутри того же файла)
+data class SupportEmailIntentData(
+    val email: String,
+    val subject: String,
+    val body: String
+)

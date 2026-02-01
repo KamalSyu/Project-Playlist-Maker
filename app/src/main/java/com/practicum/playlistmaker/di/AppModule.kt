@@ -14,6 +14,7 @@ import com.practicum.playlistmaker.data.repository.SettingsRepositoryImpl
 import com.practicum.playlistmaker.domain.factory.TrackFactory
 import com.practicum.playlistmaker.domain.repository.*
 import com.practicum.playlistmaker.domain.usecase.*
+import com.practicum.playlistmaker.presentation.util.Constants.Companion.PREFERENCES
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -34,8 +35,10 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideSharedPreferences(@ApplicationContext context: Context): SharedPreferences {
-        return PreferenceManager.getDefaultSharedPreferences(context)
+    fun provideSharedPreferences(
+        @ApplicationContext context: Context
+    ): SharedPreferences {
+        return context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE)
     }
 
     @Provides
@@ -124,7 +127,7 @@ object AppModule {
     @Singleton
     fun provideSwitchThemeUseCase(
         settingsRepository: SettingsRepository
-    ): SwitchThemeUseCase {
+    ): SwitchThemeUseCaseContract {
         return SwitchThemeUseCase(settingsRepository)
     }
 
@@ -132,19 +135,19 @@ object AppModule {
     @Singleton
     fun provideGetThemeStateUseCase(
         settingsRepository: SettingsRepository
-    ): GetThemeStateUseCase {
+    ): GetThemeStateUseCaseContract {
         return GetThemeStateUseCase(settingsRepository)
     }
 
     @Provides
     @Singleton
-    fun provideShareAppUseCase(): ShareAppUseCase {
+    fun provideShareAppUseCase(): ShareAppUseCaseContract {
         return ShareAppUseCase()
     }
 
     @Provides
     @Singleton
-    fun provideSendSupportEmailUseCase(): SendSupportEmailUseCase {
+    fun provideSendSupportEmailUseCase(): SendSupportEmailUseCaseContract {
         return SendSupportEmailUseCase()
     }
 }

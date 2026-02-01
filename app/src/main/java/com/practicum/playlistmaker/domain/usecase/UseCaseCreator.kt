@@ -8,7 +8,6 @@ import com.practicum.playlistmaker.domain.repository.PlayerRepository
 import com.practicum.playlistmaker.domain.repository.SettingsRepository
 import javax.inject.Inject
 
-
 class UseCaseCreator @Inject constructor(
     private val itunesRepository: ItunesRepository,
     private val historyRepository: HistoryRepository,
@@ -16,16 +15,16 @@ class UseCaseCreator @Inject constructor(
     private val settingsRepository: SettingsRepository,
 ) {
 
-    // Поиск треков
+    // === Поиск треков ===
     fun createSearchTracksUseCase(): SearchTracksUseCaseContract {
         return SearchTracksUseCase(itunesRepository)
     }
 
     fun createFilterTracksUseCase(): FilterTracksUseCaseContract {
-        return FilterTracksUseCase()  // ← Добавлены зависимости
+        return FilterTracksUseCase()
     }
 
-    // История поиска
+    // === История поиска ===
     fun createAddTrackToHistoryUseCase(): AddTrackToHistoryUseCaseContract {
         return AddTrackToHistoryUseCase(historyRepository)
     }
@@ -38,7 +37,7 @@ class UseCaseCreator @Inject constructor(
         return ClearSearchHistoryUseCase(historyRepository)
     }
 
-    // Темы приложения
+    // === Управление темой ===
     fun createSwitchThemeUseCase(): SwitchThemeUseCaseContract {
         return SwitchThemeUseCase(settingsRepository)
     }
@@ -47,7 +46,7 @@ class UseCaseCreator @Inject constructor(
         return GetThemeStateUseCase(settingsRepository)
     }
 
-    // Управление воспроизведением
+    // === Воспроизведение аудио ===
     fun createPreparePlaybackUseCase(): PreparePlaybackUseCaseContract {
         return PreparePlaybackUseCase(playerRepository)
     }
@@ -68,55 +67,16 @@ class UseCaseCreator @Inject constructor(
         return HandlePlaybackCompletionUseCase(playerRepository)
     }
 
-    // Поддержка и шаринг
-    fun createSendSupportEmailUseCase(): SendSupportEmailUseCaseContract {
-        return SendSupportEmailUseCase()  // ← Зависимость добавлена
+    // === Дополнительные UseCase ===
+    fun createShareAppUseCase(): ShareAppUseCaseContract {
+        return ShareAppUseCase()
     }
 
-    fun createShareAppUseCase(): ShareAppUseCaseContract {
-        return ShareAppUseCase()  // ← Зависимость добавлена
+    fun createSendSupportEmailUseCase(): SendSupportEmailUseCaseContract {
+        return SendSupportEmailUseCase()
+    }
+
+    fun createFormatTrackDurationUseCase(): FormatTrackDurationUseCase {
+        return FormatTrackDurationUseCase()
     }
 }
-
-//package com.practicum.playlistmaker.domain.usecase
-//
-// import com.practicum.playlistmaker.domain.repository.HistoryRepository
-// import com.practicum.playlistmaker.domain.repository.ItunesRepository
-// import com.practicum.playlistmaker.domain.repository.PlayerRepository
-// import com.practicum.playlistmaker.domain.repository.SettingsRepository
-// import javax.inject.Inject
-//
-//class UseCaseCreator @Inject constructor(
-//    private val itunesRepository: ItunesRepository,
-//    private val historyRepository: HistoryRepository,
-//    private val playerRepository: PlayerRepository,
-//    private val settingsRepository: SettingsRepository
-//) {
-//    fun createSearchTracksUseCase(): SearchTracksUseCase {
-//        return SearchTracksUseCase(itunesRepository)
-//    }
-//
-//    fun createAddTrackToHistoryUseCase(): AddTrackToHistoryUseCase {
-//        return AddTrackToHistoryUseCase(historyRepository)
-//    }
-//
-//    fun createGetSearchHistoryUseCase(): GetSearchHistoryUseCase {
-//        return GetSearchHistoryUseCase(historyRepository)
-//    }
-//
-//    fun createClearSearchHistoryUseCase(): ClearSearchHistoryUseCase {
-//        return ClearSearchHistoryUseCase(historyRepository)
-//    }
-//
-//    fun createFilterTracksUseCase(): FilterTracksUseCase {
-//        return FilterTracksUseCase()
-//    }
-//
-//    fun createSwitchThemeUseCase(): SwitchThemeUseCase {
-//        return SwitchThemeUseCase(settingsRepository)
-//    }
-//
-//    fun createGetThemeStateUseCase(): GetThemeStateUseCase {
-//        return GetThemeStateUseCase(settingsRepository)
-//    }
-//}

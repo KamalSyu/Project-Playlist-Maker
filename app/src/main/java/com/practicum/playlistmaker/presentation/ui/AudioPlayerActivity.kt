@@ -7,6 +7,7 @@ import android.util.Log
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.graphics.drawable.DrawableCompat.applyTheme
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -14,6 +15,7 @@ import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.domain.model.Track
 import com.practicum.playlistmaker.domain.repository.PlayerRepository
 import com.practicum.playlistmaker.domain.usecase.GetCurrentPositionUseCaseContract
+import com.practicum.playlistmaker.domain.usecase.GetThemeStateUseCase
 import com.practicum.playlistmaker.domain.usecase.PreparePlaybackUseCaseContract
 import com.practicum.playlistmaker.domain.usecase.StopPlaybackUseCaseContract
 import com.practicum.playlistmaker.domain.usecase.TogglePlaybackUseCaseContract
@@ -59,7 +61,6 @@ class AudioPlayerActivity : AppCompatActivity() {
         togglePlaybackUseCase = useCaseCreator.createTogglePlaybackUseCase()
         stopPlaybackUseCase = useCaseCreator.createStopPlaybackUseCase()
         getCurrentPositionUseCase = useCaseCreator.createGetCurrentPositionUseCase()
-
 
         val track = getTrackFromIntentOrSavedState(savedInstanceState)
         isPlaying = savedInstanceState?.getBoolean("isPlaying") ?: false

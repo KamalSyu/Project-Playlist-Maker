@@ -4,46 +4,42 @@ import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
+import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
+import com.practicum.playlistmaker.domain.repository.SettingsRepository
+import com.practicum.playlistmaker.domain.usecase.GetThemeStateUseCaseContract
+import com.practicum.playlistmaker.domain.usecase.SwitchThemeUseCaseContract
 import com.practicum.playlistmaker.presentation.util.Constants.Companion.DARK_THEME_KEY
 import com.practicum.playlistmaker.presentation.util.Constants.Companion.PREFERENCES
 import dagger.hilt.android.HiltAndroidApp
+import javax.inject.Inject
 
-@HiltAndroidApp  // 1. Добавляем аннотацию для Hilt
+@HiltAndroidApp
 class App : Application() {
 
-    lateinit var sharedPreferences: SharedPreferences  // 2. Убираем private
-
+    @Inject lateinit var switchThemeUseCase: SwitchThemeUseCaseContract
+    @Inject lateinit var getThemeStateUseCase: GetThemeStateUseCaseContract
 
     override fun onCreate() {
         super.onCreate()
-
-        // Инициализация SharedPreferences
-        sharedPreferences = getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE)
-
-        // Получение сохранённого состояния тёмной темы
-        val darkTheme = sharedPreferences.getBoolean(DARK_THEME_KEY, false)
-
-        // Установка режима ночи
-        setTheme(darkTheme)
+        // Загружаем текущую тему при старте приложения
+        val isDarkMode = getThemeStateUseCase()
+        setTheme(isDarkMode)
     }
 
+    /**
+     * Переключает тему приложения и сохраняет состояние.
+     * Вызывается только при явном действии пользователя (нажатии кнопки).
+     */
     fun switchTheme(darkThemeEnabled: Boolean) {
-        // Смена режима ночи
+        // Сохраняем в SharedPreferences через UseCase
+        switchThemeUseCase(darkThemeEnabled)
+        // Применяем тему глобально
         setTheme(darkThemeEnabled)
-        // Сохранение в SharedPreferences
-        with(sharedPreferences.edit()) {
-            putBoolean(DARK_THEME_KEY, darkThemeEnabled)
-            apply()
-        }
     }
 
-    private fun setTheme(darkTheme: Boolean) {
-        AppCompatDelegate.setDefaultNightMode(
-            if (darkTheme) {
-                AppCompatDelegate.MODE_NIGHT_YES
-            } else {
-                AppCompatDelegate.MODE_NIGHT_NO
-            }
-        )
+    private fun setTheme(isDarkMode: Boolean) {
+        val mode = if (isDarkMode) MODE_NIGHT_YES else MODE_NIGHT_NO
+        AppCompatDelegate.setDefaultNightMode(mode)
     }
 }
