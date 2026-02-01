@@ -134,18 +134,24 @@ class SearchActivity : AppCompatActivity() {
             searchEditText.setText("")
             updateTracksList(emptyList())
             hideKeyboard()
+            showNoResults(false)               // Скрываем заглушку (если была)
         }
         updateButton.setOnClickListener {
             if (isLastSearchFailed && lastSearchQuery != null) {
                 performSearch(lastSearchQuery!!)
             }
         }
+
         clearHistoryButton.setOnClickListener {
             lifecycleScope.launch {
                 clearSearchHistoryUseCase()
-                loadHistory()
+                loadHistory()  // Это обновит adapter, список станет пустым
+
+                // Скрываем элементы
+                historyRecyclerViewKit.visibility = View.GONE  // Контейнер истории
             }
         }
+
     }
 
     private fun setupTextWatchers() {
@@ -212,8 +218,12 @@ class SearchActivity : AppCompatActivity() {
                 isLastSearchFailed = false
                 errorLayout.visibility = View.GONE
                 filteredTracks = result.getOrThrow()
-                updateTracksList(filteredTracks)
-                showNoResults(filteredTracks.isEmpty())
+                if (filteredTracks.isNotEmpty()) {
+                    updateTracksList(filteredTracks)  // Показываем список
+                    showNoResults(false)           // Скрываем заглушку
+                } else {
+                    showNoResults(true)             // Показываем заглушку
+                }
             } else {
                 isLastSearchFailed = true
                 showError()
@@ -247,7 +257,6 @@ class SearchActivity : AppCompatActivity() {
         // Конвертируем Track в ParcelableTrack перед передачей
         val parcelableTrack = track.toParcelable()
         intent.putExtra("track", parcelableTrack)
-
         startActivity(intent)
     }
 

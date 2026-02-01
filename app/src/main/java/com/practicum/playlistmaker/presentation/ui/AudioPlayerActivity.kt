@@ -22,6 +22,7 @@ import com.practicum.playlistmaker.domain.usecase.TogglePlaybackUseCaseContract
 import com.practicum.playlistmaker.domain.usecase.UseCaseCreator
 import com.practicum.playlistmaker.presentation.adapter.TrackAdapter
 import com.practicum.playlistmaker.presentation.parcel.ParcelableTrack
+import com.practicum.playlistmaker.presentation.parcel.toDomain
 import com.practicum.playlistmaker.presentation.util.Constants.Companion.VIEW_TYPE_ALBUM
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -77,12 +78,30 @@ class AudioPlayerActivity : AppCompatActivity() {
         setupBackButton()
     }
 
-    // Безопасное получение Track
     private fun getTrackFromIntentOrSavedState(savedState: Bundle?): Track {
-        return savedState?.getParcelable("track")
-            ?: intent.getParcelableExtra("track")
-            ?: throw IllegalArgumentException("Track is required but not provided")
+        // 1. Пытаемся достать ParcelableTrack из savedInstanceState
+        if (savedState != null) {
+            val parcelable = savedState.getParcelable<ParcelableTrack>("track")
+            if (parcelable != null) {
+                Log.d("AudioPlayer", "Track restored from savedInstanceState")
+                return parcelable.toDomain()
+            }
+        }
+
+        // 2. Пытаемся достать ParcelableTrack из Intent
+        val parcelable = intent.getParcelableExtra<ParcelableTrack>("track")
+        if (parcelable != null) {
+            Log.d("AudioPlayer", "Track received from Intent")
+            return parcelable.toDomain()
+        }
+
+        // 3. Если ничего не нашли — ошибка
+        throw IllegalArgumentException(
+            "Track is required but not provided. Check: " +
+                    "1) Intent extra, 2) savedInstanceState, 3) Parcelable implementation"
+        )
     }
+
 
     private fun setupBackButton() {
         findViewById<TextView>(R.id.back).setOnClickListener { onBackPressed() }
