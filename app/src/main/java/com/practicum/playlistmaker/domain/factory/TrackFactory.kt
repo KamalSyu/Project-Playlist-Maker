@@ -5,9 +5,6 @@ import com.practicum.playlistmaker.domain.model.Track
 
 class TrackFactory {
 
-    /**
-     * Создаёт экземпляр Track с автоматически сгенерированным trackId.
-     */
     fun createTrack(
         trackName: String,
         artistName: String,
@@ -34,10 +31,6 @@ class TrackFactory {
         )
     }
 
-    /**
-     * Генерирует уникальный идентификатор трека на основе ключевых полей.
-     * Формат: "$trackName:$artistName:${collectionName?:""}".lowercase()
-     */
     private fun generateTrackId(
         trackName: String,
         artistName: String,

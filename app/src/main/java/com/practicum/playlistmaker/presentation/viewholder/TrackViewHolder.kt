@@ -41,25 +41,13 @@ class TrackViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             .into(artworkImageView)
     }
 
-    /**
-     * Отображает состояние плеера (иконка/текст) для текущего трека.
-     * @param isPlaying — играет ли трек
-     * @param currentTimeMillis — текущее время воспроизведения
-     */
     fun showPlayingState(isPlaying: Boolean, currentTimeMillis: Long) {
-        // Здесь можно добавить анимацию/иконку, если нужно
-        // Например:
-        // if (isPlaying) trackTimeTextView.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_playing, 0, 0, 0)
-        // Или обновить текст:
         if (currentTimeMillis > 0) {
             val formatted = SimpleDateFormat("mm:ss", Locale.getDefault()).format(currentTimeMillis)
             trackTimeTextView.text = formatted
         }
     }
 
-    /**
-     * Сбрасывает состояние плеера (например, при остановке).
-     */
     fun hidePlayingState() {
         // Возвращаем исходное время трека
         if (itemView.tag is Track) {

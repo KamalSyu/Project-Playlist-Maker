@@ -19,7 +19,6 @@ data class ParcelableTrack(
     val previewUrl: String?
 ) : Parcelable
 
-// Конвертеры
 fun Track.toParcelable() = ParcelableTrack(
     trackId = this.trackId,
     trackName = this.trackName,

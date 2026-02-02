@@ -5,11 +5,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
 
-
-/**
- * Форматирует дату релиза трека из ISO‑8601 в формат "yyyy".
- * Используется для отображения года релиза в UI.
- */
 class DateFormatter {
     private val inputFormat: SimpleDateFormat by lazy {
         SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).apply {

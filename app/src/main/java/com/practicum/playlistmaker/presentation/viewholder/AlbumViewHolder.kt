@@ -61,12 +61,6 @@ class AlbumViewHolder(
         countryTextView.text = track.country
 
         val formattedCurrent = SimpleDateFormat("mm:ss", Locale.getDefault()).format(currentTimeMillis)
-//        timeTextView.text = formattedCurrent
-//        val formattedCurrent = if (currentTimeMillis > 0) {
-//            SimpleDateFormat("mm:ss", Locale.getDefault()).format(currentTimeMillis)
-//        } else {
-//            "00:00"  // явный сброс
-//        }
         timeTextView.text = formattedCurrent
 
         // Длительность трека (используем FormatTrackDurationUseCase)

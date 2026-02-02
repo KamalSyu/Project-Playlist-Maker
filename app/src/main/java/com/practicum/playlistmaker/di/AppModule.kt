@@ -3,7 +3,6 @@ package com.practicum.playlistmaker.di
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
-import android.preference.PreferenceManager
 import com.google.gson.Gson
 import com.practicum.playlistmaker.data.mapper.DtoMapper
 import com.practicum.playlistmaker.data.network.ItunesApi
