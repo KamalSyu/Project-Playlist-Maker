@@ -45,7 +45,7 @@ class PlayerRepositoryImpl @Inject constructor() : PlayerRepository {
 
     override suspend fun stop() {
         synchronized(lock) {
-            mediaPlayer?.stop()
+            mediaPlayer?.pause()
         }
     }
 
@@ -75,6 +75,12 @@ class PlayerRepositoryImpl @Inject constructor() : PlayerRepository {
             mediaPlayer?.setOnCompletionListener { listener() }
         }
     }
+    override fun seekTo(position: Long) {
+        synchronized(lock) {
+            mediaPlayer?.seekTo(position.toInt())
+        }
+    }
+
 }
 
 

@@ -37,6 +37,8 @@ class AudioPlayerActivity : AppCompatActivity() {
     private var updateRunnable: Runnable? = null
     private var isPlaying = false
     private var wasPausedInBackground = false
+    private var savedPosition: Long = 0L  // Сохраняем позицию при паузе
+
 
     // Use Cases через Creator
     private lateinit var preparePlaybackUseCase: PreparePlaybackUseCaseContract
@@ -134,19 +136,51 @@ class AudioPlayerActivity : AppCompatActivity() {
         }
     }
 
-    private fun togglePlayback() = lifecycleScope.launch {
-        try {
-            val result = togglePlaybackUseCase()
-            if (result.isSuccess) {
-                // ВАЖНО: берём реальное состояние из плеера, а не из result!
-                isPlaying = playerRepository.isPlaying()
-                updateUI()
-                if (isPlaying) startPolling() else stopPolling()
+//    private fun togglePlayback() = lifecycleScope.launch {
+//        try {
+//            if (!playerRepository.isPlaying()) {
+//                // Если плеер не играет, нужно подготовить его заново
+//                val track = getTrackFromIntentOrSavedState(null) // Получаем текущий трек
+//                if (track.previewUrl.isNullOrBlank()) {
+//                    showError("Отрывок недоступен")
+//                    return@launch
+//                }
+//                preparePlaybackUseCase(track.previewUrl)
+//            }
+//
+//            val result = togglePlaybackUseCase()
+//            if (result.isSuccess) {
+//                isPlaying = playerRepository.isPlaying()
+//                updateUI()
+//                if (isPlaying) startPolling() else stopPolling()
+//            }
+//        } catch (e: Exception) {
+//            handlePlaybackError("Ошибка при переключении воспроизведения", e)
+//        }
+//    }
+private fun togglePlayback() = lifecycleScope.launch {
+    try {
+        if (playerRepository.isPlaying()) {
+            // Пауза: сохраняем текущую позицию
+            savedPosition = getCurrentPositionUseCase()
+            playerRepository.pause()
+            isPlaying = false
+            stopPolling()
+        } else {
+            // Воспроизведение: если есть сохранённая позиция — продолжаем с неё
+            if (savedPosition > 0L) {
+                playerRepository.seekTo(savedPosition)
             }
-        } catch (e: Exception) {
-            handlePlaybackError("Ошибка при переключении воспроизведения", e)
+            playerRepository.play()
+            isPlaying = true
+            startPolling()
         }
+        updateUI()
+    } catch (e: Exception) {
+        handlePlaybackError("Ошибка при переключении воспроизведения", e)
     }
+}
+
 
     private fun updateUI(resetTime: Boolean = false) = lifecycleScope.launch {
         val currentPosition = if (resetTime) {
@@ -174,20 +208,34 @@ class AudioPlayerActivity : AppCompatActivity() {
         updateRunnable = null
     }
 
-    private fun setupPlaybackListener() = lifecycleScope.launch {
-        try {
-            playerRepository.setOnCompletionListener {
-                lifecycleScope.launch {
-                    isPlaying = false // явно фиксируем завершение
-                    updateUI(resetTime = true) // сбрасываем время до 00:00
-                    stopPolling()
-                    playerRepository.reset() // освобождаем ресурсы
-                }
+//    private fun setupPlaybackListener() = lifecycleScope.launch {
+//        try {
+//            playerRepository.setOnCompletionListener {
+//                lifecycleScope.launch {
+//                    isPlaying = false // явно фиксируем завершение
+//                    updateUI(resetTime = true) // сбрасываем время до 00:00
+//                    stopPolling()
+//                    playerRepository.reset() // освобождаем ресурсы
+//                }
+//            }
+//        } catch (e: Exception) {
+//            Log.e("AudioPlayerActivity", "Failed to set completion listener", e)
+//        }
+//    }
+private fun setupPlaybackListener() = lifecycleScope.launch {
+    try {
+        playerRepository.setOnCompletionListener {
+            lifecycleScope.launch {
+                isPlaying = false
+                savedPosition = 0L  // Сбрасываем позицию — следующий запуск с начала
+                updateUI(resetTime = true)
+                stopPolling()
             }
-        } catch (e: Exception) {
-            Log.e("AudioPlayerActivity", "Failed to set completion listener", e)
         }
+    } catch (e: Exception) {
+        Log.e("AudioPlayerActivity", "Failed to set completion listener", e)
     }
+}
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
@@ -195,18 +243,31 @@ class AudioPlayerActivity : AppCompatActivity() {
         outState.putBoolean("isPlaying", isPlaying)
     }
 
-    override fun onPause() {
-        super.onPause()
-        if (isPlaying) {
-            lifecycleScope.launch {
-                togglePlaybackUseCase()
-                wasPausedInBackground = true
-                stopPolling()
-            }
+//    override fun onPause() {
+//        super.onPause()
+//        if (isPlaying) {
+//            lifecycleScope.launch {
+//                togglePlaybackUseCase()
+//                wasPausedInBackground = true
+//                stopPolling()
+//            }
+//        } else {
+//            stopPolling()
+//        }
+//    }
+override fun onPause() {
+    super.onPause()
+    lifecycleScope.launch {
+        if (playerRepository.isPlaying()) {
+            playerRepository.pause()
+            isPlaying = false
+            updateUI()        // Обновляет кнопку и время
+            stopPolling()     // Останавливает обновление прогресса
         } else {
-            stopPolling()
+            stopPolling()     // Если не играл — просто останавливаем polling
         }
     }
+}
 
     override fun onStop() {
         super.onStop()
@@ -237,12 +298,23 @@ class AudioPlayerActivity : AppCompatActivity() {
         super.onBackPressed()
     }
 
-    private fun stopPlaybackAndCleanup() = lifecycleScope.launch {
-        stopPlaybackUseCase()
-        isPlaying = false
-        updateUI()
-        stopPolling()
+//    private fun stopPlaybackAndCleanup() = lifecycleScope.launch {
+//        stopPlaybackUseCase()
+//        isPlaying = false
+//        updateUI()
+//        stopPolling()
+//    }
+private fun stopPlaybackAndCleanup() = lifecycleScope.launch {
+    if (playerRepository.isPlaying()) {
+        savedPosition = getCurrentPositionUseCase()  // Сохраняем перед выходом
     }
+    playerRepository.stop()
+    isPlaying = false
+    updateUI()
+    stopPolling()
+    playerRepository.reset()
+}
+
 
     private fun showError(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
