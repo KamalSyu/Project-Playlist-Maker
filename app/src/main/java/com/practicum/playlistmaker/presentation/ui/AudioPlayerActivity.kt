@@ -17,7 +17,7 @@ import com.practicum.playlistmaker.domain.usecase.*
 import com.practicum.playlistmaker.presentation.adapter.TrackAdapter
 import com.practicum.playlistmaker.presentation.parcel.ParcelableTrack
 import com.practicum.playlistmaker.presentation.parcel.toDomain
-import com.practicum.playlistmaker.presentation.util.Constants.Companion.VIEW_TYPE_ALBUM
+import com.practicum.playlistmaker.utils.Constants.Companion.VIEW_TYPE_ALBUM
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject

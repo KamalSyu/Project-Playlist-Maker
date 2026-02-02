@@ -12,7 +12,7 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.domain.model.Track
 import com.practicum.playlistmaker.domain.usecase.FormatTrackDurationUseCase
-import com.practicum.playlistmaker.presentation.util.DateFormatter
+import com.practicum.playlistmaker.utils.DateFormatter
 import java.text.SimpleDateFormat
 import java.util.Locale
 

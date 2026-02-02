@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.domain.usecase.GetSearchHistoryUseCase
 import com.practicum.playlistmaker.presentation.adapter.TrackAdapter
-import com.practicum.playlistmaker.presentation.util.Constants.Companion.VIEW_TYPE_ALBUM
+import com.practicum.playlistmaker.utils.Constants.Companion.VIEW_TYPE_ALBUM
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject

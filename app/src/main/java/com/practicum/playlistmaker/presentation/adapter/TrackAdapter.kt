@@ -8,8 +8,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.domain.model.Track
 import com.practicum.playlistmaker.presentation.viewholder.AlbumViewHolder
 import com.practicum.playlistmaker.presentation.viewholder.TrackViewHolder
-import com.practicum.playlistmaker.presentation.util.Constants.Companion.VIEW_TYPE_ALBUM
-import com.practicum.playlistmaker.presentation.util.Constants.Companion.VIEW_TYPE_TRACK
+import com.practicum.playlistmaker.utils.Constants.Companion.VIEW_TYPE_ALBUM
+import com.practicum.playlistmaker.utils.Constants.Companion.VIEW_TYPE_TRACK
 
 class TrackAdapter(
     private var tracks: List<Track> = emptyList(),

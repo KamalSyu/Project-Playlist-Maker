@@ -14,8 +14,8 @@ import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.domain.model.Track
 import com.practicum.playlistmaker.presentation.adapter.TrackAdapter
 import com.practicum.playlistmaker.presentation.parcel.toParcelable
-import com.practicum.playlistmaker.presentation.util.Constants.Companion.SEARCH_QUERY_KEY
-import com.practicum.playlistmaker.presentation.util.Constants.Companion.VIEW_TYPE_TRACK
+import com.practicum.playlistmaker.utils.Constants.Companion.SEARCH_QUERY_KEY
+import com.practicum.playlistmaker.utils.Constants.Companion.VIEW_TYPE_TRACK
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay

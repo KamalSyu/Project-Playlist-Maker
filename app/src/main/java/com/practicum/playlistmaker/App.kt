@@ -4,28 +4,23 @@ import android.app.Application
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
-import com.practicum.playlistmaker.domain.usecase.GetThemeStateUseCaseContract
-import com.practicum.playlistmaker.domain.usecase.SwitchThemeUseCaseContract
+import com.practicum.playlistmaker.domain.usecase.UseCaseCreator
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
 @HiltAndroidApp
 class App : Application() {
 
-    @Inject lateinit var switchThemeUseCase: SwitchThemeUseCaseContract
-    @Inject lateinit var getThemeStateUseCase: GetThemeStateUseCaseContract
+    @Inject lateinit var useCaseCreator: UseCaseCreator  // Добавляем это поле
 
     override fun onCreate() {
         super.onCreate()
-        // Загружаем текущую тему при старте приложения
-        val isDarkMode = getThemeStateUseCase()
+        val isDarkMode = useCaseCreator.createGetThemeStateUseCase()()
         setTheme(isDarkMode)
     }
 
     fun switchTheme(darkThemeEnabled: Boolean) {
-        // Сохраняем в SharedPreferences через UseCase
-        switchThemeUseCase(darkThemeEnabled)
-        // Применяем тему глобально
+        useCaseCreator.createSwitchThemeUseCase()(darkThemeEnabled)
         setTheme(darkThemeEnabled)
     }
 

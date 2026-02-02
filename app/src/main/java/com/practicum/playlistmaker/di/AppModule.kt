@@ -13,7 +13,7 @@ import com.practicum.playlistmaker.data.repository.SettingsRepositoryImpl
 import com.practicum.playlistmaker.domain.factory.TrackFactory
 import com.practicum.playlistmaker.domain.repository.*
 import com.practicum.playlistmaker.domain.usecase.*
-import com.practicum.playlistmaker.presentation.util.Constants.Companion.PREFERENCES
+import com.practicum.playlistmaker.utils.Constants.Companion.PREFERENCES
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
