@@ -1,5 +1,6 @@
 package com.practicum.playlistmaker.presentation.viewholder
 
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
@@ -59,13 +60,13 @@ class AlbumViewHolder(
         primaryGenreNameTextView.text = track.primaryGenreName
         countryTextView.text = track.country
 
-//        val formattedCurrent = SimpleDateFormat("mm:ss", Locale.getDefault()).format(currentTimeMillis)
+        val formattedCurrent = SimpleDateFormat("mm:ss", Locale.getDefault()).format(currentTimeMillis)
 //        timeTextView.text = formattedCurrent
-        val formattedCurrent = if (currentTimeMillis > 0) {
-            SimpleDateFormat("mm:ss", Locale.getDefault()).format(currentTimeMillis)
-        } else {
-            "00:00"  // явный сброс
-        }
+//        val formattedCurrent = if (currentTimeMillis > 0) {
+//            SimpleDateFormat("mm:ss", Locale.getDefault()).format(currentTimeMillis)
+//        } else {
+//            "00:00"  // явный сброс
+//        }
         timeTextView.text = formattedCurrent
 
         // Длительность трека (используем FormatTrackDurationUseCase)
@@ -109,6 +110,7 @@ class AlbumViewHolder(
     }
 
     fun updatePlayButtonState(isPlaying: Boolean) {
+        Log.d("AlbumViewHolder", "updatePlayButtonState: isPlaying=$isPlaying") // Для отладки
         playButton.setImageResource(
             if (isPlaying) R.drawable.ic_pause_button
             else R.drawable.ic_play_button

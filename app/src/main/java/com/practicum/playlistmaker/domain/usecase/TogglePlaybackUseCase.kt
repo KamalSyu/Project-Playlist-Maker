@@ -10,11 +10,11 @@ class TogglePlaybackUseCase @Inject constructor (
         return try {
             if (!playerRepository.isPlaying()) {
                 playerRepository.play()
-                Result.success(true)
             } else {
                 playerRepository.pause()
-                Result.success(false)
             }
+            // Возвращаем актуальное состояние после действия
+            Result.success(playerRepository.isPlaying())
         } catch (e: Exception) {
             Result.failure(e)
         }

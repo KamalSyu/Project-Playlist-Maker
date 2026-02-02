@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.domain.model.Track
 import com.practicum.playlistmaker.presentation.adapter.TrackAdapter
-import com.practicum.playlistmaker.presentation.parcel.ParcelableTrack
 import com.practicum.playlistmaker.presentation.parcel.toParcelable
 import com.practicum.playlistmaker.presentation.util.Constants.Companion.SEARCH_QUERY_KEY
 import com.practicum.playlistmaker.presentation.util.Constants.Companion.VIEW_TYPE_TRACK
@@ -64,6 +63,8 @@ class SearchActivity : AppCompatActivity() {
     private var searchQuery: String = ""
     private var lastSearchQuery: String? = null
     private var isLastSearchFailed: Boolean = false
+    private var clickJob: Job? = null
+
 
 
     // Use Cases через Creator
@@ -244,12 +245,22 @@ class SearchActivity : AppCompatActivity() {
     }
 
     private fun onTrackClicked(track: Track) {
-        lifecycleScope.launch {
-            addTrackToHistoryUseCase(track)
-            loadHistory()
-            openAudioPlayer(track)
+        // Отменяем предыдущую задачу, если она есть
+        clickJob?.cancel()
+
+        // Создаем новую задачу с задержкой
+        clickJob = lifecycleScope.launch {
+            delay(500) // Задержка 500 мс (можно настроить)
+
+            // После задержки выполняем действия
+            lifecycleScope.launch {
+                addTrackToHistoryUseCase(track)
+                loadHistory()
+                openAudioPlayer(track)
+            }
         }
     }
+
 
     private fun openAudioPlayer(track: Track) {
         val intent = Intent(this, AudioPlayerActivity::class.java)
@@ -311,5 +322,10 @@ class SearchActivity : AppCompatActivity() {
         super.onResume()
         loadHistory()
         updateHistoryVisibility()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        clickJob?.cancel() // Отменяем задачу при уничтожении активности
     }
 }
