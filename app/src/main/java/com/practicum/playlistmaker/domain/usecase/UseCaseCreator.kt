@@ -13,68 +13,49 @@ class UseCaseCreator @Inject constructor(
     private val settingsRepository: SettingsRepository,
 ) {
 
-    // === Поиск треков ===
-    fun createSearchTracksUseCase(): SearchTracksUseCaseContract {
-        return SearchTracksUseCase(itunesRepository)
-    }
-
-    fun createFilterTracksUseCase(): FilterTracksUseCaseContract {
-        return FilterTracksUseCase()
-    }
-
-    // === История поиска ===
     fun createAddTrackToHistoryUseCase(): AddTrackToHistoryUseCaseContract {
         return AddTrackToHistoryUseCase(historyRepository)
     }
-
-    fun createGetSearchHistoryUseCase(): GetSearchHistoryUseCaseContract {
-        return GetSearchHistoryUseCase(historyRepository)
-    }
-
     fun createClearSearchHistoryUseCase(): ClearSearchHistoryUseCaseContract {
         return ClearSearchHistoryUseCase(historyRepository)
     }
-
-    // === Управление темой ===
-    fun createSwitchThemeUseCase(): SwitchThemeUseCaseContract {
-        return SwitchThemeUseCase(settingsRepository)
+    fun createFilterTracksUseCase(): FilterTracksUseCaseContract {
+        return FilterTracksUseCase()
     }
-
-    fun createGetThemeStateUseCase(): GetThemeStateUseCaseContract {
-        return GetThemeStateUseCase(settingsRepository)
+    fun createFormatTrackDurationUseCase(): FormatTrackDurationUseCase {
+        return FormatTrackDurationUseCase()
     }
-
-    // === Воспроизведение аудио ===
-    fun createPreparePlaybackUseCase(): PreparePlaybackUseCaseContract {
-        return PreparePlaybackUseCase(playerRepository)
-    }
-
-    fun createTogglePlaybackUseCase(): TogglePlaybackUseCaseContract {
-        return TogglePlaybackUseCase(playerRepository)
-    }
-
-    fun createStopPlaybackUseCase(): StopPlaybackUseCaseContract {
-        return StopPlaybackUseCase(playerRepository)
-    }
-
     fun createGetCurrentPositionUseCase(): GetCurrentPositionUseCaseContract {
         return GetCurrentPositionUseCase(playerRepository)
     }
-
+    fun createGetSearchHistoryUseCase(): GetSearchHistoryUseCaseContract {
+        return GetSearchHistoryUseCase(historyRepository)
+    }
+    fun createGetThemeStateUseCase(): GetThemeStateUseCaseContract {
+        return GetThemeStateUseCase(settingsRepository)
+    }
     fun createHandlePlaybackCompletionUseCase(): HandlePlaybackCompletionUseCaseContract {
         return HandlePlaybackCompletionUseCase(playerRepository)
     }
-
-    // === Дополнительные UseCase ===
-    fun createShareAppUseCase(): ShareAppUseCaseContract {
-        return ShareAppUseCase()
+    fun createPreparePlaybackUseCase(): PreparePlaybackUseCaseContract {
+        return PreparePlaybackUseCase(playerRepository)
     }
-
+    fun createSearchTracksUseCase(): SearchTracksUseCaseContract {
+        return SearchTracksUseCase(itunesRepository)
+    }
     fun createSendSupportEmailUseCase(): SendSupportEmailUseCaseContract {
         return SendSupportEmailUseCase()
     }
-
-    fun createFormatTrackDurationUseCase(): FormatTrackDurationUseCase {
-        return FormatTrackDurationUseCase()
+    fun createShareAppUseCase(): ShareAppUseCaseContract {
+        return ShareAppUseCase()
+    }
+    fun createStopPlaybackUseCase(): StopPlaybackUseCaseContract {
+        return StopPlaybackUseCase(playerRepository)
+    }
+    fun createSwitchThemeUseCase(): SwitchThemeUseCaseContract {
+        return SwitchThemeUseCase(settingsRepository)
+    }
+    fun createTogglePlaybackUseCase(): TogglePlaybackUseCaseContract {
+        return TogglePlaybackUseCase(playerRepository)
     }
 }

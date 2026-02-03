@@ -39,34 +39,35 @@ class AudioPlayerActivity : AppCompatActivity() {
     private var wasPausedInBackground = false
     private var savedPosition: Long = 0L  // Сохраняем позицию при паузе
 
-
-    // Use Cases через Creator
+    // Use Cases через Creator (все — интерфейсы)
     private lateinit var preparePlaybackUseCase: PreparePlaybackUseCaseContract
     private lateinit var togglePlaybackUseCase: TogglePlaybackUseCaseContract
     private lateinit var stopPlaybackUseCase: StopPlaybackUseCaseContract
     private lateinit var getCurrentPositionUseCase: GetCurrentPositionUseCaseContract
+    private lateinit var handleCompletionUseCase: HandlePlaybackCompletionUseCaseContract
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_audioplayer)
 
-        // Инициализация Use Cases
+        // Инициализация Use Cases через интерфейсы
         preparePlaybackUseCase = useCaseCreator.createPreparePlaybackUseCase()
         togglePlaybackUseCase = useCaseCreator.createTogglePlaybackUseCase()
         stopPlaybackUseCase = useCaseCreator.createStopPlaybackUseCase()
         getCurrentPositionUseCase = useCaseCreator.createGetCurrentPositionUseCase()
+        handleCompletionUseCase = useCaseCreator.createHandlePlaybackCompletionUseCase()
 
         val track = getTrackFromIntentOrSavedState(savedInstanceState)
 
-        // 1. Сначала создаём RecyclerView и адаптер
+        // 1. Создаём RecyclerView и адаптер
         setupRecyclerView(track)
 
-        // Явно устанавливаем isPlaying = false при старте (если нет savedInstanceState)
+        // Устанавливаем isPlaying = false при старте (если нет savedInstanceState)
         if (savedInstanceState == null) {
             isPlaying = false
             prepareAndPlay(track)
         } else {
-            // Восстанавливаем isPlaying только если есть savedInstanceState
+            // Восстанавливаем isPlaying из savedInstanceState
             isPlaying = savedInstanceState.getBoolean("isPlaying", false)
             updateUI()
             if (isPlaying) startPolling() else stopPolling()
@@ -105,6 +106,7 @@ class AudioPlayerActivity : AppCompatActivity() {
         recyclerViewAudioPlayer = findViewById(R.id.recyclerViewAudioPlayer)
         recyclerViewAudioPlayer.layoutManager = LinearLayoutManager(this)
 
+
         adapter = TrackAdapter(
             tracks = listOf(track),
             viewType = VIEW_TYPE_ALBUM,
@@ -115,7 +117,8 @@ class AudioPlayerActivity : AppCompatActivity() {
         )
         recyclerViewAudioPlayer.adapter = adapter
 
-        // Явно обновляем UI после создания адаптера
+
+        // Обновляем UI после создания адаптера
         updateUI()
     }
 
@@ -135,6 +138,7 @@ class AudioPlayerActivity : AppCompatActivity() {
             updateUI()
         }
     }
+
     private fun togglePlayback() = lifecycleScope.launch {
         try {
             if (playerRepository.isPlaying()) {
@@ -188,8 +192,11 @@ class AudioPlayerActivity : AppCompatActivity() {
         try {
             playerRepository.setOnCompletionListener {
                 lifecycleScope.launch {
+                    // Используем Use Case для обработки завершения
+                    handleCompletionUseCase.invoke()
+
                     isPlaying = false
-                    savedPosition = 0L  // Сбрасываем позицию — следующий запуск с начала
+                    savedPosition = 0L // Сбрасываем позицию
                     updateUI(resetTime = true)
                     stopPolling()
                 }
@@ -218,17 +225,18 @@ class AudioPlayerActivity : AppCompatActivity() {
             }
         }
     }
-
     override fun onStop() {
         super.onStop()
-        lifecycleScope.launch { stopPlaybackUseCase() }
+        lifecycleScope.launch {
+            stopPlaybackUseCase()
+        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
         stopPolling()
         lifecycleScope.launch {
-            playerRepository.reset() // Достаточно reset(), без ручного сброса слушателя
+            playerRepository.reset() // Сброс плеера при уничтожении Activity
         }
     }
 
@@ -250,7 +258,7 @@ class AudioPlayerActivity : AppCompatActivity() {
 
     private fun stopPlaybackAndCleanup() = lifecycleScope.launch {
         if (playerRepository.isPlaying()) {
-            savedPosition = getCurrentPositionUseCase()  // Сохраняем перед выходом
+            savedPosition = getCurrentPositionUseCase()  // Сохраняем позицию перед выходом
         }
         playerRepository.stop()
         isPlaying = false
@@ -269,3 +277,4 @@ class AudioPlayerActivity : AppCompatActivity() {
         showError(message)
     }
 }
+

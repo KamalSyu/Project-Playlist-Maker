@@ -2,16 +2,8 @@ package com.practicum.playlistmaker.domain.usecase
 
 import com.practicum.playlistmaker.domain.model.Track
 
-interface SearchTracksUseCaseContract {
-    suspend operator fun invoke(query: String): Result<List<Track>>
-}
-
 interface AddTrackToHistoryUseCaseContract {
     suspend operator fun invoke(track: Track)
-}
-
-interface GetSearchHistoryUseCaseContract {
-    suspend operator fun invoke(): List<Track>
 }
 
 interface ClearSearchHistoryUseCaseContract {
@@ -22,32 +14,32 @@ interface FilterTracksUseCaseContract {
     operator fun invoke(tracks: List<Track>, query: String): List<Track>
 }
 
-interface SwitchThemeUseCaseContract {
-    operator fun invoke(isDarkMode: Boolean)
-}
-
-interface GetThemeStateUseCaseContract {
-    operator fun invoke(): Boolean
-}
-
-interface PreparePlaybackUseCaseContract {
-    suspend operator fun invoke(previewUrl: String?): Result<Unit>
-}
-
-interface TogglePlaybackUseCaseContract {
-    suspend operator fun invoke(): Result<Boolean>
-}
-
-interface StopPlaybackUseCaseContract {
-    suspend operator fun invoke()
+interface FormatTrackDurationUseCaseContract {
+    operator fun invoke(durationMillis: Long): String
 }
 
 interface GetCurrentPositionUseCaseContract {
     operator fun invoke(): Long
 }
 
+interface GetSearchHistoryUseCaseContract {
+    suspend operator fun invoke(): List<Track>
+}
+
+interface GetThemeStateUseCaseContract {
+    operator fun invoke(): Boolean
+}
+
 interface HandlePlaybackCompletionUseCaseContract {
     suspend operator fun invoke()
+}
+
+interface PreparePlaybackUseCaseContract {
+    suspend operator fun invoke(previewUrl: String?): Result<Unit>
+}
+
+interface SearchTracksUseCaseContract {
+    suspend operator fun invoke(query: String): Result<List<Track>>
 }
 
 interface SendSupportEmailUseCaseContract {
@@ -57,3 +49,22 @@ interface SendSupportEmailUseCaseContract {
 interface ShareAppUseCaseContract {
     operator fun invoke(): String
 }
+
+interface StopPlaybackUseCaseContract {
+    suspend operator fun invoke()
+}
+
+interface SwitchThemeUseCaseContract {
+    operator fun invoke(isDarkMode: Boolean)
+}
+
+interface TogglePlaybackUseCaseContract {
+    suspend operator fun invoke(): Result<Boolean>
+}
+
+
+
+
+
+
+
