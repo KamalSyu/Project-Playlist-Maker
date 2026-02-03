@@ -9,9 +9,13 @@ import com.google.android.material.switchmaterial.SwitchMaterial
 import com.practicum.playlistmaker.App
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.domain.model.SupportEmailIntentData
+import com.practicum.playlistmaker.domain.usecase.GetThemeStateUseCaseContract
+import com.practicum.playlistmaker.domain.usecase.SendSupportEmailUseCaseContract
+import com.practicum.playlistmaker.domain.usecase.ShareAppUseCaseContract
 import com.practicum.playlistmaker.domain.usecase.UseCaseCreator
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+
 
 
 @AndroidEntryPoint
@@ -22,14 +26,25 @@ class SettingsActivity : AppCompatActivity() {
 
     private lateinit var themeSwitcher: SwitchMaterial
 
+    // Use Cases через Creator
+    private lateinit var getThemeStateUseCase: GetThemeStateUseCaseContract
+    private lateinit var shareAppUseCase: ShareAppUseCaseContract
+    private lateinit var sendSupportEmailUseCase: SendSupportEmailUseCaseContract
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
 
         themeSwitcher = findViewById(R.id.switch_button)
 
+        // Инициализация Use Cases
+        getThemeStateUseCase = useCaseCreator.createGetThemeStateUseCase()
+        shareAppUseCase = useCaseCreator.createShareAppUseCase()
+        sendSupportEmailUseCase = useCaseCreator.createSendSupportEmailUseCase()
+
+
         // Получаем состояние темы через use case
-        val isDarkMode = useCaseCreator.createGetThemeStateUseCase()()
+        val isDarkMode = getThemeStateUseCase()
         themeSwitcher.isChecked = isDarkMode
 
         // Обработчик переключения темы
@@ -45,22 +60,19 @@ class SettingsActivity : AppCompatActivity() {
         findViewById<View>(R.id.userAgreementButton).setOnClickListener { openUserAgreement() }
     }
 
-    // Метод для рассылки ссылки на приложение
+    // Метод для рассылки ссылки на приложение (через Use Case)
     private fun shareApp() {
-        val shareText = "Скачайте приложение: https://example.com/playlistmaker"
+        val shareText = shareAppUseCase() // Вызов Use Case
         val intent = Intent(Intent.ACTION_SEND)
         intent.type = "text/plain"
         intent.putExtra(Intent.EXTRA_TEXT, shareText)
         startActivity(Intent.createChooser(intent, getString(R.string.choose_app)))
     }
 
-    // Метод для отправки email поддержки
+    // Метод для отправки email поддержки (через Use Case)
     private fun sendEmail() {
-        val data = SupportEmailIntentData(
-            email = "support@example.com",
-            subject = "Вопрос по приложению Playlist Maker",
-            body = "Здравствуйте! У меня возникла проблема..."
-        )
+        val data = sendSupportEmailUseCase() // Вызов Use Case
+
 
         val intent = Intent(Intent.ACTION_SENDTO)
         intent.data = Uri.parse("mailto:")  // Схема для email
