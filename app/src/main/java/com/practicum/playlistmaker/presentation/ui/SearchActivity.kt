@@ -24,6 +24,7 @@ import android.view.inputmethod.InputMethodManager
 import com.practicum.playlistmaker.domain.usecase.AddTrackToHistoryUseCaseContract
 import com.practicum.playlistmaker.domain.usecase.ClearSearchHistoryUseCaseContract
 import com.practicum.playlistmaker.domain.usecase.FilterTracksUseCaseContract
+import com.practicum.playlistmaker.domain.usecase.FormatTrackDurationUseCaseContract
 import com.practicum.playlistmaker.domain.usecase.GetSearchHistoryUseCaseContract
 import com.practicum.playlistmaker.domain.usecase.SearchTracksUseCaseContract
 import com.practicum.playlistmaker.domain.usecase.UseCaseCreator
@@ -33,10 +34,8 @@ import kotlinx.coroutines.Job
 @AndroidEntryPoint
 class SearchActivity : AppCompatActivity() {
 
-
     @Inject
     lateinit var useCaseCreator: UseCaseCreator
-
 
     // Вьюшки
     private lateinit var backTextView: TextView
@@ -52,11 +51,9 @@ class SearchActivity : AppCompatActivity() {
     private lateinit var historyRecyclerViewKit: LinearLayout
     private lateinit var progressBar: ProgressBar
 
-
     // Адаптеры
     private lateinit var tracksAdapter: TrackAdapter
     private lateinit var historyAdapter: TrackAdapter
-
 
     // Данные
     private var filteredTracks: List<Track> = emptyList()
@@ -65,15 +62,13 @@ class SearchActivity : AppCompatActivity() {
     private var isLastSearchFailed: Boolean = false
     private var clickJob: Job? = null
 
-
-
     // Use Cases через Creator
     private lateinit var searchTracksUseCase: SearchTracksUseCaseContract
     private lateinit var addTrackToHistoryUseCase: AddTrackToHistoryUseCaseContract
     private lateinit var getSearchHistoryUseCase: GetSearchHistoryUseCaseContract
     private lateinit var clearSearchHistoryUseCase: ClearSearchHistoryUseCaseContract
     private lateinit var filterTracksUseCase: FilterTracksUseCaseContract
-
+    private lateinit var formatTrackDurationUseCase: FormatTrackDurationUseCaseContract  // Новое поле
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -85,7 +80,7 @@ class SearchActivity : AppCompatActivity() {
         getSearchHistoryUseCase = useCaseCreator.createGetSearchHistoryUseCase()
         clearSearchHistoryUseCase = useCaseCreator.createClearSearchHistoryUseCase()
         filterTracksUseCase = useCaseCreator.createFilterTracksUseCase()
-
+        formatTrackDurationUseCase = useCaseCreator.createFormatTrackDurationUseCase()
 
         initViews()
         setupClickListeners()
@@ -113,7 +108,8 @@ class SearchActivity : AppCompatActivity() {
             tracks = emptyList(),
             viewType = VIEW_TYPE_TRACK,
             onTrackClick = { track -> onTrackClicked(track) },
-            onClickPlayButton = {}
+            onClickPlayButton = {},
+            formatDurationUseCase = formatTrackDurationUseCase  // Передача
         )
         recyclerView.adapter = tracksAdapter
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -123,7 +119,9 @@ class SearchActivity : AppCompatActivity() {
             tracks = emptyList(),
             viewType = VIEW_TYPE_TRACK,
             onTrackClick = { track -> openAudioPlayer(track) },
-            onClickPlayButton = {}
+            onClickPlayButton = {},
+            formatDurationUseCase = formatTrackDurationUseCase  // Передача
+
         )
         historyRecyclerView.adapter = historyAdapter
         historyRecyclerView.layoutManager = LinearLayoutManager(this)

@@ -5,7 +5,8 @@ import com.practicum.playlistmaker.domain.repository.HistoryRepository
 import javax.inject.Inject
 
 class GetSearchHistoryUseCase @Inject constructor (
-    private val historyRepository: HistoryRepository) : GetSearchHistoryUseCaseContract {
+    private val historyRepository: HistoryRepository
+) : GetSearchHistoryUseCaseContract {
 
     override suspend operator fun invoke(): List<Track> {
         return historyRepository.getHistory()

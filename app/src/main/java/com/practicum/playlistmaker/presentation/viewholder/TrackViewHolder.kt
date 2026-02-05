@@ -8,30 +8,37 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.domain.model.Track
-import com.practicum.playlistmaker.domain.usecase.FormatTrackDurationUseCase
-import java.text.SimpleDateFormat
-import java.util.Locale
+import com.practicum.playlistmaker.domain.usecase.FormatTrackDurationUseCaseContract
 
-class TrackViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+
+class TrackViewHolder(
+    itemView: View,
+    private val formatDurationUseCase: FormatTrackDurationUseCaseContract
+) : RecyclerView.ViewHolder(itemView) {
+
 
     private val artworkImageView: ImageView = itemView.findViewById(R.id.artwork_image)
     private val trackNameTextView: TextView = itemView.findViewById(R.id.track_name)
     private val artistNameTextView: TextView = itemView.findViewById(R.id.artist_name)
     private val trackTimeTextView: TextView = itemView.findViewById(R.id.track_time)
 
+    private var track: Track? = null  // Сохраняем трек для использования в hidePlayingState
+
+
     fun bind(track: Track) {
+        this.track = track
+
         trackNameTextView.text = track.trackName
         artistNameTextView.text = track.artistName
 
-        // Безопасная обработка nullable-значения
+        // Форматируем длительность через Use Case
         track.trackTimeMillis?.let { timeMillis ->
-            val formattedTime = FormatTrackDurationUseCase()(timeMillis)
-            trackTimeTextView.text = formattedTime
+            trackTimeTextView.text = formatDurationUseCase.invoke(timeMillis)
         } ?: run {
             trackTimeTextView.text = ""
         }
 
-        // Загружаем обложку через Glide
+        // Загружаем обложку
         Glide.with(itemView.context)
             .load(track.artworkUrl100)
             .placeholder(R.drawable.ic_placeholder_45)
@@ -43,19 +50,15 @@ class TrackViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
     fun showPlayingState(isPlaying: Boolean, currentTimeMillis: Long) {
         if (currentTimeMillis > 0) {
-            val formatted = SimpleDateFormat("mm:ss", Locale.getDefault()).format(currentTimeMillis)
-            trackTimeTextView.text = formatted
+            trackTimeTextView.text = formatDurationUseCase.invoke(currentTimeMillis)
         }
     }
 
     fun hidePlayingState() {
-        // Возвращаем исходное время трека
-        if (itemView.tag is Track) {
-            val track = itemView.tag as Track
-            if (track.trackTimeMillis != null) {
-                val formatted = SimpleDateFormat("mm:ss", Locale.getDefault()).format(track.trackTimeMillis)
-                trackTimeTextView.text = formatted
-            }
+        track?.trackTimeMillis?.let { timeMillis ->
+            trackTimeTextView.text = formatDurationUseCase.invoke(timeMillis)
+        } ?: run {
+            trackTimeTextView.text = ""
         }
     }
 }

@@ -45,6 +45,7 @@ class AudioPlayerActivity : AppCompatActivity() {
     private lateinit var stopPlaybackUseCase: StopPlaybackUseCaseContract
     private lateinit var getCurrentPositionUseCase: GetCurrentPositionUseCaseContract
     private lateinit var handleCompletionUseCase: HandlePlaybackCompletionUseCaseContract
+    private lateinit var formatTrackDurationUseCase: FormatTrackDurationUseCaseContract
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,6 +57,7 @@ class AudioPlayerActivity : AppCompatActivity() {
         stopPlaybackUseCase = useCaseCreator.createStopPlaybackUseCase()
         getCurrentPositionUseCase = useCaseCreator.createGetCurrentPositionUseCase()
         handleCompletionUseCase = useCaseCreator.createHandlePlaybackCompletionUseCase()
+        formatTrackDurationUseCase = useCaseCreator.createFormatTrackDurationUseCase()
 
         val track = getTrackFromIntentOrSavedState(savedInstanceState)
 
@@ -113,7 +115,8 @@ class AudioPlayerActivity : AppCompatActivity() {
             onTrackClick = {},
             onClickPlayButton = { togglePlayback() },
             onAddToPlaylist = {},
-            onFavorite = {}
+            onFavorite = {},
+            formatDurationUseCase = formatTrackDurationUseCase
         )
         recyclerViewAudioPlayer.adapter = adapter
 

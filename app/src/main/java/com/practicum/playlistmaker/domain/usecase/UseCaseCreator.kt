@@ -22,7 +22,7 @@ class UseCaseCreator @Inject constructor(
     fun createFilterTracksUseCase(): FilterTracksUseCaseContract {
         return FilterTracksUseCase()
     }
-    fun createFormatTrackDurationUseCase(): FormatTrackDurationUseCase {
+    fun createFormatTrackDurationUseCase(): FormatTrackDurationUseCaseContract {
         return FormatTrackDurationUseCase()
     }
     fun createGetCurrentPositionUseCase(): GetCurrentPositionUseCaseContract {

@@ -149,4 +149,23 @@ object AppModule {
     fun provideSendSupportEmailUseCase(): SendSupportEmailUseCaseContract {
         return SendSupportEmailUseCase()
     }
+
+
+    @Provides
+    @Singleton
+    fun provideFilterTracksUseCase(): FilterTracksUseCaseContract {
+        return FilterTracksUseCase()
+    }
+
+    @Provides
+    @Singleton
+    fun provideFormatTrackDurationUseCase(): FormatTrackDurationUseCaseContract {
+        return FormatTrackDurationUseCase()
+    }
+
+    @Provides
+    @Singleton
+    fun provideTogglePlaybackUseCase(playerRepository: PlayerRepository): TogglePlaybackUseCaseContract {
+        return TogglePlaybackUseCase(playerRepository)
+    }
 }

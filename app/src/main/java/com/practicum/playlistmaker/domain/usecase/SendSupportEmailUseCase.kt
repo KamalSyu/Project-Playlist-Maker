@@ -2,7 +2,8 @@ package com.practicum.playlistmaker.domain.usecase
 
 import javax.inject.Inject
 
-class SendSupportEmailUseCase @Inject constructor() : SendSupportEmailUseCaseContract{
+class SendSupportEmailUseCase @Inject constructor(
+) : SendSupportEmailUseCaseContract{
 
     override operator fun invoke(): SupportEmailIntentData {
         return SupportEmailIntentData(

@@ -4,7 +4,8 @@ import com.practicum.playlistmaker.domain.repository.PlayerRepository
 import javax.inject.Inject
 
 class TogglePlaybackUseCase @Inject constructor (
-    private val playerRepository: PlayerRepository) : TogglePlaybackUseCaseContract {
+    private val playerRepository: PlayerRepository
+) : TogglePlaybackUseCaseContract {
 
     override suspend operator fun invoke(): Result<Boolean> {
         return try {

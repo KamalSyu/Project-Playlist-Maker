@@ -4,7 +4,8 @@ import com.practicum.playlistmaker.domain.repository.HistoryRepository
 import javax.inject.Inject
 
 class ClearSearchHistoryUseCase @Inject constructor (
-    private val historyRepository: HistoryRepository) : ClearSearchHistoryUseCaseContract {
+    private val historyRepository: HistoryRepository
+) : ClearSearchHistoryUseCaseContract {
 
     override suspend operator fun invoke() {
         historyRepository.clearHistory()

@@ -7,20 +7,22 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.R
-import com.practicum.playlistmaker.domain.usecase.GetSearchHistoryUseCase
+import com.practicum.playlistmaker.domain.usecase.FormatTrackDurationUseCaseContract
+import com.practicum.playlistmaker.domain.usecase.GetSearchHistoryUseCaseContract  // ✅ Изменили импорт
+import com.practicum.playlistmaker.domain.usecase.UseCaseCreator
 import com.practicum.playlistmaker.presentation.adapter.TrackAdapter
 import com.practicum.playlistmaker.utils.Constants.Companion.VIEW_TYPE_ALBUM
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-
 @AndroidEntryPoint
 class MediatekaActivity : AppCompatActivity() {
 
-    @Inject lateinit var getSearchHistoryUseCase: GetSearchHistoryUseCase  // ← Внедряем через Hilt
+    @Inject lateinit var useCaseCreator: UseCaseCreator
 
-
+    private lateinit var formatTrackDurationUseCase: FormatTrackDurationUseCaseContract
+    private lateinit var getSearchHistoryUseCase: GetSearchHistoryUseCaseContract  // ✅ Изменили тип
     private lateinit var adapter: TrackAdapter
     private lateinit var recyclerView: RecyclerView
 
@@ -29,26 +31,36 @@ class MediatekaActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_mediateca)
 
-        // Находим RecyclerView
+        // Инициализация Use Case через Creator
+        formatTrackDurationUseCase = useCaseCreator.createFormatTrackDurationUseCase()
+        getSearchHistoryUseCase = useCaseCreator.createGetSearchHistoryUseCase()  // Теперь тип совпадает
+
+
         recyclerView = findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
-        adapter = TrackAdapter(mutableListOf(), VIEW_TYPE_ALBUM, {}, {})
+
+
+        adapter = TrackAdapter(
+            tracks = mutableListOf(),
+            viewType = VIEW_TYPE_ALBUM,
+            onTrackClick = { /* Пустой обработчик */ },
+            onClickPlayButton = { /* Пустой обработчик */ },
+            formatDurationUseCase = formatTrackDurationUseCase
+        )
         recyclerView.adapter = adapter
 
-        // Кнопка "Назад"
+
         findViewById<View>(R.id.back).setOnClickListener { finish() }
-
-
         loadHistory()
     }
 
     private fun loadHistory() {
         lifecycleScope.launch {
             try {
-                val history = getSearchHistoryUseCase()
+                val history = getSearchHistoryUseCase()  // Вызов через контракт
                 adapter.updateList(history)
             } catch (e: Exception) {
-                // Можно показать ошибку (например, Snackbar)
+                // Обработка ошибки (например, показать Snackbar)
             }
         }
     }

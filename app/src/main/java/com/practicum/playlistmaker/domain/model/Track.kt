@@ -1,5 +1,7 @@
 package com.practicum.playlistmaker.domain.model
 
+// Назначение: основная доменная модель — музыкальный трек.
+
 data class Track(
     val trackId: String,
     var trackName: String,
@@ -13,6 +15,7 @@ data class Track(
     var previewUrl: String?
 )  {
 
+    // Возвращает URL обложки в высоком разрешении (512x512)
     fun getHighQualityArtworkUrl(): String? {
         return artworkUrl100?.replace("100x100bb.jpg", "512x512bb.jpg")
     }
