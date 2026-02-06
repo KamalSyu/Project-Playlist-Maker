@@ -17,19 +17,12 @@ import com.practicum.playlistmaker.presentation.parcel.toParcelable
 import com.practicum.playlistmaker.utils.Constants.Companion.SEARCH_QUERY_KEY
 import com.practicum.playlistmaker.utils.Constants.Companion.VIEW_TYPE_TRACK
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.delay
 import javax.inject.Inject
 import android.view.inputmethod.InputMethodManager
-import com.practicum.playlistmaker.domain.usecase.AddTrackToHistoryUseCaseContract
-import com.practicum.playlistmaker.domain.usecase.ClearSearchHistoryUseCaseContract
-import com.practicum.playlistmaker.domain.usecase.FilterTracksUseCaseContract
-import com.practicum.playlistmaker.domain.usecase.FormatTrackDurationUseCaseContract
-import com.practicum.playlistmaker.domain.usecase.GetSearchHistoryUseCaseContract
-import com.practicum.playlistmaker.domain.usecase.SearchTracksUseCaseContract
-import com.practicum.playlistmaker.domain.usecase.UseCaseCreator
-import kotlinx.coroutines.Job
-
+import com.practicum.playlistmaker.domain.usecase.*
+import kotlinx.coroutines.delay
 
 @AndroidEntryPoint
 class SearchActivity : AppCompatActivity() {
@@ -67,7 +60,8 @@ class SearchActivity : AppCompatActivity() {
     private lateinit var getSearchHistoryUseCase: GetSearchHistoryUseCaseContract
     private lateinit var clearSearchHistoryUseCase: ClearSearchHistoryUseCaseContract
     private lateinit var filterTracksUseCase: FilterTracksUseCaseContract
-    private lateinit var formatTrackDurationUseCase: FormatTrackDurationUseCaseContract  // Новое поле
+    private lateinit var formatTrackDurationUseCase: FormatTrackDurationUseCaseContract
+    private lateinit var delayedTrackActionUseCase: DelayedTrackActionUseCaseContract
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,6 +74,7 @@ class SearchActivity : AppCompatActivity() {
         clearSearchHistoryUseCase = useCaseCreator.createClearSearchHistoryUseCase()
         filterTracksUseCase = useCaseCreator.createFilterTracksUseCase()
         formatTrackDurationUseCase = useCaseCreator.createFormatTrackDurationUseCase()
+        delayedTrackActionUseCase = useCaseCreator.createDelayedTrackActionUseCase()
 
         initViews()
         setupClickListeners()
@@ -101,92 +96,73 @@ class SearchActivity : AppCompatActivity() {
         historyRecyclerViewKit = findViewById(R.id.search_history_layout)
         progressBar = findViewById(R.id.progressBar)
 
-
         tracksAdapter = TrackAdapter(
             tracks = emptyList(),
             viewType = VIEW_TYPE_TRACK,
             onTrackClick = { track -> onTrackClicked(track) },
             onClickPlayButton = {},
-            formatDurationUseCase = formatTrackDurationUseCase  // Передача
+            onAddToPlaylist = {},
+            onFavorite = {},
+            useCaseCreator = useCaseCreator  // Передаём Creator
         )
         recyclerView.adapter = tracksAdapter
         recyclerView.layoutManager = LinearLayoutManager(this)
-
 
         historyAdapter = TrackAdapter(
             tracks = emptyList(),
             viewType = VIEW_TYPE_TRACK,
             onTrackClick = { track -> openAudioPlayer(track) },
             onClickPlayButton = {},
-            formatDurationUseCase = formatTrackDurationUseCase  // Передача
-
+            onAddToPlaylist = {},
+            onFavorite = {},
+            useCaseCreator = useCaseCreator  // Передаём Creator
         )
         historyRecyclerView.adapter = historyAdapter
         historyRecyclerView.layoutManager = LinearLayoutManager(this)
     }
-
     private fun setupClickListeners() {
         backTextView.setOnClickListener { finish() }
         resetButton.setOnClickListener {
             searchEditText.setText("")
             updateTracksList(emptyList())
             hideKeyboard()
-            showNoResults(false)               // Скрываем заглушку (если была)
+            showNoResults(false)
         }
         updateButton.setOnClickListener {
             if (isLastSearchFailed && lastSearchQuery != null) {
                 performSearch(lastSearchQuery!!)
             }
         }
-
         clearHistoryButton.setOnClickListener {
             lifecycleScope.launch {
                 clearSearchHistoryUseCase()
-                loadHistory()  // Это обновит adapter, список станет пустым
-
-                // Скрываем элементы
-                historyRecyclerViewKit.visibility = View.GONE  // Контейнер истории
+                loadHistory()
+                historyRecyclerViewKit.visibility = View.GONE
             }
         }
-
     }
-
     private fun setupTextWatchers() {
         var searchJob: Job? = null
-
-
         searchEditText.doOnTextChanged { text, _, _, _ ->
             val query = text?.toString()?.trim() ?: ""
             searchQuery = query
-
-            // Показать/скрыть кнопку сброса
             resetButton.visibility = if (query.isNotEmpty()) View.VISIBLE else View.INVISIBLE
-
-            // Обновить подсказки и историю
             updateHistoryVisibility()
-
-            // Отменить предыдущий debounce, если был
             searchJob?.cancel()
-
             if (query.isNotEmpty()) {
-                // Запустить новый debounce (2 сек)
                 searchJob = lifecycleScope.launch {
-                    delay(2000) // 2 секунды
+                    delay(2000)
                     performSearch(query)
                 }
             } else {
-                // Если строка пуста — сразу очистить результаты
                 updateTracksList(emptyList())
                 showNoResults(true)
             }
         }
-
-        // Обработчик фокуса
         searchEditText.setOnFocusChangeListener { _, hasFocus ->
             updateHistoryVisibility()
         }
     }
-
     private fun restoreState(savedInstanceState: Bundle?) {
         if (savedInstanceState != null) {
             searchQuery = savedInstanceState.getString(SEARCH_QUERY_KEY, "")
@@ -194,7 +170,6 @@ class SearchActivity : AppCompatActivity() {
             if (searchQuery.isNotEmpty()) performSearch(searchQuery)
         }
     }
-
     private fun loadHistory() {
         lifecycleScope.launch {
             val history = getSearchHistoryUseCase()
@@ -202,7 +177,6 @@ class SearchActivity : AppCompatActivity() {
             updateHistoryVisibility()
         }
     }
-
     private fun performSearch(query: String) {
         if (query.isEmpty()) return
         showLoading()
@@ -214,10 +188,10 @@ class SearchActivity : AppCompatActivity() {
                 errorLayout.visibility = View.GONE
                 filteredTracks = result.getOrThrow()
                 if (filteredTracks.isNotEmpty()) {
-                    updateTracksList(filteredTracks)  // Показываем список
-                    showNoResults(false)           // Скрываем заглушку
+                    updateTracksList(filteredTracks)
+                    showNoResults(false)
                 } else {
-                    showNoResults(true)             // Показываем заглушку
+                    showNoResults(true)
                 }
             } else {
                 isLastSearchFailed = true
@@ -226,7 +200,6 @@ class SearchActivity : AppCompatActivity() {
             hideLoading()
         }
     }
-
     private fun filterAndUpdateTracks(query: String) {
         filteredTracks = filterTracksUseCase(tracks = filteredTracks, query = query)
         updateTracksList(filteredTracks)
@@ -239,27 +212,24 @@ class SearchActivity : AppCompatActivity() {
     }
 
     private fun onTrackClicked(track: Track) {
-        // Отменяем предыдущую задачу, если она есть
         clickJob?.cancel()
-
-        // Создаем новую задачу с задержкой
         clickJob = lifecycleScope.launch {
-            delay(500) // Задержка 500 мс (можно настроить)
-
-            // После задержки выполняем действия
-            lifecycleScope.launch {
-                addTrackToHistoryUseCase(track)
-                loadHistory()
-                openAudioPlayer(track)
-            }
+            delayedTrackActionUseCase.invoke(
+                track = track,
+                delayMillis = 500L,
+                onDelayedAction = { delayedTrack ->
+                    lifecycleScope.launch {
+                        addTrackToHistoryUseCase(delayedTrack)
+                        loadHistory()
+                        openAudioPlayer(delayedTrack)
+                    }
+                }
+            )
         }
     }
 
-
     private fun openAudioPlayer(track: Track) {
         val intent = Intent(this, AudioPlayerActivity::class.java)
-
-        // Конвертируем Track в ParcelableTrack перед передачей
         val parcelableTrack = track.toParcelable()
         intent.putExtra("track", parcelableTrack)
         startActivity(intent)
@@ -285,7 +255,6 @@ class SearchActivity : AppCompatActivity() {
         noResultsLayout.visibility = if (show && !isLastSearchFailed) View.VISIBLE else View.GONE
         errorLayout.visibility = View.GONE
     }
-
 
     private fun updateHistoryVisibility() {
         val isEmptyQuery = searchEditText.text.isEmpty()
@@ -317,6 +286,6 @@ class SearchActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        clickJob?.cancel() // Отменяем задачу при уничтожении активности
+        clickJob?.cancel()
     }
 }

@@ -13,15 +13,16 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.domain.model.Track
 import com.practicum.playlistmaker.domain.usecase.FormatTrackDurationUseCaseContract
+import com.practicum.playlistmaker.presentation.parcel.ParcelableTrack
 import com.practicum.playlistmaker.utils.DateFormatter
 
 
 class AlbumViewHolder(
     itemView: View,
-    private val onClickListener: (Track) -> Unit,
-    private val onPlayButtonClick: (Track) -> Unit,
-    private val onAddToPlaylistClick: (Track) -> Unit,
-    private val onFavoriteClick: (Track) -> Unit,
+    private val onClickListener: (ParcelableTrack) -> Unit,
+    private val onPlayButtonClick: (ParcelableTrack) -> Unit,
+    private val onAddToPlaylistClick: (ParcelableTrack) -> Unit,
+    private val onFavoriteClick: (ParcelableTrack) -> Unit,
     private val formatDurationUseCase: FormatTrackDurationUseCaseContract
 ) : RecyclerView.ViewHolder(itemView) {
 
@@ -42,11 +43,11 @@ class AlbumViewHolder(
 
     private val dateFormatter = DateFormatter()
 
-    private var currentTrack: Track? = null
+    private var currentTrack: ParcelableTrack? = null
 
 
     fun bind(
-        track: Track,
+        track: ParcelableTrack,
         isPlaying: Boolean,
         currentTimeMillis: Long = 0
     ) {
@@ -85,7 +86,7 @@ class AlbumViewHolder(
         setupClickListeners(track)
     }
 
-    private fun setupClickListeners(track: Track) {
+    private fun setupClickListeners(track: ParcelableTrack) {
         itemView.setOnClickListener { onClickListener(track) }
         playButton.setOnClickListener { onPlayButtonClick(track) }
         plusButton.setOnClickListener { onAddToPlaylistClick(track) }

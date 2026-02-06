@@ -7,6 +7,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.R
+import com.practicum.playlistmaker.data.mapper.DtoMapper
 import com.practicum.playlistmaker.domain.usecase.FormatTrackDurationUseCaseContract
 import com.practicum.playlistmaker.domain.usecase.GetSearchHistoryUseCaseContract  // ✅ Изменили импорт
 import com.practicum.playlistmaker.domain.usecase.UseCaseCreator
@@ -20,6 +21,7 @@ import javax.inject.Inject
 class MediatekaActivity : AppCompatActivity() {
 
     @Inject lateinit var useCaseCreator: UseCaseCreator
+    @Inject lateinit var dtoMapper: DtoMapper  // Добавляем инъекцию DtoMapper
 
     private lateinit var formatTrackDurationUseCase: FormatTrackDurationUseCaseContract
     private lateinit var getSearchHistoryUseCase: GetSearchHistoryUseCaseContract  // ✅ Изменили тип
@@ -57,11 +59,14 @@ class MediatekaActivity : AppCompatActivity() {
     private fun loadHistory() {
         lifecycleScope.launch {
             try {
-                val history = getSearchHistoryUseCase()  // Вызов через контракт
-                adapter.updateList(history)
+                val history = getSearchHistoryUseCase()  // List<Track>
+                // Преобразуем через DtoMapper (соблюдаем слоистую архитектуру)
+                val uiModels = history.map { dtoMapper.toParcelableTrack(it) }
+                adapter.updateList(uiModels)
             } catch (e: Exception) {
-                // Обработка ошибки (например, показать Snackbar)
+                // Обработка ошибки
             }
         }
     }
+
 }

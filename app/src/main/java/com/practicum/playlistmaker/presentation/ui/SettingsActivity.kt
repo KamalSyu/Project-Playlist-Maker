@@ -11,23 +11,30 @@ import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.domain.usecase.GetThemeStateUseCaseContract
 import com.practicum.playlistmaker.domain.usecase.SendSupportEmailUseCaseContract
 import com.practicum.playlistmaker.domain.usecase.ShareAppUseCaseContract
+import com.practicum.playlistmaker.domain.usecase.UseCaseCreator
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class SettingsActivity : AppCompatActivity() {
 
-    @Inject lateinit var getThemeStateUseCase: GetThemeStateUseCaseContract
-    @Inject lateinit var shareAppUseCase: ShareAppUseCaseContract
-    @Inject lateinit var sendSupportEmailUseCase: SendSupportEmailUseCaseContract
+    @Inject lateinit var useCaseCreator: UseCaseCreator
 
     private lateinit var themeSwitcher: SwitchMaterial
+    private lateinit var getThemeStateUseCase: GetThemeStateUseCaseContract
+    private lateinit var shareAppUseCase: ShareAppUseCaseContract
+    private lateinit var sendSupportEmailUseCase: SendSupportEmailUseCaseContract
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
 
         themeSwitcher = findViewById(R.id.switch_button)
+
+        // Получаем Use Cases через Creator
+        getThemeStateUseCase = useCaseCreator.createGetThemeStateUseCase()
+        shareAppUseCase = useCaseCreator.createShareAppUseCase()
+        sendSupportEmailUseCase = useCaseCreator.createSendSupportEmailUseCase()
 
         // Получаем текущее состояние темы через Use Case
         val isDarkMode = getThemeStateUseCase()
@@ -46,10 +53,10 @@ class SettingsActivity : AppCompatActivity() {
         findViewById<View>(R.id.userAgreementButton).setOnClickListener { openUserAgreement() }
     }
 
-    // Метод для рассылки ссылки на приложение (через Use Case)
+    // Метод для рассылки ссылки на приложение
     private fun shareApp() {
         try {
-            val shareText = shareAppUseCase()
+            val shareText = shareAppUseCase()  // Теперь из strings.xml!
 
             val intent = Intent(Intent.ACTION_SEND).apply {
                 type = "text/plain"
@@ -59,22 +66,19 @@ class SettingsActivity : AppCompatActivity() {
             if (intent.resolveActivity(packageManager) != null) {
                 startActivity(intent)
             } else {
-                // Можно показать Snackbar: "Не найдено приложение для отправки"
+                // Показать ошибку
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            // Можно показать сообщение об ошибке
         }
     }
 
-    // Метод для отправки email поддержки (через Use Case)
+    // Метод для отправки email поддержки
     private fun sendEmail() {
         try {
-            // ИЗМЕНЕНИЕ: переименовали `data` → `emailData`, чтобы не конфликтовать с `intent.data`
             val emailData = sendSupportEmailUseCase() ?: return
-
             val intent = Intent(Intent.ACTION_SENDTO).apply {
-                data = Uri.parse("mailto:")  // Теперь компилятор понимает, что это поле интента
+                data = Uri.parse("mailto:")
                 putExtra(Intent.EXTRA_EMAIL, arrayOf(emailData.email))
                 putExtra(Intent.EXTRA_SUBJECT, emailData.subject)
                 putExtra(Intent.EXTRA_TEXT, emailData.body)
@@ -83,11 +87,10 @@ class SettingsActivity : AppCompatActivity() {
             if (intent.resolveActivity(packageManager) != null) {
                 startActivity(intent)
             } else {
-                // Можно показать Snackbar: "Установите почтовый клиент"
+                // Показать ошибку
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            // Можно показать сообщение об ошибке
         }
     }
 

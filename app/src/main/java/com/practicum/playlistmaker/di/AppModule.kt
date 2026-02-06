@@ -11,8 +11,11 @@ import com.practicum.playlistmaker.data.repository.ItunesRepositoryImpl
 import com.practicum.playlistmaker.data.repository.PlayerRepositoryImpl
 import com.practicum.playlistmaker.data.repository.SettingsRepositoryImpl
 import com.practicum.playlistmaker.domain.factory.TrackFactory
-import com.practicum.playlistmaker.domain.repository.*
-import com.practicum.playlistmaker.domain.usecase.*
+import com.practicum.playlistmaker.domain.repository.HistoryRepository
+import com.practicum.playlistmaker.domain.repository.ItunesRepository
+import com.practicum.playlistmaker.domain.repository.PlayerRepository
+import com.practicum.playlistmaker.domain.repository.SettingsRepository
+import com.practicum.playlistmaker.domain.usecase.UseCaseCreator
 import com.practicum.playlistmaker.utils.Constants.Companion.PREFERENCES
 import dagger.Module
 import dagger.Provides
@@ -80,7 +83,6 @@ object AppModule {
         return HistoryRepositoryImpl(sharedPreferences, gson, dtoMapper)
     }
 
-
     @Provides
     @Singleton
     fun providePlayerRepository(): PlayerRepository {
@@ -94,7 +96,7 @@ object AppModule {
         gson: Gson,
         dtoMapper: DtoMapper
     ): SettingsRepository {
-        return SettingsRepositoryImpl(sharedPreferences, gson, dtoMapper)  // ← нет dtoMapper!
+        return SettingsRepositoryImpl(sharedPreferences, gson, dtoMapper)
     }
 
     // 4. Mapper и вспомогательные сервисы
@@ -110,67 +112,22 @@ object AppModule {
         return TrackFactory()
     }
 
-    // 5. UseCaseCreator (ЕДИНСТВЕННЫЙ провайдер для Use Cases)
+    // 5. ЕДИНСТВЕННЫЙ провайдер для Use Cases — через Creator
     @Provides
     @Singleton
     fun provideUseCaseCreator(
+        @ApplicationContext context: Context,
         itunesRepository: ItunesRepository,
         historyRepository: HistoryRepository,
         playerRepository: PlayerRepository,
         settingsRepository: SettingsRepository
     ): UseCaseCreator {
         return UseCaseCreator(
+            context = context,
             itunesRepository = itunesRepository,
             historyRepository = historyRepository,
             playerRepository = playerRepository,
             settingsRepository = settingsRepository
         )
-    }
-
-    @Provides
-    @Singleton
-    fun provideSwitchThemeUseCase(
-        settingsRepository: SettingsRepository
-    ): SwitchThemeUseCaseContract {
-        return SwitchThemeUseCase(settingsRepository)
-    }
-
-    @Provides
-    @Singleton
-    fun provideGetThemeStateUseCase(
-        settingsRepository: SettingsRepository
-    ): GetThemeStateUseCaseContract {
-        return GetThemeStateUseCase(settingsRepository)
-    }
-
-    @Provides
-    @Singleton
-    fun provideShareAppUseCase(): ShareAppUseCaseContract {
-        return ShareAppUseCase()
-    }
-
-    @Provides
-    @Singleton
-    fun provideSendSupportEmailUseCase(): SendSupportEmailUseCaseContract {
-        return SendSupportEmailUseCase()
-    }
-
-
-    @Provides
-    @Singleton
-    fun provideFilterTracksUseCase(): FilterTracksUseCaseContract {
-        return FilterTracksUseCase()
-    }
-
-    @Provides
-    @Singleton
-    fun provideFormatTrackDurationUseCase(): FormatTrackDurationUseCaseContract {
-        return FormatTrackDurationUseCase()
-    }
-
-    @Provides
-    @Singleton
-    fun provideTogglePlaybackUseCase(playerRepository: PlayerRepository): TogglePlaybackUseCaseContract {
-        return TogglePlaybackUseCase(playerRepository)
     }
 }

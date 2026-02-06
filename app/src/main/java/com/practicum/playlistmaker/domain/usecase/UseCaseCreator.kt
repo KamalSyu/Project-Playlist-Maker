@@ -1,9 +1,11 @@
 package com.practicum.playlistmaker.domain.usecase
 
+import android.content.Context
 import com.practicum.playlistmaker.domain.repository.HistoryRepository
 import com.practicum.playlistmaker.domain.repository.ItunesRepository
 import com.practicum.playlistmaker.domain.repository.PlayerRepository
 import com.practicum.playlistmaker.domain.repository.SettingsRepository
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
 class UseCaseCreator @Inject constructor(
@@ -11,7 +13,8 @@ class UseCaseCreator @Inject constructor(
     private val historyRepository: HistoryRepository,
     private val playerRepository: PlayerRepository,
     private val settingsRepository: SettingsRepository,
-) {
+    @ApplicationContext private val context: Context
+    ) {
 
     fun createAddTrackToHistoryUseCase(): AddTrackToHistoryUseCaseContract {
         return AddTrackToHistoryUseCase(historyRepository)
@@ -44,10 +47,10 @@ class UseCaseCreator @Inject constructor(
         return SearchTracksUseCase(itunesRepository)
     }
     fun createSendSupportEmailUseCase(): SendSupportEmailUseCaseContract {
-        return SendSupportEmailUseCase()
+        return SendSupportEmailUseCase(context)
     }
     fun createShareAppUseCase(): ShareAppUseCaseContract {
-        return ShareAppUseCase()
+        return ShareAppUseCase(context)
     }
     fun createStopPlaybackUseCase(): StopPlaybackUseCaseContract {
         return StopPlaybackUseCase(playerRepository)
@@ -57,5 +60,8 @@ class UseCaseCreator @Inject constructor(
     }
     fun createTogglePlaybackUseCase(): TogglePlaybackUseCaseContract {
         return TogglePlaybackUseCase(playerRepository)
+    }
+    fun createDelayedTrackActionUseCase(): DelayedTrackActionUseCaseContract {
+        return DelayedTrackActionUseCase()
     }
 }

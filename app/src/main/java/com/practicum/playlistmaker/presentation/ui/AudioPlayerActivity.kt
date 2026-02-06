@@ -13,7 +13,13 @@ import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.domain.model.Track
 import com.practicum.playlistmaker.domain.repository.PlayerRepository
-import com.practicum.playlistmaker.domain.usecase.*
+import com.practicum.playlistmaker.domain.usecase.FormatTrackDurationUseCaseContract
+import com.practicum.playlistmaker.domain.usecase.GetCurrentPositionUseCaseContract
+import com.practicum.playlistmaker.domain.usecase.HandlePlaybackCompletionUseCaseContract
+import com.practicum.playlistmaker.domain.usecase.PreparePlaybackUseCaseContract
+import com.practicum.playlistmaker.domain.usecase.StopPlaybackUseCaseContract
+import com.practicum.playlistmaker.domain.usecase.TogglePlaybackUseCaseContract
+import com.practicum.playlistmaker.domain.usecase.UseCaseCreator
 import com.practicum.playlistmaker.presentation.adapter.TrackAdapter
 import com.practicum.playlistmaker.presentation.parcel.ParcelableTrack
 import com.practicum.playlistmaker.presentation.parcel.toDomain
@@ -27,9 +33,6 @@ class AudioPlayerActivity : AppCompatActivity() {
 
     @Inject
     lateinit var useCaseCreator: UseCaseCreator
-
-    @Inject
-    lateinit var playerRepository: PlayerRepository
 
     private lateinit var recyclerViewAudioPlayer: RecyclerView
     private lateinit var adapter: TrackAdapter
@@ -107,8 +110,6 @@ class AudioPlayerActivity : AppCompatActivity() {
     private fun setupRecyclerView(track: Track) {
         recyclerViewAudioPlayer = findViewById(R.id.recyclerViewAudioPlayer)
         recyclerViewAudioPlayer.layoutManager = LinearLayoutManager(this)
-
-
         adapter = TrackAdapter(
             tracks = listOf(track),
             viewType = VIEW_TYPE_ALBUM,
@@ -119,9 +120,6 @@ class AudioPlayerActivity : AppCompatActivity() {
             formatDurationUseCase = formatTrackDurationUseCase
         )
         recyclerViewAudioPlayer.adapter = adapter
-
-
-        // Обновляем UI после создания адаптера
         updateUI()
     }
 
@@ -144,26 +142,13 @@ class AudioPlayerActivity : AppCompatActivity() {
 
     private fun togglePlayback() = lifecycleScope.launch {
         try {
-            if (playerRepository.isPlaying()) {
-                // Пауза: сохраняем текущую позицию
-                savedPosition = getCurrentPositionUseCase()
-                playerRepository.pause()
-                isPlaying = false
-                stopPolling()
-            } else {
-                // Воспроизведение: если есть сохранённая позиция — продолжаем с неё
-                if (savedPosition > 0L) {
-                    playerRepository.seekTo(savedPosition)
-                }
-                playerRepository.play()
-                isPlaying = true
-                startPolling()
-            }
-            updateUI()
+            togglePlaybackUseCase() // Вся логика теперь внутри Use Case
+            updateUI() // Обновляем UI после изменения состояния
         } catch (e: Exception) {
             handlePlaybackError("Ошибка при переключении воспроизведения", e)
         }
     }
+
 
     private fun updateUI(resetTime: Boolean = false) = lifecycleScope.launch {
         val currentPosition = if (resetTime) {
@@ -193,17 +178,8 @@ class AudioPlayerActivity : AppCompatActivity() {
 
     private fun setupPlaybackListener() = lifecycleScope.launch {
         try {
-            playerRepository.setOnCompletionListener {
-                lifecycleScope.launch {
-                    // Используем Use Case для обработки завершения
-                    handleCompletionUseCase.invoke()
-
-                    isPlaying = false
-                    savedPosition = 0L // Сбрасываем позицию
-                    updateUI(resetTime = true)
-                    stopPolling()
-                }
-            }
+            // Переносим логику обработки завершения в Use Case
+            handleCompletionUseCase() // Use Case сам подписывается на событие
         } catch (e: Exception) {
             Log.e("AudioPlayerActivity", "Failed to set completion listener", e)
         }
@@ -218,16 +194,14 @@ class AudioPlayerActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         lifecycleScope.launch {
-            if (playerRepository.isPlaying()) {
-                playerRepository.pause()
-                isPlaying = false
-                updateUI()        // Обновляет кнопку и время
-                stopPolling()     // Останавливает обновление прогресса
-            } else {
-                stopPolling()     // Если не играл — просто останавливаем polling
-            }
+            // Вместо playerRepository.isPlaying() и playerRepository.pause():
+            togglePlaybackUseCase() // Переключает, если нужно
+            isPlaying = !isPlaying // Если Use Case меняет состояние
+            updateUI()
+            stopPolling()
         }
     }
+
     override fun onStop() {
         super.onStop()
         lifecycleScope.launch {
@@ -239,7 +213,7 @@ class AudioPlayerActivity : AppCompatActivity() {
         super.onDestroy()
         stopPolling()
         lifecycleScope.launch {
-            playerRepository.reset() // Сброс плеера при уничтожении Activity
+            stopPlaybackUseCase() // Сброс через Use Case
         }
     }
 
@@ -260,14 +234,13 @@ class AudioPlayerActivity : AppCompatActivity() {
     }
 
     private fun stopPlaybackAndCleanup() = lifecycleScope.launch {
-        if (playerRepository.isPlaying()) {
-            savedPosition = getCurrentPositionUseCase()  // Сохраняем позицию перед выходом
-        }
-        playerRepository.stop()
+        val currentPos = getCurrentPositionUseCase()
+        savedPosition = currentPos
+        stopPlaybackUseCase() // Останавливает через Use Case
+        handleCompletionUseCase() // Сброс через Use Case?
         isPlaying = false
         updateUI()
         stopPolling()
-        playerRepository.reset()
     }
 
     private fun showError(message: String) {

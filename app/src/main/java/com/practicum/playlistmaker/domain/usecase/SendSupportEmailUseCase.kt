@@ -1,15 +1,19 @@
 package com.practicum.playlistmaker.domain.usecase
 
+import android.content.Context
+import com.practicum.playlistmaker.R
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
 class SendSupportEmailUseCase @Inject constructor(
+    @ApplicationContext private val context: Context
 ) : SendSupportEmailUseCaseContract{
 
     override operator fun invoke(): SupportEmailIntentData {
         return SupportEmailIntentData(
-            email = "support@example.com",
-            subject = "Вопрос по приложению Playlist Maker",
-            body = "Здравствуйте! У меня возникла проблема..."
+            email = context.getString(R.string.support_email),
+            subject = context.getString(R.string.email_subject),
+            body = context.getString(R.string.email_text)
         )
     }
 }

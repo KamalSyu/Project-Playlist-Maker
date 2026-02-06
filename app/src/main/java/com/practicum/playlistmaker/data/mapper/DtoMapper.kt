@@ -8,6 +8,7 @@ import com.practicum.playlistmaker.domain.factory.TrackFactory
 import com.practicum.playlistmaker.domain.model.SearchResponse
 import com.practicum.playlistmaker.domain.model.ThemeSettings
 import com.practicum.playlistmaker.domain.model.Track
+import com.practicum.playlistmaker.presentation.parcel.ParcelableTrack
 import javax.inject.Inject
 
 class DtoMapper @Inject constructor(
@@ -84,6 +85,21 @@ class DtoMapper @Inject constructor(
     fun fromDto(dto: ThemeSettingsDTO): ThemeSettings {
         return ThemeSettings(
             isDarkTheme = dto.isDarkTheme
+        )
+    }
+    fun toParcelableTrack(track: Track): ParcelableTrack {
+        val trackDto = toDto(track)  // Преобразуем в DTO (без trackId)
+        return ParcelableTrack(
+            trackId = track.trackId,  // Берём из Domain-модели (trackId уже сгенерирован)
+            trackName = trackDto.trackName,
+            artistName = trackDto.artistName,
+            trackTimeMillis = trackDto.trackTimeMillis,
+            artworkUrl100 = trackDto.artworkUrl100,
+            releaseDate = trackDto.releaseDate,
+            collectionName = trackDto.collectionName,
+            primaryGenreName = trackDto.primaryGenreName,
+            country = trackDto.country,
+            previewUrl = trackDto.previewUrl
         )
     }
 

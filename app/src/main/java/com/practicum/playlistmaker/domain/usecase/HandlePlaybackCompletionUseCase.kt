@@ -8,6 +8,7 @@ class HandlePlaybackCompletionUseCase @Inject constructor(
 ) : HandlePlaybackCompletionUseCaseContract {
 
     override suspend operator fun invoke() {
+        playerRepository.stop()
         playerRepository.reset()
     }
 }
