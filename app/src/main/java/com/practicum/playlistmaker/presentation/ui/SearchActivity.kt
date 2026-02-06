@@ -45,7 +45,6 @@ class SearchActivity : AppCompatActivity() {
     private lateinit var noResultsLayout: LinearLayout
     private lateinit var errorLayout: LinearLayout
     private lateinit var updateButton: Button
-    private lateinit var hintMessage: TextView
     private lateinit var historyRecyclerView: RecyclerView
     private lateinit var clearHistoryButton: Button
     private lateinit var historyRecyclerViewKit: LinearLayout
@@ -97,7 +96,6 @@ class SearchActivity : AppCompatActivity() {
         noResultsLayout = findViewById(R.id.no_results_layout)
         errorLayout = findViewById(R.id.error_layout)
         updateButton = findViewById(R.id.refresh_button)
-        hintMessage = findViewById(R.id.searchHint)
         historyRecyclerView = findViewById(R.id.history_recycler_view)
         clearHistoryButton = findViewById(R.id.clear_history_button)
         historyRecyclerViewKit = findViewById(R.id.search_history_layout)
@@ -165,7 +163,6 @@ class SearchActivity : AppCompatActivity() {
             resetButton.visibility = if (query.isNotEmpty()) View.VISIBLE else View.INVISIBLE
 
             // Обновить подсказки и историю
-            updateHintVisibility(query.isEmpty())
             updateHistoryVisibility()
 
             // Отменить предыдущий debounce, если был
@@ -186,7 +183,6 @@ class SearchActivity : AppCompatActivity() {
 
         // Обработчик фокуса
         searchEditText.setOnFocusChangeListener { _, hasFocus ->
-            updateHintVisibility(hasFocus && searchEditText.text.isEmpty())
             updateHistoryVisibility()
         }
     }
@@ -290,9 +286,6 @@ class SearchActivity : AppCompatActivity() {
         errorLayout.visibility = View.GONE
     }
 
-    private fun updateHintVisibility(show: Boolean) {
-        hintMessage.visibility = if (show) View.VISIBLE else View.GONE
-    }
 
     private fun updateHistoryVisibility() {
         val isEmptyQuery = searchEditText.text.isEmpty()

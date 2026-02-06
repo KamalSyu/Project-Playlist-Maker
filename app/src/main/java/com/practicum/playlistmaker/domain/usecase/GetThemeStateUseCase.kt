@@ -8,6 +8,6 @@ class GetThemeStateUseCase @Inject constructor(
 ) : GetThemeStateUseCaseContract {
 
     override operator fun invoke(): Boolean {
-        return settingsRepository.isDarkThemeEnabled()
+        return settingsRepository.getThemeSettings().isDarkTheme
     }
 }

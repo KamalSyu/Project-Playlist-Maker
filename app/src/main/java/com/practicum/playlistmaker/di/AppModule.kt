@@ -73,10 +73,13 @@ object AppModule {
     @Provides
     @Singleton
     fun provideHistoryRepository(
-        sharedPreferences: SharedPreferences
+        sharedPreferences: SharedPreferences,
+        gson: Gson,
+        dtoMapper: DtoMapper
     ): HistoryRepository {
-        return HistoryRepositoryImpl(sharedPreferences)
+        return HistoryRepositoryImpl(sharedPreferences, gson, dtoMapper)
     }
+
 
     @Provides
     @Singleton
@@ -87,9 +90,11 @@ object AppModule {
     @Provides
     @Singleton
     fun provideSettingsRepository(
-        sharedPreferences: SharedPreferences
+        sharedPreferences: SharedPreferences,
+        gson: Gson,
+        dtoMapper: DtoMapper
     ): SettingsRepository {
-        return SettingsRepositoryImpl(sharedPreferences)
+        return SettingsRepositoryImpl(sharedPreferences, gson, dtoMapper)  // ← нет dtoMapper!
     }
 
     // 4. Mapper и вспомогательные сервисы

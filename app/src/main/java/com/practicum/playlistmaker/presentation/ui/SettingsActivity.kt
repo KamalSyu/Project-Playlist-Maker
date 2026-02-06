@@ -8,28 +8,20 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.practicum.playlistmaker.App
 import com.practicum.playlistmaker.R
-import com.practicum.playlistmaker.domain.model.SupportEmailIntentData
 import com.practicum.playlistmaker.domain.usecase.GetThemeStateUseCaseContract
 import com.practicum.playlistmaker.domain.usecase.SendSupportEmailUseCaseContract
 import com.practicum.playlistmaker.domain.usecase.ShareAppUseCaseContract
-import com.practicum.playlistmaker.domain.usecase.UseCaseCreator
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-
-
 
 @AndroidEntryPoint
 class SettingsActivity : AppCompatActivity() {
 
-    @Inject
-    lateinit var useCaseCreator: UseCaseCreator
+    @Inject lateinit var getThemeStateUseCase: GetThemeStateUseCaseContract
+    @Inject lateinit var shareAppUseCase: ShareAppUseCaseContract
+    @Inject lateinit var sendSupportEmailUseCase: SendSupportEmailUseCaseContract
 
     private lateinit var themeSwitcher: SwitchMaterial
-
-    // Use Cases через Creator
-    private lateinit var getThemeStateUseCase: GetThemeStateUseCaseContract
-    private lateinit var shareAppUseCase: ShareAppUseCaseContract
-    private lateinit var sendSupportEmailUseCase: SendSupportEmailUseCaseContract
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,20 +29,14 @@ class SettingsActivity : AppCompatActivity() {
 
         themeSwitcher = findViewById(R.id.switch_button)
 
-        // Инициализация Use Cases
-        getThemeStateUseCase = useCaseCreator.createGetThemeStateUseCase()
-        shareAppUseCase = useCaseCreator.createShareAppUseCase()
-        sendSupportEmailUseCase = useCaseCreator.createSendSupportEmailUseCase()
-
-
-        // Получаем состояние темы через use case
+        // Получаем текущее состояние темы через Use Case
         val isDarkMode = getThemeStateUseCase()
         themeSwitcher.isChecked = isDarkMode
 
         // Обработчик переключения темы
         themeSwitcher.setOnCheckedChangeListener { _, isChecked ->
             (application as App).switchTheme(isChecked)
-            recreate()  // Пересоздание Activity для немедленного применения темы
+            recreate() // Пересоздание Activity для немедленного применения темы
         }
 
         // Обработчики кнопок
@@ -62,30 +48,63 @@ class SettingsActivity : AppCompatActivity() {
 
     // Метод для рассылки ссылки на приложение (через Use Case)
     private fun shareApp() {
-        val shareText = shareAppUseCase() // Вызов Use Case
-        val intent = Intent(Intent.ACTION_SEND)
-        intent.type = "text/plain"
-        intent.putExtra(Intent.EXTRA_TEXT, shareText)
-        startActivity(Intent.createChooser(intent, getString(R.string.choose_app)))
+        try {
+            val shareText = shareAppUseCase()
+
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_TEXT, shareText)
+            }
+
+            if (intent.resolveActivity(packageManager) != null) {
+                startActivity(intent)
+            } else {
+                // Можно показать Snackbar: "Не найдено приложение для отправки"
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            // Можно показать сообщение об ошибке
+        }
     }
 
     // Метод для отправки email поддержки (через Use Case)
     private fun sendEmail() {
-        val data = sendSupportEmailUseCase() // Вызов Use Case
+        try {
+            // ИЗМЕНЕНИЕ: переименовали `data` → `emailData`, чтобы не конфликтовать с `intent.data`
+            val emailData = sendSupportEmailUseCase() ?: return
 
+            val intent = Intent(Intent.ACTION_SENDTO).apply {
+                data = Uri.parse("mailto:")  // Теперь компилятор понимает, что это поле интента
+                putExtra(Intent.EXTRA_EMAIL, arrayOf(emailData.email))
+                putExtra(Intent.EXTRA_SUBJECT, emailData.subject)
+                putExtra(Intent.EXTRA_TEXT, emailData.body)
+            }
 
-        val intent = Intent(Intent.ACTION_SENDTO)
-        intent.data = Uri.parse("mailto:")  // Схема для email
-        intent.putExtra(Intent.EXTRA_EMAIL, arrayOf(data.email))      // Получатель
-        intent.putExtra(Intent.EXTRA_SUBJECT, data.subject)         // Тема
-        intent.putExtra(Intent.EXTRA_TEXT, data.body)             // Текст письма
-        startActivity(intent)
+            if (intent.resolveActivity(packageManager) != null) {
+                startActivity(intent)
+            } else {
+                // Можно показать Snackbar: "Установите почтовый клиент"
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            // Можно показать сообщение об ошибке
+        }
     }
 
     // Метод для открытия пользовательского соглашения
     private fun openUserAgreement() {
-        val url = getString(R.string.url_oferta)
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-        startActivity(intent)
+        try {
+            val url = getString(R.string.url_oferta)
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+
+            if (intent.resolveActivity(packageManager) != null) {
+                startActivity(intent)
+            } else {
+                // Можно показать Snackbar: "Не удалось открыть ссылку"
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            // Можно показать сообщение об ошибке
+        }
     }
 }
