@@ -159,13 +159,25 @@ class AudioPlayerActivity : AppCompatActivity() {
 
     private fun togglePlayback() = lifecycleScope.launch {
         try {
-            val resumePosition = if (!isPlaying && savedPosition > 0L) savedPosition else null
+            // Если плеер в состоянии "завершено" (UI показывает 00:00), начинаем с начала
+            val resumePosition = if (isPlaying) {
+                null  // продолжаем текущее воспроизведение
+            } else if (savedPosition > 0L && !isPlaying) {
+                savedPosition  // продолжаем с паузы
+            } else {
+                0L  // начинаем заново (включая случай завершения)
+            }
+
             val result = togglePlaybackUseCase(resumePosition)
 
             if (result.isSuccess) {
                 isPlaying = result.getOrThrow()
                 if (isPlaying) {
                     startPolling()
+                    // При старте с начала обнуляем savedPosition
+                    if (resumePosition == 0L) {
+                        savedPosition = 0L
+                    }
                 } else {
                     savedPosition = getCurrentPositionUseCase()
                     stopPolling()
@@ -178,6 +190,7 @@ class AudioPlayerActivity : AppCompatActivity() {
             handlePlaybackError("Ошибка при переключении воспроизведения", t)
         }
     }
+
 
     private fun updateUI(resetTime: Boolean = false) = lifecycleScope.launch {
         val currentPosition = if (resetTime) {
@@ -213,12 +226,14 @@ class AudioPlayerActivity : AppCompatActivity() {
         setCompletionListenerUseCase {
             lifecycleScope.launch {
                 isPlaying = false
+                savedPosition = 0L  // <-- ВАЖНО: сбросить позицию!
                 stopPolling()
                 updateUI(resetTime = true)
                 handleCompletionUseCase()
             }
         }
     }
+
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
