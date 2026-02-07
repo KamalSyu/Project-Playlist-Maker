@@ -3,8 +3,10 @@ package com.practicum.playlistmaker.presentation.ui
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.net.toUri
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.practicum.playlistmaker.App
 import com.practicum.playlistmaker.R
@@ -55,59 +57,27 @@ class SettingsActivity : AppCompatActivity() {
 
     // Метод для рассылки ссылки на приложение
     private fun shareApp() {
-        try {
-            val shareText = shareAppUseCase()  // Теперь из strings.xml!
-
-            val intent = Intent(Intent.ACTION_SEND).apply {
-                type = "text/plain"
-                putExtra(Intent.EXTRA_TEXT, shareText)
-            }
-
-            if (intent.resolveActivity(packageManager) != null) {
-                startActivity(intent)
-            } else {
-                // Показать ошибку
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        val shareText = shareAppUseCase() // Получаем текст через use case
+        val intent = Intent(Intent.ACTION_SEND)
+        intent.type = "text/plain"
+        intent.putExtra(Intent.EXTRA_TEXT, shareText)
+        startActivity(Intent.createChooser(intent, getString(R.string.choose_app)))
     }
 
-    // Метод для отправки email поддержки
     private fun sendEmail() {
-        try {
-            val emailData = sendSupportEmailUseCase() ?: return
-            val intent = Intent(Intent.ACTION_SENDTO).apply {
-                data = Uri.parse("mailto:")
-                putExtra(Intent.EXTRA_EMAIL, arrayOf(emailData.email))
-                putExtra(Intent.EXTRA_SUBJECT, emailData.subject)
-                putExtra(Intent.EXTRA_TEXT, emailData.body)
-            }
+        val emailData = sendSupportEmailUseCase() // Получаем данные через use case
 
-            if (intent.resolveActivity(packageManager) != null) {
-                startActivity(intent)
-            } else {
-                // Показать ошибку
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        val emailIntent = Intent(Intent.ACTION_SENDTO)
+        emailIntent.data = Uri.parse("mailto:${emailData.email}") // Используем email из DTO
+        emailIntent.putExtra(Intent.EXTRA_SUBJECT, emailData.subject)
+        emailIntent.putExtra(Intent.EXTRA_TEXT, emailData.body)
+
+        startActivity(emailIntent)
     }
-
-    // Метод для открытия пользовательского соглашения
     private fun openUserAgreement() {
-        try {
-            val url = getString(R.string.url_oferta)
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-
-            if (intent.resolveActivity(packageManager) != null) {
-                startActivity(intent)
-            } else {
-                // Можно показать Snackbar: "Не удалось открыть ссылку"
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            // Можно показать сообщение об ошибке
-        }
+        val url = getString(R.string.url_oferta)
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        startActivity(intent)
     }
+
 }
