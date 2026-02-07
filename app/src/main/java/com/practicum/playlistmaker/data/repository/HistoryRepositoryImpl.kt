@@ -40,7 +40,7 @@ class HistoryRepositoryImpl @Inject constructor(
             return emptyList()
         }
     }
-    override suspend fun clearHistory() {
+    override suspend fun clearHistory() { // Очищает историю поиска
         sharedPreferences.edit()
             .remove(HISTORY_KEY)
             .apply()
