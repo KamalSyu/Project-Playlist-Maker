@@ -68,6 +68,9 @@ interface DelayedTrackActionUseCaseContract {
         onDelayedAction: (Track) -> Unit
     )
 }
+interface SetPlaybackCompletionListenerUseCaseContract {
+    suspend operator fun invoke(onCompletion: () -> Unit)
+}
 
 
 

@@ -1,6 +1,7 @@
 package com.practicum.playlistmaker.data.repository
 
 import android.media.MediaPlayer
+import android.util.Log
 import com.practicum.playlistmaker.domain.repository.PlayerRepository
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -14,19 +15,44 @@ class PlayerRepositoryImpl @Inject constructor() : PlayerRepository {
 
     override suspend fun prepare(url: String?) {
         synchronized(lock) {
-            mediaPlayer = MediaPlayer().apply {
-                setDataSource(url)
-                prepare()
-                setOnCompletionListener {
-                    completionListener?.invoke()
+            try {
+                mediaPlayer = MediaPlayer().apply {
+                    setDataSource(url)
+                    Log.d("PlayerRepository", "setDataSource: $url")
+
+                    setOnErrorListener { mp, what, extra ->
+                        Log.e("PlayerRepository", "MediaPlayer error: what=$what, extra=$extra")
+                        false
+                    }
+
+                    prepareAsync()
+                    Log.d("PlayerRepository", "prepareAsync() called")
+
+                    setOnPreparedListener { mp ->
+                        Log.d("PlayerRepository", "MediaPlayer prepared, calling start()")
+                        mp.start()
+                        Log.d("PlayerRepository", "start() called, isPlaying: ${mp.isPlaying}")
+                    }
+
+                    setOnCompletionListener {
+                        completionListener?.invoke()
+                    }
                 }
+            } catch (e: Exception) {
+                Log.e("PlayerRepository", "Prepare failed", e)
+                mediaPlayer?.release()
+                mediaPlayer = null
             }
         }
     }
 
+
+
     override suspend fun play() {
         synchronized(lock) {
-            mediaPlayer?.start()
+            mediaPlayer?.start()?.also {
+                Log.d("PlayerRepository", "play() called, isPlaying=${mediaPlayer?.isPlaying}")
+            } ?: Log.e("PlayerRepository", "MediaPlayer is null in play()")
         }
     }
 
@@ -38,7 +64,7 @@ class PlayerRepositoryImpl @Inject constructor() : PlayerRepository {
 
     override suspend fun stop() {
         synchronized(lock) {
-            mediaPlayer?.pause()
+            mediaPlayer?.reset()
         }
     }
 

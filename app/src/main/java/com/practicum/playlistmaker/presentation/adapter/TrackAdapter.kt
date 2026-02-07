@@ -1,5 +1,6 @@
 package com.practicum.playlistmaker.presentation.adapter
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -76,6 +77,7 @@ class TrackAdapter(
             isPlaying = isPlaying,
             currentTimeMillis = currentTimeMillis
         )
+        Log.d("TrackAdapter", "Bound track at position $position, isPlaying=$isPlaying")
     }
 
     override fun getItemCount(): Int = tracks.size

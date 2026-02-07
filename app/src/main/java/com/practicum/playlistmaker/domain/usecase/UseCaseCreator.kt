@@ -64,4 +64,7 @@ class UseCaseCreator @Inject constructor(
     fun createDelayedTrackActionUseCase(): DelayedTrackActionUseCaseContract {
         return DelayedTrackActionUseCase()
     }
+    fun createSetPlaybackCompletionListenerUseCase(): SetPlaybackCompletionListenerUseCaseContract {
+        return SetPlaybackCompletionListenerUseCase(playerRepository)
+    }
 }
