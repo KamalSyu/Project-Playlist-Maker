@@ -60,9 +60,7 @@ class MediatekaActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val history = getSearchHistoryUseCase()  // List<Track>
-                // Преобразуем через DtoMapper (соблюдаем слоистую архитектуру)
-                val uiModels = history.map { dtoMapper.toParcelableTrack(it) }
-                adapter.updateList(uiModels)
+                adapter.updateList(history)  // ✅ Передаём List<Track> напрямую
             } catch (e: Exception) {
                 // Обработка ошибки
             }

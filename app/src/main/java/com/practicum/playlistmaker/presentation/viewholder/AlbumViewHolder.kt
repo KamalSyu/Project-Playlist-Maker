@@ -19,10 +19,10 @@ import com.practicum.playlistmaker.utils.DateFormatter
 
 class AlbumViewHolder(
     itemView: View,
-    private val onClickListener: (ParcelableTrack) -> Unit,
-    private val onPlayButtonClick: (ParcelableTrack) -> Unit,
-    private val onAddToPlaylistClick: (ParcelableTrack) -> Unit,
-    private val onFavoriteClick: (ParcelableTrack) -> Unit,
+    private val onClickListener: (Track) -> Unit,
+    private val onPlayButtonClick: (Track) -> Unit,
+    private val onAddToPlaylistClick: (Track) -> Unit,
+    private val onFavoriteClick: (Track) -> Unit,
     private val formatDurationUseCase: FormatTrackDurationUseCaseContract
 ) : RecyclerView.ViewHolder(itemView) {
 
@@ -40,14 +40,12 @@ class AlbumViewHolder(
     private val plusButton: Button = itemView.findViewById(R.id.ic_button_plus)
     private val likeButton: Button = itemView.findViewById(R.id.ic_button_like)
 
-
     private val dateFormatter = DateFormatter()
-
-    private var currentTrack: ParcelableTrack? = null
+    private var currentTrack: Track? = null
 
 
     fun bind(
-        track: ParcelableTrack,
+        track: Track,
         isPlaying: Boolean,
         currentTimeMillis: Long = 0
     ) {
@@ -86,7 +84,7 @@ class AlbumViewHolder(
         setupClickListeners(track)
     }
 
-    private fun setupClickListeners(track: ParcelableTrack) {
+    private fun setupClickListeners(track: Track) {
         itemView.setOnClickListener { onClickListener(track) }
         playButton.setOnClickListener { onPlayButtonClick(track) }
         plusButton.setOnClickListener { onAddToPlaylistClick(track) }

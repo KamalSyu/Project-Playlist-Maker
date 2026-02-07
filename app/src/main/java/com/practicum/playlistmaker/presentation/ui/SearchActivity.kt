@@ -1,5 +1,6 @@
 package com.practicum.playlistmaker.presentation.ui
 
+import android.R.attr.track
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -21,6 +22,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import android.view.inputmethod.InputMethodManager
+import com.practicum.playlistmaker.data.mapper.DtoMapper
 import com.practicum.playlistmaker.domain.usecase.*
 import kotlinx.coroutines.delay
 
@@ -29,6 +31,8 @@ class SearchActivity : AppCompatActivity() {
 
     @Inject
     lateinit var useCaseCreator: UseCaseCreator
+    @Inject
+    lateinit var dtoMapper: DtoMapper
 
     // Вьюшки
     private lateinit var backTextView: TextView
@@ -99,12 +103,22 @@ class SearchActivity : AppCompatActivity() {
         tracksAdapter = TrackAdapter(
             tracks = emptyList(),
             viewType = VIEW_TYPE_TRACK,
-            onTrackClick = { track -> onTrackClicked(track) },
-            onClickPlayButton = {},
-            onAddToPlaylist = {},
-            onFavorite = {},
-            useCaseCreator = useCaseCreator  // Передаём Creator
+            onTrackClick = { track ->  // track: Track (исправлено!)
+                onTrackClicked(track)  // передаём Track напрямую
+            },
+            onClickPlayButton = { track ->  // track: Track
+                // Логика для кнопки Play (используем track как Track)
+            },
+            onAddToPlaylist = { track ->  // track: Track
+                // Логика добавления в плейлист
+            },
+            onFavorite = { track ->  // track: Track
+                // Логика для Favorite
+            },
+            formatDurationUseCase = formatTrackDurationUseCase
         )
+
+
         recyclerView.adapter = tracksAdapter
         recyclerView.layoutManager = LinearLayoutManager(this)
 
@@ -115,7 +129,7 @@ class SearchActivity : AppCompatActivity() {
             onClickPlayButton = {},
             onAddToPlaylist = {},
             onFavorite = {},
-            useCaseCreator = useCaseCreator  // Передаём Creator
+            formatDurationUseCase = formatTrackDurationUseCase  // ДОБАВЛЕНО
         )
         historyRecyclerView.adapter = historyAdapter
         historyRecyclerView.layoutManager = LinearLayoutManager(this)
@@ -177,6 +191,7 @@ class SearchActivity : AppCompatActivity() {
             updateHistoryVisibility()
         }
     }
+
     private fun performSearch(query: String) {
         if (query.isEmpty()) return
         showLoading()
@@ -206,10 +221,11 @@ class SearchActivity : AppCompatActivity() {
     }
 
     private fun updateTracksList(tracks: List<Track>) {
-        tracksAdapter.updateList(tracks)
+        tracksAdapter.updateList(tracks)  // ✅ Передаём List<Track> напрямую
         recyclerView.visibility = if (tracks.isNotEmpty()) View.VISIBLE else View.GONE
         showNoResults(tracks.isEmpty() && searchQuery.isNotEmpty())
     }
+
 
     private fun onTrackClicked(track: Track) {
         clickJob?.cancel()

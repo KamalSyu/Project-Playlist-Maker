@@ -12,19 +12,22 @@ import com.practicum.playlistmaker.presentation.viewholder.TrackViewHolder
 import com.practicum.playlistmaker.utils.Constants.Companion.VIEW_TYPE_ALBUM
 import com.practicum.playlistmaker.utils.Constants.Companion.VIEW_TYPE_TRACK
 
+
 class TrackAdapter(
-    private var tracks: List<ParcelableTrack> = emptyList(),  // Было: List<Track>
+    private var tracks: List<Track> = emptyList(),  // Было: List<ParcelableTrack>
     private val viewType: Int,
-    private var onTrackClick: (ParcelableTrack) -> Unit = {},  // Было: (Track) -> Unit
-    private var onClickPlayButton: (ParcelableTrack) -> Unit = {},
-    private var onAddToPlaylist: (ParcelableTrack) -> Unit = {},
-    private var onFavorite: (ParcelableTrack) -> Unit = {},
+    private var onTrackClick: (Track) -> Unit = {},  // Было: (ParcelableTrack) -> Unit
+    private var onClickPlayButton: (Track) -> Unit = {},
+    private var onAddToPlaylist: (Track) -> Unit = {},
+    private var onFavorite: (Track) -> Unit = {},
     private val formatDurationUseCase: FormatTrackDurationUseCaseContract
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
 
     var isPlaying: Boolean = false
     var currentTimeMillis: Long = 0
     var currentPosition: Int = -1
+
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return when (this.viewType) {
@@ -42,7 +45,7 @@ class TrackAdapter(
                     onClickPlayButton,
                     onAddToPlaylist,
                     onFavorite,
-                    formatDurationUseCase
+                    formatDurationUseCase  // ✅ Передаём в AlbumViewHolder
                 )
             }
             else -> throw IllegalArgumentException("Unsupported view type: $this.viewType")
@@ -56,10 +59,9 @@ class TrackAdapter(
             is AlbumViewHolder -> bindAlbumViewHolder(holder, track, position)
         }
         holder.itemView.setOnClickListener { onTrackClick(track) }
-        holder.itemDialog.tag = this.viewType
     }
 
-    private fun bindTrackViewHolder(holder: TrackViewHolder, track: ParcelableTrack, position: Int) {
+    private fun bindTrackViewHolder(holder: TrackViewHolder, track: Track, position: Int) {
         holder.bind(track)
         if (position == currentPosition) {
             holder.showPlayingState(isPlaying, currentTimeMillis)
@@ -68,7 +70,7 @@ class TrackAdapter(
         }
     }
 
-    private fun bindAlbumViewHolder(holder: AlbumViewHolder, track: ParcelableTrack, position: Int) {
+    private fun bindAlbumViewHolder(holder: AlbumViewHolder, track: Track, position: Int) {
         holder.bind(
             track = track,
             isPlaying = isPlaying,
@@ -79,16 +81,16 @@ class TrackAdapter(
     override fun getItemCount(): Int = tracks.size
 
 
-    fun updateList(newTracks: List<ParcelableTrack>) {  // Было: List<Track>
+    fun updateList(newTracks: List<Track>) {  // Было: List<ParcelableTrack>
         tracks = newTracks
         notifyDataSetChanged()
     }
 
-    fun setOnItemClickListener(listener: (ParcelableTrack) -> Unit) {  // Было: (Track) -> Unit
+    fun setOnItemClickListener(listener: (Track) -> Unit) {  // Было: (ParcelableTrack) -> Unit
         onTrackClick = listener
     }
 
-    fun setOnPlayButtonClickListener(listener: (ParcelableTrack) -> Unit) {  // Было: (Track) -> Unit
+    fun setOnPlayButtonClickListener(listener: (Track) -> Unit) {  // Было: (ParcelableTrack) -> Unit
         onClickPlayButton = listener
     }
 
@@ -107,6 +109,10 @@ class TrackAdapter(
         } else {
             notifyDataSetChanged()
         }
+    }
+
+    fun getTracks(): List<Track> {
+        return tracks
     }
 }
 

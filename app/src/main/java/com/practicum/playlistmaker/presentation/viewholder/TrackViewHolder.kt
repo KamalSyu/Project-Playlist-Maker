@@ -9,6 +9,7 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.domain.model.Track
 import com.practicum.playlistmaker.domain.usecase.FormatTrackDurationUseCaseContract
+import com.practicum.playlistmaker.presentation.parcel.ParcelableTrack
 
 
 class TrackViewHolder(
@@ -22,8 +23,7 @@ class TrackViewHolder(
     private val artistNameTextView: TextView = itemView.findViewById(R.id.artist_name)
     private val trackTimeTextView: TextView = itemView.findViewById(R.id.track_time)
 
-    private var track: Track? = null  // Сохраняем трек для использования в hidePlayingState
-
+    private var track: Track? = null  // Изменено: Track вместо ParcelableTrack
 
     fun bind(track: Track) {
         this.track = track

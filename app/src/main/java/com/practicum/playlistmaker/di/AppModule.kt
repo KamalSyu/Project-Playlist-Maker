@@ -130,4 +130,6 @@ object AppModule {
             settingsRepository = settingsRepository
         )
     }
+
+
 }
