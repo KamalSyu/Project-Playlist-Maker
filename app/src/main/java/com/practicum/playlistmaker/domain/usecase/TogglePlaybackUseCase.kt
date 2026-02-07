@@ -7,24 +7,23 @@ class TogglePlaybackUseCase @Inject constructor(
     private val playerRepository: PlayerRepository
 ) : TogglePlaybackUseCaseContract {
 
-    override suspend operator fun invoke(): Result<Boolean> {
+    override suspend operator fun invoke(seekPosition: Long?): Result<Boolean> {  // Убрали = null
         return try {
             val wasPlaying = playerRepository.isPlaying()
+
             if (!wasPlaying) {
-                // Проверяем, что MediaPlayer готов к воспроизведению
-                if (playerRepository.getCurrentPosition() >= 0L) {
-                    playerRepository.play()
-                } else {
-                    return Result.failure(Exception("MediaPlayer не готов"))
+                // Явно проверяем на null
+                if (seekPosition != null) {
+                    playerRepository.seekTo(seekPosition)
                 }
+                playerRepository.play()
             } else {
                 playerRepository.pause()
             }
+
             Result.success(playerRepository.isPlaying())
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 }
-
-

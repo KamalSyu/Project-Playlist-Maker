@@ -28,12 +28,6 @@ class PlayerRepositoryImpl @Inject constructor() : PlayerRepository {
                     prepareAsync()
                     Log.d("PlayerRepository", "prepareAsync() called")
 
-                    setOnPreparedListener { mp ->
-                        Log.d("PlayerRepository", "MediaPlayer prepared, calling start()")
-                        mp.start()
-                        Log.d("PlayerRepository", "start() called, isPlaying: ${mp.isPlaying}")
-                    }
-
                     setOnCompletionListener {
                         completionListener?.invoke()
                     }

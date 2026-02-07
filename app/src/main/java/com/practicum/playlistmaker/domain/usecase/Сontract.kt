@@ -59,8 +59,9 @@ interface SwitchThemeUseCaseContract {
 }
 
 interface TogglePlaybackUseCaseContract {
-    suspend operator fun invoke(): Result<Boolean>
+    suspend operator fun invoke(seekPosition: Long? = null): Result<Boolean>
 }
+
 interface DelayedTrackActionUseCaseContract {
     suspend operator fun invoke(
         track: Track,
