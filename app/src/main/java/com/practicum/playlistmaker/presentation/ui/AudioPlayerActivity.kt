@@ -76,10 +76,18 @@ class AudioPlayerActivity : AppCompatActivity() {
             }
             updateUI()
         } else {
-            isPlaying = false  // Всегда останавливаем воспроизведение
-            savedPosition = 0L  // ← Принудительно сбрасываем позицию на начало
-            updateUI()  // Кнопка «Играть»
-            stopPolling()  // Гарантируем остановку polling
+            // Восстанавливаем сохранённые значения
+            isPlaying = savedInstanceState.getBoolean("isPlaying")
+            savedPosition = savedInstanceState.getLong("savedPosition")
+
+
+            // Обновляем UI с актуальной позицией
+            updateUI(resetTime = false)
+
+            // Если воспроизведение было активным — возобновляем polling
+            if (isPlaying) {
+                startPolling()
+            }
         }
 
 
@@ -151,7 +159,8 @@ class AudioPlayerActivity : AppCompatActivity() {
 
     private fun togglePlayback() = lifecycleScope.launch {
         try {
-            val result = togglePlaybackUseCase(null)  // null → старт с 0 мс
+            val resumePosition = if (!isPlaying && savedPosition > 0L) savedPosition else null
+            val result = togglePlaybackUseCase(resumePosition)
 
             if (result.isSuccess) {
                 isPlaying = result.getOrThrow()
@@ -170,14 +179,17 @@ class AudioPlayerActivity : AppCompatActivity() {
         }
     }
 
-
-
-
-
     private fun updateUI(resetTime: Boolean = false) = lifecycleScope.launch {
-        val currentPosition = if (resetTime) 0L else getCurrentPositionUseCase()
+        val currentPosition = if (resetTime) {
+            0L
+        } else if (!isPlaying && savedPosition > 0L) {
+            savedPosition  // Используем сохранённую позицию, если воспроизведение приостановлено
+        } else {
+            getCurrentPositionUseCase()  // Иначе берём текущую позицию
+        }
         adapter.notifyDataSetChangedWithState(isPlaying, currentPosition)
     }
+
 
     private fun startPolling() {
         Log.d("AudioPlayer", "startPolling called, isPlaying=$isPlaying")
@@ -201,7 +213,6 @@ class AudioPlayerActivity : AppCompatActivity() {
         setCompletionListenerUseCase {
             lifecycleScope.launch {
                 isPlaying = false
-                savedPosition = 0L
                 stopPolling()
                 updateUI(resetTime = true)
                 handleCompletionUseCase()
@@ -223,35 +234,35 @@ class AudioPlayerActivity : AppCompatActivity() {
         super.onPause()
         lifecycleScope.launch {
             if (isPlaying) {
-                val pauseResult = togglePlaybackUseCase(null)
+                // Приостанавливаем воспроизведение
+                val pauseResult = togglePlaybackUseCase(null)  // или с явной позицией
                 if (pauseResult.isSuccess) {
                     isPlaying = false
-                    savedPosition = getCurrentPositionUseCase()
+                    savedPosition = getCurrentPositionUseCase()  // Сохраняем позицию
                 }
             }
-            stopPolling()
+            stopPolling()  // Останавливаем обновление прогресса
+            updateUI()     // Обновляем UI: кнопка станет «Играть»
         }
     }
 
+
     override fun onStop() {
         super.onStop()
-        lifecycleScope.launch {
-            stopPlaybackUseCase()
-        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
         stopPolling()
-        lifecycleScope.launch {
-            stopPlaybackUseCase()
-        }
     }
 
     override fun onResume() {
         super.onResume()
         // Не запускаем воспроизведение, даже если isPlaying = true
         updateUI()  // Только обновляем UI
+        if (isPlaying) {  // Если воспроизведение было активным
+            startPolling()  // Возобновляем polling для обновления прогресса
+        }
     }
 
 
@@ -272,7 +283,6 @@ class AudioPlayerActivity : AppCompatActivity() {
         handleCompletionUseCase()
         updateUI()
         stopPolling()
-        // return не нужен — корутина завершится сама
     }
 
 
