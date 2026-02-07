@@ -6,15 +6,21 @@ import android.content.SharedPreferences
 import com.google.gson.Gson
 import com.practicum.playlistmaker.data.mapper.DtoMapper
 import com.practicum.playlistmaker.data.network.ItunesApi
+import com.practicum.playlistmaker.data.provider.CoroutineDelayProvider
 import com.practicum.playlistmaker.data.repository.HistoryRepositoryImpl
 import com.practicum.playlistmaker.data.repository.ItunesRepositoryImpl
 import com.practicum.playlistmaker.data.repository.PlayerRepositoryImpl
 import com.practicum.playlistmaker.data.repository.SettingsRepositoryImpl
+import com.practicum.playlistmaker.data.repository.ShareTextProviderImpl
+import com.practicum.playlistmaker.data.repository.SupportEmailDataProviderImpl
 import com.practicum.playlistmaker.domain.factory.TrackFactory
+import com.practicum.playlistmaker.domain.provider.SupportEmailDataProvider
 import com.practicum.playlistmaker.domain.repository.HistoryRepository
 import com.practicum.playlistmaker.domain.repository.ItunesRepository
 import com.practicum.playlistmaker.domain.repository.PlayerRepository
 import com.practicum.playlistmaker.domain.repository.SettingsRepository
+import com.practicum.playlistmaker.domain.usecase.DelayProvider
+import com.practicum.playlistmaker.domain.usecase.ShareTextProvider
 import com.practicum.playlistmaker.domain.usecase.UseCaseCreator
 import com.practicum.playlistmaker.utils.Constants.Companion.PREFERENCES
 import dagger.Module
@@ -25,12 +31,10 @@ import dagger.hilt.components.SingletonComponent
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
-
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
-    // 1. Базовые зависимости (Context, SharedPreferences, Gson)
     @Provides
     @Singleton
     fun provideContext(@ApplicationContext app: Application): Context = app
@@ -47,7 +51,6 @@ object AppModule {
     @Singleton
     fun provideGson(): Gson = Gson()
 
-    // 2. Сетевые компоненты (Retrofit, API)
     @Provides
     @Singleton
     fun provideRetrofit(): Retrofit {
@@ -63,7 +66,6 @@ object AppModule {
         return retrofit.create(ItunesApi::class.java)
     }
 
-    // 3. Репозитории (реализуют интерфейсы из domain)
     @Provides
     @Singleton
     fun provideItunesRepository(
@@ -99,7 +101,6 @@ object AppModule {
         return SettingsRepositoryImpl(sharedPreferences, gson, dtoMapper)
     }
 
-    // 4. Mapper и вспомогательные сервисы
     @Provides
     @Singleton
     fun provideDtoMapper(trackFactory: TrackFactory): DtoMapper {
@@ -112,7 +113,29 @@ object AppModule {
         return TrackFactory()
     }
 
-    // 5. ЕДИНСТВЕННЫЙ провайдер для Use Cases — через Creator
+    @Provides
+    @Singleton
+    fun provideDelayProvider(): DelayProvider {
+        return CoroutineDelayProvider()
+    }
+
+    @Provides
+    @Singleton
+    fun provideSupportEmailDataProvider(
+        @ApplicationContext context: Context
+    ): SupportEmailDataProvider {
+        return SupportEmailDataProviderImpl(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideShareTextProvider(
+        @ApplicationContext context: Context
+    ): ShareTextProvider {
+        return ShareTextProviderImpl(context)
+    }
+
+    // Теперь все зависимости доступны!
     @Provides
     @Singleton
     fun provideUseCaseCreator(
@@ -120,16 +143,19 @@ object AppModule {
         itunesRepository: ItunesRepository,
         historyRepository: HistoryRepository,
         playerRepository: PlayerRepository,
-        settingsRepository: SettingsRepository
+        settingsRepository: SettingsRepository,
+        delayProvider: DelayProvider,
+        supportEmailDataProvider: SupportEmailDataProvider,
+        shareTextProvider: ShareTextProvider  // ← Добавлен!
     ): UseCaseCreator {
         return UseCaseCreator(
-            context = context,
             itunesRepository = itunesRepository,
             historyRepository = historyRepository,
             playerRepository = playerRepository,
-            settingsRepository = settingsRepository
+            settingsRepository = settingsRepository,
+            delayProvider = delayProvider,
+            supportEmailDataProvider = supportEmailDataProvider,
+            shareTextProvider = shareTextProvider  // ← Передаём дальше
         )
     }
-
-
 }

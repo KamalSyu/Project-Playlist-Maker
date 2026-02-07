@@ -9,7 +9,6 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.domain.model.Track
 import com.practicum.playlistmaker.domain.usecase.FormatTrackDurationUseCaseContract
-import com.practicum.playlistmaker.presentation.parcel.ParcelableTrack
 
 
 class TrackViewHolder(
@@ -23,7 +22,7 @@ class TrackViewHolder(
     private val artistNameTextView: TextView = itemView.findViewById(R.id.artist_name)
     private val trackTimeTextView: TextView = itemView.findViewById(R.id.track_time)
 
-    private var track: Track? = null  // Изменено: Track вместо ParcelableTrack
+    private var track: Track? = null
 
     fun bind(track: Track) {
         this.track = track
@@ -31,7 +30,6 @@ class TrackViewHolder(
         trackNameTextView.text = track.trackName
         artistNameTextView.text = track.artistName
 
-        // Форматируем длительность через Use Case
         track.trackTimeMillis?.let { timeMillis ->
             trackTimeTextView.text = formatDurationUseCase.invoke(timeMillis)
         } ?: run {

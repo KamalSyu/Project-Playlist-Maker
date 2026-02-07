@@ -8,5 +8,6 @@ class Constants {
         const val SEARCH_QUERY_KEY = "SEARCH_QUERY"
         const val VIEW_TYPE_TRACK = 0
         const val VIEW_TYPE_ALBUM = 1
+        const val MAX_HISTORY_SIZE = 10
     }
 }

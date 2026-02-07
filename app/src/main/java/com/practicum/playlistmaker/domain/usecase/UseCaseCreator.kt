@@ -1,11 +1,10 @@
 package com.practicum.playlistmaker.domain.usecase
 
-import android.content.Context
+import com.practicum.playlistmaker.domain.provider.SupportEmailDataProvider
 import com.practicum.playlistmaker.domain.repository.HistoryRepository
 import com.practicum.playlistmaker.domain.repository.ItunesRepository
 import com.practicum.playlistmaker.domain.repository.PlayerRepository
 import com.practicum.playlistmaker.domain.repository.SettingsRepository
-import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
 class UseCaseCreator @Inject constructor(
@@ -13,7 +12,9 @@ class UseCaseCreator @Inject constructor(
     private val historyRepository: HistoryRepository,
     private val playerRepository: PlayerRepository,
     private val settingsRepository: SettingsRepository,
-    @ApplicationContext private val context: Context
+    private val delayProvider: DelayProvider,
+    private val shareTextProvider: ShareTextProvider,
+    private val supportEmailDataProvider: SupportEmailDataProvider,
     ) {
 
     fun createAddTrackToHistoryUseCase(): AddTrackToHistoryUseCaseContract {
@@ -47,10 +48,10 @@ class UseCaseCreator @Inject constructor(
         return SearchTracksUseCase(itunesRepository)
     }
     fun createSendSupportEmailUseCase(): SendSupportEmailUseCaseContract {
-        return SendSupportEmailUseCase(context)
+        return SendSupportEmailUseCase(supportEmailDataProvider)
     }
     fun createShareAppUseCase(): ShareAppUseCaseContract {
-        return ShareAppUseCase(context)
+        return ShareAppUseCase(shareTextProvider)
     }
     fun createStopPlaybackUseCase(): StopPlaybackUseCaseContract {
         return StopPlaybackUseCase(playerRepository)
@@ -62,7 +63,7 @@ class UseCaseCreator @Inject constructor(
         return TogglePlaybackUseCase(playerRepository)
     }
     fun createDelayedTrackActionUseCase(): DelayedTrackActionUseCaseContract {
-        return DelayedTrackActionUseCase()
+        return DelayedTrackActionUseCase(delayProvider)
     }
     fun createSetPlaybackCompletionListenerUseCase(): SetPlaybackCompletionListenerUseCaseContract {
         return SetPlaybackCompletionListenerUseCase(playerRepository)

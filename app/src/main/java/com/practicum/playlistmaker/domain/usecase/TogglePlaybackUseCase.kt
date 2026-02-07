@@ -7,12 +7,11 @@ class TogglePlaybackUseCase @Inject constructor(
     private val playerRepository: PlayerRepository
 ) : TogglePlaybackUseCaseContract {
 
-    override suspend operator fun invoke(seekPosition: Long?): Result<Boolean> {  // Убрали = null
+    override suspend operator fun invoke(seekPosition: Long?): Result<Boolean> {
         return try {
             val wasPlaying = playerRepository.isPlaying()
 
             if (!wasPlaying) {
-                // Явно проверяем на null
                 if (seekPosition != null) {
                     playerRepository.seekTo(seekPosition)
                 }

@@ -3,7 +3,6 @@ package com.practicum.playlistmaker.domain.factory
 import com.practicum.playlistmaker.domain.model.Track
 
 class TrackFactory {
-    // Создаёт объект Track с уникальным trackId
     fun createTrack(
         trackName: String,
         artistName: String,
@@ -29,7 +28,7 @@ class TrackFactory {
             previewUrl = previewUrl
         )
     }
-    // Генерирует уникальный ID на основе имени трека, артиста и коллекции
+
     private fun generateTrackId(
         trackName: String,
         artistName: String,

@@ -1,6 +1,5 @@
 package com.practicum.playlistmaker.presentation.ui
 
-import android.R.attr.track
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -103,21 +102,17 @@ class SearchActivity : AppCompatActivity() {
         tracksAdapter = TrackAdapter(
             tracks = emptyList(),
             viewType = VIEW_TYPE_TRACK,
-            onTrackClick = { track ->  // track: Track (исправлено!)
-                onTrackClicked(track)  // передаём Track напрямую
+            onTrackClick = { track ->
+                onTrackClicked(track)
             },
-            onClickPlayButton = { track ->  // track: Track
-                // Логика для кнопки Play (используем track как Track)
+            onClickPlayButton = { track ->
             },
-            onAddToPlaylist = { track ->  // track: Track
-                // Логика добавления в плейлист
+            onAddToPlaylist = { track ->
             },
-            onFavorite = { track ->  // track: Track
-                // Логика для Favorite
+            onFavorite = { track ->
             },
             formatDurationUseCase = formatTrackDurationUseCase
         )
-
 
         recyclerView.adapter = tracksAdapter
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -129,7 +124,7 @@ class SearchActivity : AppCompatActivity() {
             onClickPlayButton = {},
             onAddToPlaylist = {},
             onFavorite = {},
-            formatDurationUseCase = formatTrackDurationUseCase  // ДОБАВЛЕНО
+            formatDurationUseCase = formatTrackDurationUseCase
         )
         historyRecyclerView.adapter = historyAdapter
         historyRecyclerView.layoutManager = LinearLayoutManager(this)
@@ -221,11 +216,10 @@ class SearchActivity : AppCompatActivity() {
     }
 
     private fun updateTracksList(tracks: List<Track>) {
-        tracksAdapter.updateList(tracks)  // ✅ Передаём List<Track> напрямую
+        tracksAdapter.updateList(tracks)
         recyclerView.visibility = if (tracks.isNotEmpty()) View.VISIBLE else View.GONE
         showNoResults(tracks.isEmpty() && searchQuery.isNotEmpty())
     }
-
 
     private fun onTrackClicked(track: Track) {
         clickJob?.cancel()

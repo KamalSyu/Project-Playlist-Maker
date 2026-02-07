@@ -1,5 +1,6 @@
 package com.practicum.playlistmaker.domain.usecase
 
+import com.practicum.playlistmaker.domain.model.SupportEmailIntentData
 import com.practicum.playlistmaker.domain.model.Track
 
 interface AddTrackToHistoryUseCaseContract {
@@ -73,6 +74,13 @@ interface SetPlaybackCompletionListenerUseCaseContract {
     suspend operator fun invoke(onCompletion: () -> Unit)
 }
 
+interface DelayProvider {
+    suspend fun delay(millis: Long)
+}
+
+interface ShareTextProvider {
+    fun getShareText(): String
+}
 
 
 

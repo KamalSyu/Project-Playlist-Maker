@@ -19,9 +19,6 @@ data class ParcelableTrack(
     val previewUrl: String?
 ) : Parcelable {
 
-    fun getHighQualityArtworkUrl(): String? {
-        return artworkUrl100?.replace("100x100bb.jpg", "512x512bb.jpg")
-    }
 }
 
 fun Track.toParcelable() = ParcelableTrack(
@@ -37,17 +34,5 @@ fun Track.toParcelable() = ParcelableTrack(
     previewUrl = this.previewUrl
 )
 
-fun ParcelableTrack.toDomain() = Track(
-    trackId = this.trackId,
-    trackName = this.trackName,
-    artistName = this.artistName,
-    trackTimeMillis = this.trackTimeMillis,
-    artworkUrl100 = this.artworkUrl100,
-    releaseDate = this.releaseDate,
-    collectionName = this.collectionName,
-    primaryGenreName = this.primaryGenreName,
-    country = this.country,
-    previewUrl = this.previewUrl
-)
 
 

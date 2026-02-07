@@ -6,6 +6,8 @@ import com.practicum.playlistmaker.data.dto.SearchHistoryDTO
 import com.practicum.playlistmaker.data.mapper.DtoMapper
 import com.practicum.playlistmaker.domain.model.Track
 import com.practicum.playlistmaker.domain.repository.HistoryRepository
+import com.practicum.playlistmaker.utils.Constants.Companion.HISTORY_KEY
+import com.practicum.playlistmaker.utils.Constants.Companion.MAX_HISTORY_SIZE
 import javax.inject.Inject
 
 class HistoryRepositoryImpl @Inject constructor(
@@ -14,17 +16,12 @@ class HistoryRepositoryImpl @Inject constructor(
     private val dtoMapper: DtoMapper
 ) : HistoryRepository {
 
-    companion object {
-        private const val HISTORY_KEY = "search_history"
-    }
-
     override suspend fun addTrack(track: Track) {
         val currentHistory = getHistory()
         val updatedHistory = (listOf(track) + currentHistory)
             .distinctBy { it.trackId }
-            .take(10) // Ограничение до 10 последних треков
+            .take(MAX_HISTORY_SIZE)
 
-        // Преобразуем в DTO и сохраняем
         val dto = dtoMapper.toSearchHistoryDto(updatedHistory)
         sharedPreferences.edit()
             .putString(HISTORY_KEY, gson.toJson(dto))
@@ -36,16 +33,13 @@ class HistoryRepositoryImpl @Inject constructor(
         if (json == null) return emptyList()
 
         try {
-            // Читаем DTO из JSON
             val dto: SearchHistoryDTO = gson.fromJson(json, SearchHistoryDTO::class.java)
-            // Преобразуем DTO → List<Track>
             return dtoMapper.fromSearchHistoryDto(dto)
         } catch (e: Exception) {
             e.printStackTrace()
-            return emptyList() // Обработка ошибок (некорректный JSON и т.п.)
+            return emptyList()
         }
     }
-
     override suspend fun clearHistory() {
         sharedPreferences.edit()
             .remove(HISTORY_KEY)

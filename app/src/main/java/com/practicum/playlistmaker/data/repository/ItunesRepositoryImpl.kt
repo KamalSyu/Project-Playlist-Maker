@@ -9,11 +9,11 @@ import javax.inject.Inject
 
 class ItunesRepositoryImpl @Inject constructor(
     private val api: ItunesApi,
-    private val dtoMapper: DtoMapper  // Внедряем маппер
+    private val dtoMapper: DtoMapper
 ) : ItunesRepository {
 
     override suspend fun search(query: String): SearchResponse {
         val response: SearchResponseDTO = api.searchTracks(query)
-        return dtoMapper.toDomain(response)  // Вызов через dtoMapper!
+        return dtoMapper.toDomain(response)
     }
 }

@@ -13,7 +13,6 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.domain.model.Track
 import com.practicum.playlistmaker.domain.usecase.FormatTrackDurationUseCaseContract
-import com.practicum.playlistmaker.presentation.parcel.ParcelableTrack
 import com.practicum.playlistmaker.utils.DateFormatter
 
 
@@ -25,7 +24,6 @@ class AlbumViewHolder(
     private val onFavoriteClick: (Track) -> Unit,
     private val formatDurationUseCase: FormatTrackDurationUseCaseContract
 ) : RecyclerView.ViewHolder(itemView) {
-
 
     private val albumImageView: ImageView = itemView.findViewById(R.id.album)
     private val textTrackName: TextView = itemView.findViewById(R.id.textTrackName)
@@ -43,7 +41,6 @@ class AlbumViewHolder(
     private val dateFormatter = DateFormatter()
     private var currentTrack: Track? = null
 
-
     fun bind(
         track: Track,
         isPlaying: Boolean,
@@ -58,15 +55,12 @@ class AlbumViewHolder(
         primaryGenreNameTextView.text = track.primaryGenreName
         countryTextView.text = track.country
 
-        // Текущее время воспроизведения (например, «1:20»)
         timeTextView.text = formatDurationUseCase.invoke(currentTimeMillis)
 
-        // Общая длительность трека
         trackTimeMillisTextView.text = track.trackTimeMillis?.let {
             formatDurationUseCase.invoke(it)
         } ?: ""
 
-        // Загрузка изображения
         val cornerRadiusPx = (8 * itemView.resources.displayMetrics.density).toInt()
         if (track.artworkUrl100 != null) {
             Glide.with(itemView.context)

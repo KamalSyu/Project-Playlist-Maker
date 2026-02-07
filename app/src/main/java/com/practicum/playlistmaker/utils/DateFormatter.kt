@@ -20,8 +20,8 @@ class DateFormatter {
         if (releaseDateString == null) return "-"
 
         return try {
-            val date = inputFormat.parse(releaseDateString) ?: return "-"  // Если parse вернул null — сразу возвращаем "-"
-            outputFormat.format(date)                                     // Теперь date — не nullable
+            val date = inputFormat.parse(releaseDateString) ?: return "-"
+            outputFormat.format(date)
         } catch (e: Exception) {
             Log.w("DateFormatter", "Failed to parse release date: $releaseDateString", e)
             "-"

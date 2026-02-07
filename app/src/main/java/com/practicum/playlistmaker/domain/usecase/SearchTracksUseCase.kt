@@ -12,7 +12,7 @@ class SearchTracksUseCase @Inject constructor (
         return try {
             val response = itunesRepository.search(query)
             if (response.results.isEmpty()) {
-                Result.success(emptyList()) // Явно возвращаем пустой список
+                Result.success(emptyList())
             } else {
                 Result.success(response.results)
             }

@@ -12,11 +12,10 @@ import javax.inject.Inject
 @HiltAndroidApp
 class App : Application() {
 
-    @Inject lateinit var useCaseCreator: UseCaseCreator  // Добавляем это поле
+    @Inject lateinit var useCaseCreator: UseCaseCreator
 
     override fun onCreate() {
         super.onCreate()
-        // Проверяем инициализацию
         if (!::useCaseCreator.isInitialized) {
             throw IllegalStateException("DI не внедрил useCaseCreator!")
         }
@@ -31,7 +30,6 @@ class App : Application() {
             setTheme(darkThemeEnabled)
         } catch (e: Exception) {
             Log.e("Theme", "Ошибка сохранения темы", e)
-            // Дополнительно: показать уведомление пользователю
         }
     }
 

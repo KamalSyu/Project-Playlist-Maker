@@ -3,10 +3,8 @@ package com.practicum.playlistmaker.presentation.ui
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.net.toUri
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.practicum.playlistmaker.App
 import com.practicum.playlistmaker.R
@@ -33,21 +31,17 @@ class SettingsActivity : AppCompatActivity() {
 
         themeSwitcher = findViewById(R.id.switch_button)
 
-        // Получаем Use Cases через Creator
         getThemeStateUseCase = useCaseCreator.createGetThemeStateUseCase()
         shareAppUseCase = useCaseCreator.createShareAppUseCase()
         sendSupportEmailUseCase = useCaseCreator.createSendSupportEmailUseCase()
 
-        // Получаем текущее состояние темы через Use Case
         val isDarkMode = getThemeStateUseCase()
         themeSwitcher.isChecked = isDarkMode
 
-        // Обработчик переключения темы
         themeSwitcher.setOnCheckedChangeListener { _, isChecked ->
             (application as App).switchTheme(isChecked)
-            recreate() // Пересоздание Activity для немедленного применения темы
+            recreate()
         }
-
         // Обработчики кнопок
         findViewById<View>(R.id.back).setOnClickListener { finish() }
         findViewById<View>(R.id.btnShare).setOnClickListener { shareApp() }
@@ -55,9 +49,8 @@ class SettingsActivity : AppCompatActivity() {
         findViewById<View>(R.id.userAgreementButton).setOnClickListener { openUserAgreement() }
     }
 
-    // Метод для рассылки ссылки на приложение
     private fun shareApp() {
-        val shareText = shareAppUseCase() // Получаем текст через use case
+        val shareText = shareAppUseCase()
         val intent = Intent(Intent.ACTION_SEND)
         intent.type = "text/plain"
         intent.putExtra(Intent.EXTRA_TEXT, shareText)
@@ -65,10 +58,10 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun sendEmail() {
-        val emailData = sendSupportEmailUseCase() // Получаем данные через use case
+        val emailData = sendSupportEmailUseCase()
 
         val emailIntent = Intent(Intent.ACTION_SENDTO)
-        emailIntent.data = Uri.parse("mailto:${emailData.email}") // Используем email из DTO
+        emailIntent.data = Uri.parse("mailto:${emailData.email}")
         emailIntent.putExtra(Intent.EXTRA_SUBJECT, emailData.subject)
         emailIntent.putExtra(Intent.EXTRA_TEXT, emailData.body)
 

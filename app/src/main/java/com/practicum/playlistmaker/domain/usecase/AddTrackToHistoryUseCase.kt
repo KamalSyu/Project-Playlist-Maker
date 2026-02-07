@@ -4,8 +4,6 @@ import com.practicum.playlistmaker.domain.model.Track
 import com.practicum.playlistmaker.domain.repository.HistoryRepository
 import javax.inject.Inject
 
-//«Добавить трек в историю поиска».
-
 class AddTrackToHistoryUseCase @Inject constructor(
     private val historyRepository: HistoryRepository
 ) : AddTrackToHistoryUseCaseContract {

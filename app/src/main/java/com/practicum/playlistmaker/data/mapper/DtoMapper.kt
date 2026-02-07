@@ -10,12 +10,10 @@ import com.practicum.playlistmaker.domain.model.ThemeSettings
 import com.practicum.playlistmaker.domain.model.Track
 import com.practicum.playlistmaker.presentation.parcel.ParcelableTrack
 import javax.inject.Inject
+
 class DtoMapper @Inject constructor(
     private val trackFactory: TrackFactory
 ) {
-
-    // === ПРЕОБРАЗОВАНИЕ DTO → DOMAIN ===
-
     fun toDomain(trackDto: TrackDTO): Track {
         return trackFactory.createTrack(
             trackName = trackDto.trackName,
@@ -37,7 +35,6 @@ class DtoMapper @Inject constructor(
         )
     }
 
-    // НОВОЕ: Преобразование ParcelableTrack → Track
     fun toDomain(parcelableTrack: ParcelableTrack): Track {
         return trackFactory.createTrack(
             trackName = parcelableTrack.trackName,
@@ -51,8 +48,6 @@ class DtoMapper @Inject constructor(
             previewUrl = parcelableTrack.previewUrl,
         )
     }
-
-    // === ПРЕОБРАЗОВАНИЕ DOMAIN → DTO (для сохранения в Data-слой) ===
 
     fun toDto(track: Track): TrackDTO {
         return TrackDTO(
@@ -68,14 +63,20 @@ class DtoMapper @Inject constructor(
         )
     }
 
-    fun toDto(searchResponse: SearchResponse): SearchResponseDTO {
-        return SearchResponseDTO(
-            resultCount = searchResponse.resultCount,
-            results = searchResponse.results.map { toDto(it) }
+    fun toParcelableTrack(track: Track): ParcelableTrack {
+        return ParcelableTrack(
+            trackId = track.trackId,
+            trackName = track.trackName ?: "",
+            artistName = track.artistName ?: "",
+            trackTimeMillis = track.trackTimeMillis ?: 0L,
+            artworkUrl100 = track.artworkUrl100,
+            releaseDate = track.releaseDate,
+            collectionName = track.collectionName,
+            primaryGenreName = track.primaryGenreName,
+            country = track.country,
+            previewUrl = track.previewUrl
         )
     }
-
-    // === ДОПОЛНИТЕЛЬНО: ДЛЯ ИСТОРИИ ПОИСКА ===
 
     fun toSearchHistoryDto(tracks: List<Track>): SearchHistoryDTO {
         return SearchHistoryDTO(
@@ -93,22 +94,6 @@ class DtoMapper @Inject constructor(
 
     fun fromDto(dto: ThemeSettingsDTO): ThemeSettings {
         return ThemeSettings(isDarkTheme = dto.isDarkTheme)
-    }
-
-    // ИСПРАВЛЕНО: Прямое преобразование Track → ParcelableTrack
-    fun toParcelableTrack(track: Track): ParcelableTrack {
-        return ParcelableTrack(
-            trackId = track.trackId,
-            trackName = track.trackName ?: "",
-            artistName = track.artistName ?: "",
-            trackTimeMillis = track.trackTimeMillis ?: 0L,
-            artworkUrl100 = track.artworkUrl100,
-            releaseDate = track.releaseDate,
-            collectionName = track.collectionName,
-            primaryGenreName = track.primaryGenreName,
-            country = track.country,
-            previewUrl = track.previewUrl
-        )
     }
 }
 

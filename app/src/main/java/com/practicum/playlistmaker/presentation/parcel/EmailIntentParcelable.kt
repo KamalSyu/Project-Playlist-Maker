@@ -1,16 +1,13 @@
 package com.practicum.playlistmaker.presentation.parcel
 
-
 import android.os.Parcel
 import android.os.Parcelable
 import com.practicum.playlistmaker.domain.model.SupportEmailIntentData
 
-// Адаптер: превращает доменную модель в Parcelable для Intent
 class EmailIntentParcelable(
     val data: SupportEmailIntentData
 ) : Parcelable {
 
-    // Конструктор для создания из Parcel (требуется Parcelable)
     private constructor(parcel: Parcel) : this(
         SupportEmailIntentData(
             email = parcel.readString() ?: "",

@@ -39,6 +39,8 @@ class AudioPlayerActivity : AppCompatActivity() {
     private var updateRunnable: Runnable? = null
     private var isPlaying = false
     private var savedPosition: Long = 0L
+    private var isTrackFromIntent: Boolean = false
+
 
     // Use Cases через интерфейсы
     private lateinit var preparePlaybackUseCase: PreparePlaybackUseCaseContract
@@ -59,7 +61,7 @@ class AudioPlayerActivity : AppCompatActivity() {
 
         if (savedInstanceState == null) {
             isPlaying = false
-            savedPosition = 0L  // Начинаем с начала
+            savedPosition = 0L
             lifecycleScope.launch {
                 try {
                     if (track.previewUrl.isNullOrBlank()) {
@@ -76,20 +78,14 @@ class AudioPlayerActivity : AppCompatActivity() {
             }
             updateUI()
         } else {
-            // Восстанавливаем сохранённые значения
             isPlaying = savedInstanceState.getBoolean("isPlaying")
             savedPosition = savedInstanceState.getLong("savedPosition")
-
-
-            // Обновляем UI с актуальной позицией
             updateUI(resetTime = false)
 
-            // Если воспроизведение было активным — возобновляем polling
             if (isPlaying) {
                 startPolling()
             }
         }
-
 
         setupPlaybackListener()
         setupBackButton()
@@ -106,18 +102,19 @@ class AudioPlayerActivity : AppCompatActivity() {
     }
 
     private fun getTrackFromIntentOrSavedState(savedState: Bundle?): Track {
-        if (savedState != null) {
-            val parcelable = savedState.getParcelable<ParcelableTrack>("track")
-            if (parcelable != null) {
-                Log.d("AudioPlayer", "Track restored from savedInstanceState")
-                return dtoMapper.toDomain(parcelable)
-            }
-        }
         val parcelable = intent.getParcelableExtra<ParcelableTrack>("track")
         if (parcelable != null) {
             Log.d("AudioPlayer", "Track received from Intent")
             return dtoMapper.toDomain(parcelable)
         }
+        if (savedState != null) {
+            val savedParcelable = savedState.getParcelable<ParcelableTrack>("track")
+            if (savedParcelable != null) {
+                Log.d("AudioPlayer", "Track restored from savedInstanceState (fallback)")
+                return dtoMapper.toDomain(savedParcelable)
+            }
+        }
+
         throw IllegalArgumentException("Track is required but not provided.")
     }
 
@@ -139,33 +136,15 @@ class AudioPlayerActivity : AppCompatActivity() {
         )
         recyclerViewAudioPlayer.adapter = adapter
     }
-    private fun prepareAndPlay(track: Track) = lifecycleScope.launch {
-        try {
-            if (track.previewUrl.isNullOrBlank()) {
-                showError("Отрывок недоступен")
-                return@launch  // Выход из корутины
-            }
-            val result = preparePlaybackUseCase(track.previewUrl)
-            if (result.isSuccess) {
-                updateUI()
-            } else {
-                handlePlaybackError("Не удалось подготовить воспроизведение", result.exceptionOrNull() ?: return@launch)
-            }
-        } catch (e: Exception) {
-            handlePlaybackError("Ошибка при подготовке воспроизведения", e)
-        }
-    }
-
 
     private fun togglePlayback() = lifecycleScope.launch {
         try {
-            // Если плеер в состоянии "завершено" (UI показывает 00:00), начинаем с начала
             val resumePosition = if (isPlaying) {
-                null  // продолжаем текущее воспроизведение
+                null
             } else if (savedPosition > 0L && !isPlaying) {
-                savedPosition  // продолжаем с паузы
+                savedPosition
             } else {
-                0L  // начинаем заново (включая случай завершения)
+                0L
             }
 
             val result = togglePlaybackUseCase(resumePosition)
@@ -174,7 +153,6 @@ class AudioPlayerActivity : AppCompatActivity() {
                 isPlaying = result.getOrThrow()
                 if (isPlaying) {
                     startPolling()
-                    // При старте с начала обнуляем savedPosition
                     if (resumePosition == 0L) {
                         savedPosition = 0L
                     }
@@ -196,13 +174,12 @@ class AudioPlayerActivity : AppCompatActivity() {
         val currentPosition = if (resetTime) {
             0L
         } else if (!isPlaying && savedPosition > 0L) {
-            savedPosition  // Используем сохранённую позицию, если воспроизведение приостановлено
+            savedPosition
         } else {
-            getCurrentPositionUseCase()  // Иначе берём текущую позицию
+            getCurrentPositionUseCase()
         }
         adapter.notifyDataSetChangedWithState(isPlaying, currentPosition)
     }
-
 
     private fun startPolling() {
         Log.d("AudioPlayer", "startPolling called, isPlaying=$isPlaying")
@@ -226,7 +203,7 @@ class AudioPlayerActivity : AppCompatActivity() {
         setCompletionListenerUseCase {
             lifecycleScope.launch {
                 isPlaying = false
-                savedPosition = 0L  // <-- ВАЖНО: сбросить позицию!
+                savedPosition = 0L
                 stopPolling()
                 updateUI(resetTime = true)
                 handleCompletionUseCase()
@@ -234,33 +211,35 @@ class AudioPlayerActivity : AppCompatActivity() {
         }
     }
 
-
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        val currentTrack = adapter.getTracks().firstOrNull()
-        if (currentTrack != null) {
-            outState.putParcelable("track", dtoMapper.toParcelableTrack(currentTrack))
+
+        if (!isTrackFromIntent) {
+            val currentTrack = adapter.getTracks().firstOrNull()
+            if (currentTrack != null) {
+                outState.putParcelable("track", dtoMapper.toParcelableTrack(currentTrack))
+            }
         }
+
         outState.putBoolean("isPlaying", isPlaying)
         outState.putLong("savedPosition", savedPosition)
     }
+
 
     override fun onPause() {
         super.onPause()
         lifecycleScope.launch {
             if (isPlaying) {
-                // Приостанавливаем воспроизведение
-                val pauseResult = togglePlaybackUseCase(null)  // или с явной позицией
+                val pauseResult = togglePlaybackUseCase(null)
                 if (pauseResult.isSuccess) {
                     isPlaying = false
-                    savedPosition = getCurrentPositionUseCase()  // Сохраняем позицию
+                    savedPosition = getCurrentPositionUseCase()
                 }
             }
-            stopPolling()  // Останавливаем обновление прогресса
-            updateUI()     // Обновляем UI: кнопка станет «Играть»
+            stopPolling()
+            updateUI()
         }
     }
-
 
     override fun onStop() {
         super.onStop()
@@ -273,13 +252,11 @@ class AudioPlayerActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        // Не запускаем воспроизведение, даже если isPlaying = true
-        updateUI()  // Только обновляем UI
-        if (isPlaying) {  // Если воспроизведение было активным
-            startPolling()  // Возобновляем polling для обновления прогресса
+        updateUI()
+        if (isPlaying) {
+            startPolling()
         }
     }
-
 
     override fun onBackPressed() {
         stopPlaybackAndCleanup()
@@ -300,12 +277,11 @@ class AudioPlayerActivity : AppCompatActivity() {
         stopPolling()
     }
 
-
     private fun showError(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
         Log.e("AudioPlayerActivity", "Ошибка: $message")
     }
-    private fun handlePlaybackError(message: String, e: Throwable) {  // Throwable вместо Exception
+    private fun handlePlaybackError(message: String, e: Throwable) {
         Log.e("AudioPlayerActivity", message, e)
         showError(message)
     }
