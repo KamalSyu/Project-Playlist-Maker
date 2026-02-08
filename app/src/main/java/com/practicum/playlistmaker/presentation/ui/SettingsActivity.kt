@@ -5,6 +5,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.net.toUri
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.practicum.playlistmaker.App
 import com.practicum.playlistmaker.R
@@ -61,12 +62,14 @@ class SettingsActivity : AppCompatActivity() {
         val emailData = sendSupportEmailUseCase()
 
         val emailIntent = Intent(Intent.ACTION_SENDTO)
-        emailIntent.data = Uri.parse("mailto:${emailData.email}")
+        emailIntent.data = "mailto:".toUri()
+        emailIntent.putExtra(Intent.EXTRA_EMAIL, arrayOf(emailData.email))
         emailIntent.putExtra(Intent.EXTRA_SUBJECT, emailData.subject)
         emailIntent.putExtra(Intent.EXTRA_TEXT, emailData.body)
 
         startActivity(emailIntent)
     }
+
     private fun openUserAgreement() {
         val url = getString(R.string.url_oferta)
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
