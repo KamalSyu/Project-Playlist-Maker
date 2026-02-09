@@ -1,48 +1,40 @@
 package com.practicum.playlistmaker
 
 import android.app.Application
-import android.content.Context
-import android.content.SharedPreferences
+import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
-import com.practicum.playlistmaker.Constants.Companion.PREFERENCES
-import com.practicum.playlistmaker.Constants.Companion.DARK_THEME_KEY
+import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
+import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
+import com.practicum.playlistmaker.domain.usecase.UseCaseCreator
+import dagger.hilt.android.HiltAndroidApp
+import javax.inject.Inject
 
+@HiltAndroidApp
 class App : Application() {
-    // Переменная для хранения экземпляра SharedPreferences
-    private lateinit var sharedPreferences: SharedPreferences
+
+    @Inject lateinit var useCaseCreator: UseCaseCreator
 
     override fun onCreate() {
         super.onCreate()
+        if (!::useCaseCreator.isInitialized) {
+            throw IllegalStateException("DI не внедрил useCaseCreator!")
+        }
 
-        // Инициализация SharedPreferences
-        sharedPreferences = getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE)
-
-        // Получение сохранённого состояния тёмной темы из SharedPreferences
-        val darkTheme = sharedPreferences.getBoolean(DARK_THEME_KEY, false)
-
-        // Установка режима ночи в зависимости от состояния тёмной темы
-        setTheme(darkTheme)
+        val isDarkMode = useCaseCreator.createGetThemeStateUseCase()()
+        setTheme(isDarkMode)
     }
 
     fun switchTheme(darkThemeEnabled: Boolean) {
-        // Смена режима ночи
-        setTheme(darkThemeEnabled)
-
-        // Сохранение выбранного состояния тёмной темы в SharedPreferences
-        with(sharedPreferences.edit()) {
-            putBoolean(DARK_THEME_KEY, darkThemeEnabled)
-            apply()
+        try {
+            useCaseCreator.createSwitchThemeUseCase()(darkThemeEnabled)
+            setTheme(darkThemeEnabled)
+        } catch (e: Exception) {
+            Log.e("Theme", "Ошибка сохранения темы", e)
         }
     }
 
-    private fun setTheme(darkTheme: Boolean) {
-        AppCompatDelegate.setDefaultNightMode(
-            if (darkTheme) {
-                AppCompatDelegate.MODE_NIGHT_YES
-            } else {
-                AppCompatDelegate.MODE_NIGHT_NO
-            }
-        )
+    private fun setTheme(isDarkMode: Boolean) {
+        val mode = if (isDarkMode) MODE_NIGHT_YES else MODE_NIGHT_NO
+        AppCompatDelegate.setDefaultNightMode(mode)
     }
 }
-

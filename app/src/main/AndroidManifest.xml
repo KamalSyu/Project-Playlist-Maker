@@ -16,7 +16,7 @@
         android:theme="@style/Theme.PlaylistMaker"
         tools:targetApi="31">
         <activity
-            android:name=".MainActivity"
+            android:name=".presentation.ui.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -28,10 +28,10 @@
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
-        <activity android:name=".SettingsActivity" />
-        <activity android:name=".SearchActivity" />
-        <activity android:name=".MediatekaActivity" />
-        <activity android:name=".AudioPlayer" />
+        <activity android:name=".presentation.ui.SettingsActivity" />
+        <activity android:name=".presentation.ui.SearchActivity" />
+        <activity android:name=".presentation.ui.MediatekaActivity" />
+        <activity android:name=".presentation.ui.AudioPlayerActivity" />
 
     </application>
 
