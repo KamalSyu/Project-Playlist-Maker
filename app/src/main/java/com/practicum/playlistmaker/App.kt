@@ -5,7 +5,7 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
-import com.practicum.playlistmaker.domain.usecase.UseCaseCreator
+import com.practicum.playlistmaker.UseCaseCreator
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
