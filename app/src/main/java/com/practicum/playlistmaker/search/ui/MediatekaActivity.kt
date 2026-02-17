@@ -8,9 +8,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.search.data.mapper.DtoMapper
-import com.practicum.playlistmaker.FormatTrackDurationUseCaseContract
-import com.practicum.playlistmaker.GetSearchHistoryUseCaseContract
-import com.practicum.playlistmaker.UseCaseCreator
+import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContract
+import com.practicum.playlistmaker.core.contract.GetSearchHistoryUseCaseContract
+import com.practicum.playlistmaker.core.usecase.UseCaseCreator
 import com.practicum.playlistmaker.search.ui.adapter.TrackAdapter
 import com.practicum.playlistmaker.core.constants.Constants
 import dagger.hilt.android.AndroidEntryPoint

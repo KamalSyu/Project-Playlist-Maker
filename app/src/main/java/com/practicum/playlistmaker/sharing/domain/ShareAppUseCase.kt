@@ -1,7 +1,7 @@
 package com.practicum.playlistmaker.sharing.domain
 
-import com.practicum.playlistmaker.ShareAppUseCaseContract
-import com.practicum.playlistmaker.ShareTextProvider
+import com.practicum.playlistmaker.core.contract.ShareAppUseCaseContract
+import com.practicum.playlistmaker.core.contract.ShareTextProvider
 import javax.inject.Inject
 
 class ShareAppUseCase @Inject constructor(

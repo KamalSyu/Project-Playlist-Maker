@@ -1,6 +1,6 @@
 package com.practicum.playlistmaker.core.utils
 
-import com.practicum.playlistmaker.DelayProvider
+import com.practicum.playlistmaker.core.contract.DelayProvider
 
 class CoroutineDelayProvider : DelayProvider {
     override suspend fun delay(millis: Long) {

@@ -1,6 +1,6 @@
 package com.practicum.playlistmaker.core.utils
 
-import com.practicum.playlistmaker.FormatTrackDurationUseCaseContract
+import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContract
 import javax.inject.Inject
 
 class FormatTrackDurationUseCase @Inject constructor(

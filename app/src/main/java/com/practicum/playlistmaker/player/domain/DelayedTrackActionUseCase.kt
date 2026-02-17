@@ -1,7 +1,7 @@
 package com.practicum.playlistmaker.player.domain
 
-import com.practicum.playlistmaker.DelayProvider
-import com.practicum.playlistmaker.DelayedTrackActionUseCaseContract
+import com.practicum.playlistmaker.core.contract.DelayProvider
+import com.practicum.playlistmaker.core.contract.DelayedTrackActionUseCaseContract
 import com.practicum.playlistmaker.core.models.Track
 import javax.inject.Inject
 

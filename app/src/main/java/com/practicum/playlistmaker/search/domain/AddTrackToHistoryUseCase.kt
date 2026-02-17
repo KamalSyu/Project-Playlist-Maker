@@ -2,7 +2,7 @@ package com.practicum.playlistmaker.search.domain
 
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.search.domain.repository.HistoryRepository
-import com.practicum.playlistmaker.AddTrackToHistoryUseCaseContract
+import com.practicum.playlistmaker.core.contract.AddTrackToHistoryUseCaseContract
 import javax.inject.Inject
 
 class AddTrackToHistoryUseCase @Inject constructor(

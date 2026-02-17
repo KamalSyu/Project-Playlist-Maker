@@ -5,7 +5,7 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
-import com.practicum.playlistmaker.UseCaseCreator
+import com.practicum.playlistmaker.core.usecase.UseCaseCreator
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
@@ -16,21 +16,8 @@ class App : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        if (!::useCaseCreator.isInitialized) {
-            throw IllegalStateException("DI не внедрил useCaseCreator!")
-        }
-
         val isDarkMode = useCaseCreator.createGetThemeStateUseCase()()
         setTheme(isDarkMode)
-    }
-
-    fun switchTheme(darkThemeEnabled: Boolean) {
-        try {
-            useCaseCreator.createSwitchThemeUseCase()(darkThemeEnabled)
-            setTheme(darkThemeEnabled)
-        } catch (e: Exception) {
-            Log.e("Theme", "Ошибка сохранения темы", e)
-        }
     }
 
     private fun setTheme(isDarkMode: Boolean) {

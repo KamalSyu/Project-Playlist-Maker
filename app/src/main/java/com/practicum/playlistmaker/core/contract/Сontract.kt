@@ -1,7 +1,7 @@
-package com.practicum.playlistmaker.settings.domain
+package com.practicum.playlistmaker.core.contract
 
-import com.practicum.playlistmaker.sharing.domain.model.SupportEmailIntentData
 import com.practicum.playlistmaker.core.models.Track
+import com.practicum.playlistmaker.sharing.domain.model.SupportEmailIntentData
 
 interface AddTrackToHistoryUseCaseContract {
     suspend operator fun invoke(track: Track)

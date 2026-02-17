@@ -4,7 +4,7 @@ import com.practicum.playlistmaker.search.data.dto.SearchHistoryDTO
 import com.practicum.playlistmaker.search.data.dto.SearchResponseDTO
 import com.practicum.playlistmaker.settings.data.dto.ThemeSettingsDTO
 import com.practicum.playlistmaker.search.data.dto.TrackDTO
-import com.practicum.playlistmaker.core.utils.TrackFactory
+import com.practicum.playlistmaker.creator.domain.TrackFactory
 import com.practicum.playlistmaker.search.domain.model.SearchResponse
 import com.practicum.playlistmaker.settings.domain.model.ThemeSettings
 import com.practicum.playlistmaker.core.models.Track

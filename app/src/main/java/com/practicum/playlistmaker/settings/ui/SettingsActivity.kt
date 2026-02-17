@@ -7,12 +7,12 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import com.google.android.material.switchmaterial.SwitchMaterial
-import com.practicum.playlistmaker.App
 import com.practicum.playlistmaker.R
-import com.practicum.playlistmaker.GetThemeStateUseCaseContract
-import com.practicum.playlistmaker.SendSupportEmailUseCaseContract
-import com.practicum.playlistmaker.ShareAppUseCaseContract
-import com.practicum.playlistmaker.UseCaseCreator
+import com.practicum.playlistmaker.core.contract.GetThemeStateUseCaseContract
+import com.practicum.playlistmaker.core.contract.SendSupportEmailUseCaseContract
+import com.practicum.playlistmaker.core.contract.ShareAppUseCaseContract
+import com.practicum.playlistmaker.core.contract.SwitchThemeUseCaseContract
+import com.practicum.playlistmaker.core.usecase.UseCaseCreator
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -22,7 +22,7 @@ class SettingsActivity : AppCompatActivity() {
     @Inject
     lateinit var useCaseCreator: UseCaseCreator
 
-    private lateinit var themeSwitcher: SwitchMaterial
+    private lateinit var switchThemeUseCase: SwitchThemeUseCaseContract
     private lateinit var getThemeStateUseCase: GetThemeStateUseCaseContract
     private lateinit var shareAppUseCase: ShareAppUseCaseContract
     private lateinit var sendSupportEmailUseCase: SendSupportEmailUseCaseContract
@@ -31,17 +31,17 @@ class SettingsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
 
-        themeSwitcher = findViewById(R.id.switch_button)
-
+        switchThemeUseCase = useCaseCreator.createSwitchThemeUseCase()
         getThemeStateUseCase = useCaseCreator.createGetThemeStateUseCase()
         shareAppUseCase = useCaseCreator.createShareAppUseCase()
         sendSupportEmailUseCase = useCaseCreator.createSendSupportEmailUseCase()
 
-        val isDarkMode = getThemeStateUseCase()
-        themeSwitcher.isChecked = isDarkMode
+        val switchButton = findViewById<SwitchMaterial>(R.id.switch_button)
 
-        themeSwitcher.setOnCheckedChangeListener { _, isChecked ->
-            (application as App).switchTheme(isChecked)
+        switchButton.isChecked = getThemeStateUseCase()
+
+        switchButton.setOnCheckedChangeListener { _, isChecked ->
+            switchThemeUseCase(isChecked)  // ← используем полученный UseCase
             recreate()
         }
         // Обработчики кнопок

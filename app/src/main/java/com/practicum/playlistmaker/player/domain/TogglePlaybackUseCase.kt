@@ -1,7 +1,7 @@
 package com.practicum.playlistmaker.player.domain
 
 import com.practicum.playlistmaker.player.domain.repository.PlayerRepository
-import com.practicum.playlistmaker.TogglePlaybackUseCaseContract
+import com.practicum.playlistmaker.core.contract.TogglePlaybackUseCaseContract
 import javax.inject.Inject
 
 class TogglePlaybackUseCase @Inject constructor(

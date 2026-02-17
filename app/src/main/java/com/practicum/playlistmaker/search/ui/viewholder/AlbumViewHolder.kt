@@ -11,7 +11,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.core.models.Track
-import com.practicum.playlistmaker.FormatTrackDurationUseCaseContract
+import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContract
 import com.practicum.playlistmaker.core.utils.DateFormatter
 
 class AlbumViewHolder(

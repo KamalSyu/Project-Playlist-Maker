@@ -1,7 +1,7 @@
 package com.practicum.playlistmaker.player.domain
 
 import com.practicum.playlistmaker.player.domain.repository.PlayerRepository
-import com.practicum.playlistmaker.SetPlaybackCompletionListenerUseCaseContract
+import com.practicum.playlistmaker.core.contract.SetPlaybackCompletionListenerUseCaseContract
 import javax.inject.Inject
 
 class SetPlaybackCompletionListenerUseCase @Inject constructor(

@@ -13,16 +13,17 @@ import com.practicum.playlistmaker.player.data.repository.PlayerRepositoryImpl
 import com.practicum.playlistmaker.settings.data.repository.SettingsRepositoryImpl
 import com.practicum.playlistmaker.sharing.domain.provider.ShareTextProviderImpl
 import com.practicum.playlistmaker.sharing.domain.provider.SupportEmailDataProviderImpl
-import com.practicum.playlistmaker.core.utils.TrackFactory
+import com.practicum.playlistmaker.creator.domain.TrackFactory
 import com.practicum.playlistmaker.sharing.domain.provider.SupportEmailDataProvider
 import com.practicum.playlistmaker.search.domain.repository.HistoryRepository
 import com.practicum.playlistmaker.search.domain.repository.ItunesRepository
 import com.practicum.playlistmaker.player.domain.repository.PlayerRepository
 import com.practicum.playlistmaker.settings.domain.repository.SettingsRepository
-import com.practicum.playlistmaker.DelayProvider
-import com.practicum.playlistmaker.ShareTextProvider
-import com.practicum.playlistmaker.UseCaseCreator
+import com.practicum.playlistmaker.core.contract.DelayProvider
+import com.practicum.playlistmaker.core.contract.ShareTextProvider
+import com.practicum.playlistmaker.core.usecase.UseCaseCreator
 import com.practicum.playlistmaker.core.constants.Constants.Companion.PREFERENCES
+import com.practicum.playlistmaker.settings.domain.SwitchThemeUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -146,7 +147,7 @@ object AppModule {
         settingsRepository: SettingsRepository,
         delayProvider: DelayProvider,
         supportEmailDataProvider: SupportEmailDataProvider,
-        shareTextProvider: ShareTextProvider  // ← Добавлен!
+        shareTextProvider: ShareTextProvider
     ): UseCaseCreator {
         return UseCaseCreator(
             itunesRepository = itunesRepository,
@@ -155,7 +156,16 @@ object AppModule {
             settingsRepository = settingsRepository,
             delayProvider = delayProvider,
             supportEmailDataProvider = supportEmailDataProvider,
-            shareTextProvider = shareTextProvider  // ← Передаём дальше
+            shareTextProvider = shareTextProvider
         )
     }
+
+    @Provides
+    @Singleton
+    fun provideSwitchThemeUseCase(
+        settingsRepository: SettingsRepository
+    ): SwitchThemeUseCase {
+        return SwitchThemeUseCase(settingsRepository)
+    }
+
 }
