@@ -24,6 +24,7 @@ import com.practicum.playlistmaker.core.usecase.UseCaseCreator
 import com.practicum.playlistmaker.search.ui.adapter.TrackAdapter
 import com.practicum.playlistmaker.search.ui.parcel.ParcelableTrack
 import com.practicum.playlistmaker.core.constants.Constants
+import com.practicum.playlistmaker.core.contract.GetPlaybackPositionUseCaseContract
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -53,6 +54,7 @@ class AudioPlayerActivity : AppCompatActivity() {
     private lateinit var handleCompletionUseCase: HandlePlaybackCompletionUseCaseContract
     private lateinit var formatTrackDurationUseCase: FormatTrackDurationUseCaseContract
     private lateinit var setCompletionListenerUseCase: SetPlaybackCompletionListenerUseCaseContract
+    private lateinit var getPlaybackPositionUseCase : GetPlaybackPositionUseCaseContract
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -102,6 +104,7 @@ class AudioPlayerActivity : AppCompatActivity() {
         handleCompletionUseCase = useCaseCreator.createHandlePlaybackCompletionUseCase()
         formatTrackDurationUseCase = useCaseCreator.createFormatTrackDurationUseCase()
         setCompletionListenerUseCase = useCaseCreator.createSetPlaybackCompletionListenerUseCase()
+        getPlaybackPositionUseCase = useCaseCreator.createGetPlaybackPositionUseCase()
     }
 
     private fun getTrackFromIntentOrSavedState(savedState: Bundle?): Track {
@@ -142,6 +145,7 @@ class AudioPlayerActivity : AppCompatActivity() {
 
     private fun togglePlayback() = lifecycleScope.launch {
         try {
+            // 1. Определяем позицию для seek
             val resumePosition = if (isPlaying) {
                 null
             } else if (savedPosition > 0L && !isPlaying) {
@@ -150,6 +154,7 @@ class AudioPlayerActivity : AppCompatActivity() {
                 0L
             }
 
+            // 2. Вызываем UseCase (логика в domain/data)
             val result = togglePlaybackUseCase(resumePosition)
 
             if (result.isSuccess) {
@@ -160,12 +165,12 @@ class AudioPlayerActivity : AppCompatActivity() {
                         savedPosition = 0L
                     }
                 } else {
-                    savedPosition = getCurrentPositionUseCase()
+                    savedPosition = getCurrentPositionUseCase()  // ← UseCase, всё ок
                     stopPolling()
                 }
                 updateUI()
             } else {
-                handlePlaybackError("Ошибка переключения воспроизведения", result.exceptionOrNull() ?: return@launch)
+                handlePlaybackError("Ошибка переключения воспроизведения", result.exceptionOrNull()!!)
             }
         } catch (t: Throwable) {
             handlePlaybackError("Ошибка при переключении воспроизведения", t)
@@ -173,14 +178,12 @@ class AudioPlayerActivity : AppCompatActivity() {
     }
 
 
+
+
+
     private fun updateUI(resetTime: Boolean = false) = lifecycleScope.launch {
-        val currentPosition = if (resetTime) {
-            0L
-        } else if (!isPlaying && savedPosition > 0L) {
-            savedPosition
-        } else {
-            getCurrentPositionUseCase()
-        }
+        val currentPosition = getPlaybackPositionUseCase(isPlaying, savedPosition, resetTime)
+
         adapter.notifyDataSetChangedWithState(isPlaying, currentPosition)
     }
 
@@ -267,18 +270,19 @@ class AudioPlayerActivity : AppCompatActivity() {
     }
 
     private fun stopPlaybackAndCleanup() = lifecycleScope.launch {
-        if (isPlaying) {
-            savedPosition = getCurrentPositionUseCase()
-            val pauseResult = togglePlaybackUseCase()
-            if (pauseResult.isSuccess) {
-                isPlaying = false
-            }
+        val result = stopPlaybackUseCase()  // Без параметра!
+        if (result.isSuccess) {
+            isPlaying = false
+            savedPosition = 0L
+            updateUI()
+            stopPolling()
+        } else {
+            handlePlaybackError("Ошибка остановки", result.exceptionOrNull()!!)
         }
-        stopPlaybackUseCase()
-        handleCompletionUseCase()
-        updateUI()
-        stopPolling()
     }
+
+
+
 
     private fun showError(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()

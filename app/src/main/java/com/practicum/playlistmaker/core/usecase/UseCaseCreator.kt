@@ -7,6 +7,7 @@ import com.practicum.playlistmaker.core.contract.DelayedTrackActionUseCaseContra
 import com.practicum.playlistmaker.core.contract.FilterTracksUseCaseContract
 import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContract
 import com.practicum.playlistmaker.core.contract.GetCurrentPositionUseCaseContract
+import com.practicum.playlistmaker.core.contract.GetPlaybackPositionUseCaseContract
 import com.practicum.playlistmaker.core.contract.GetSearchHistoryUseCaseContract
 import com.practicum.playlistmaker.core.contract.GetThemeStateUseCaseContract
 import com.practicum.playlistmaker.core.contract.HandlePlaybackCompletionUseCaseContract
@@ -22,6 +23,7 @@ import com.practicum.playlistmaker.core.contract.TogglePlaybackUseCaseContract
 import com.practicum.playlistmaker.core.utils.FormatTrackDurationUseCase
 import com.practicum.playlistmaker.player.domain.DelayedTrackActionUseCase
 import com.practicum.playlistmaker.player.domain.GetCurrentPositionUseCase
+import com.practicum.playlistmaker.player.domain.GetPlaybackPositionUseCase
 import com.practicum.playlistmaker.player.domain.HandlePlaybackCompletionUseCase
 import com.practicum.playlistmaker.player.domain.PreparePlaybackUseCase
 import com.practicum.playlistmaker.player.domain.SetPlaybackCompletionListenerUseCase
@@ -90,8 +92,13 @@ class UseCaseCreator @Inject constructor(
         return ShareAppUseCase(shareTextProvider)
     }
     fun createStopPlaybackUseCase(): StopPlaybackUseCaseContract {
-        return StopPlaybackUseCase(playerRepository)
+        return StopPlaybackUseCase(
+            playerRepository,
+            createGetCurrentPositionUseCase(),
+            createTogglePlaybackUseCase()
+        )
     }
+
     fun createSwitchThemeUseCase(): SwitchThemeUseCaseContract {
         return SwitchThemeUseCase(settingsRepository)
     }
@@ -103,5 +110,8 @@ class UseCaseCreator @Inject constructor(
     }
     fun createSetPlaybackCompletionListenerUseCase(): SetPlaybackCompletionListenerUseCaseContract {
         return SetPlaybackCompletionListenerUseCase(playerRepository)
+    }
+    fun createGetPlaybackPositionUseCase(): GetPlaybackPositionUseCaseContract {
+        return GetPlaybackPositionUseCase(playerRepository)
     }
 }

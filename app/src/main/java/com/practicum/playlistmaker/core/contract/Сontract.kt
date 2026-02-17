@@ -26,7 +26,13 @@ interface GetCurrentPositionUseCaseContract {
 interface GetSearchHistoryUseCaseContract {
     suspend operator fun invoke(): List<Track>
 }
-
+interface GetPlaybackPositionUseCaseContract {
+    operator  fun invoke(
+        isPlaying: Boolean,
+        savedPosition: Long,
+        resetTime: Boolean
+    ): Long
+}
 interface GetThemeStateUseCaseContract {
     operator fun invoke(): Boolean
 }
@@ -52,7 +58,7 @@ interface ShareAppUseCaseContract {
 }
 
 interface StopPlaybackUseCaseContract {
-    suspend operator fun invoke()
+    suspend operator fun invoke() : Result<Unit>
 }
 
 interface SwitchThemeUseCaseContract {
