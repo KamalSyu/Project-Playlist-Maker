@@ -23,8 +23,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-
-
 @AndroidEntryPoint
 class AudioPlayerActivity : AppCompatActivity() {
 
@@ -40,9 +38,6 @@ class AudioPlayerActivity : AppCompatActivity() {
     private val handler = Handler(Looper.getMainLooper())
     private var updateRunnable: Runnable? = null
 
-
-    // Локальное поле playbackState удалено — все данные берём из LiveData
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_audioplayer)
@@ -51,7 +46,17 @@ class AudioPlayerActivity : AppCompatActivity() {
         setupBackButton()
 
         // Подписываемся на изменения состояния воспроизведения
-        viewModel.playbackState.observe(this) { newState ->
+        viewModel.playbackState.observe(this) { _ ->
+            updateUI()
+        }
+
+        // Подписываемся на изменение текущего времени в миллисекундах
+        viewModel.currentPositionMillis.observe(this) { _ ->
+            updateUI()
+        }
+
+        // Подписываемся на форматированное время
+        viewModel.formattedTime.observe(this) { _ ->
             updateUI()
         }
 
@@ -101,7 +106,7 @@ class AudioPlayerActivity : AppCompatActivity() {
             onClickPlayButton = { _ -> togglePlayback() },
             onAddToPlaylist = {},
             onFavorite = {},
-            formatDurationUseCase = viewModel.getFormatTrackDurationUseCase()
+            formatDurationUseCase = viewModel.formatTrackDurationUseCase  // ПРЯМО берём из ViewModel
         )
         recyclerViewAudioPlayer.adapter = adapter
     }
@@ -119,17 +124,18 @@ class AudioPlayerActivity : AppCompatActivity() {
         viewModel.stopPlayback()
     }
 
+    // Обновлённый updateUI — получает данные из LiveData через .value после подписки
     private fun updateUI() {
         val currentState = viewModel.playbackState.value ?: PlaybackState(false, 0L)
-        val currentTimeMillis = viewModel.currentPositionMillis.value ?: 0L  // берём Long
+        val currentTimeMillis = viewModel.currentPositionMillis.value ?: 0L
         val formattedTime = viewModel.formattedTime.value ?: "00:00"
 
         adapter.notifyDataSetChangedWithState(
             isPlaying = currentState.isPlaying,
-            currentTimeMillis = currentTimeMillis
+            currentTimeMillis = currentTimeMillis,
+            position = 0  // position передаём, formattedTime убираем
         )
     }
-
 
     private fun startPolling() {
         updateRunnable = Runnable {
@@ -196,3 +202,176 @@ class AudioPlayerActivity : AppCompatActivity() {
         showError(message)
     }
 }
+
+
+//@AndroidEntryPoint
+//class AudioPlayerActivity : AppCompatActivity() {
+//
+//    private val viewModel: AudioPlayerViewModel by viewModels()
+//
+//    @Inject
+//    lateinit var useCaseCreator: UseCaseCreator
+//    @Inject
+//    lateinit var dtoMapper: DtoMapper
+//
+//    private lateinit var recyclerViewAudioPlayer: RecyclerView
+//    private lateinit var adapter: TrackAdapter
+//    private val handler = Handler(Looper.getMainLooper())
+//    private var updateRunnable: Runnable? = null
+//
+//
+//    // Локальное поле playbackState удалено — все данные берём из LiveData
+//
+//    override fun onCreate(savedInstanceState: Bundle?) {
+//        super.onCreate(savedInstanceState)
+//        setContentView(R.layout.activity_audioplayer)
+//
+//        setupRecyclerView(getTrackFromIntent())
+//        setupBackButton()
+//
+//        // Подписываемся на изменения состояния воспроизведения
+//        viewModel.playbackState.observe(this) { newState ->
+//            updateUI()
+//        }
+//
+//        // Подписываемся на событие завершения воспроизведения
+//        viewModel.playbackCompleted.observe(this) {
+//            lifecycleScope.launch {
+//                stopPolling()
+//                updateUI()
+//            }
+//        }
+//
+//        // Инициализация при первом запуске
+//        if (savedInstanceState == null) {
+//            val track = getTrackFromIntent()
+//            viewModel.initPlayback(track.previewUrl)
+//            setupCompletionListener()
+//        } else {
+//            // Восстановление состояния воспроизведения
+//            val isPlaying = savedInstanceState.getBoolean("isPlaying")
+//            val savedPosition = savedInstanceState.getLong("savedPosition")
+//            if (isPlaying) {
+//                startPolling()
+//            }
+//        }
+//    }
+//
+//    private fun getTrackFromIntent(): Track {
+//        val parcelable = intent.getParcelableExtra<ParcelableTrack>("track")
+//        if (parcelable != null) {
+//            Log.d("AudioPlayer", "Track received from Intent")
+//            return dtoMapper.toDomain(parcelable)
+//        }
+//        throw IllegalArgumentException("Track is required but not provided.")
+//    }
+//
+//    private fun setupBackButton() {
+//        findViewById<TextView>(R.id.back).setOnClickListener { onBackPressed() }
+//    }
+//
+//    private fun setupRecyclerView(track: Track) {
+//        recyclerViewAudioPlayer = findViewById(R.id.recyclerViewAudioPlayer)
+//        recyclerViewAudioPlayer.layoutManager = LinearLayoutManager(this)
+//        adapter = TrackAdapter(
+//            tracks = listOf(track),
+//            viewType = Constants.Companion.VIEW_TYPE_ALBUM,
+//            onTrackClick = {},
+//            onClickPlayButton = { _ -> togglePlayback() },
+//            onAddToPlaylist = {},
+//            onFavorite = {},
+//            formatDurationUseCase = viewModel.getFormatTrackDurationUseCase()
+//        )
+//        recyclerViewAudioPlayer.adapter = adapter
+//    }
+//
+//    private fun togglePlayback() {
+//        val currentState = viewModel.playbackState.value ?: PlaybackState(false, 0L)
+//        val resumePosition = when {
+//            !currentState.isPlaying && currentState.position > 0L -> currentState.position
+//            else -> null
+//        }
+//        viewModel.togglePlayback(resumePosition)
+//    }
+//
+//    private fun stopPlaybackAndCleanup() {
+//        viewModel.stopPlayback()
+//    }
+//
+//    private fun updateUI() {
+//        val currentState = viewModel.playbackState.value ?: PlaybackState(false, 0L)
+//        val currentTimeMillis = viewModel.currentPositionMillis.value ?: 0L  // берём Long
+//        val formattedTime = viewModel.formattedTime.value ?: "00:00"
+//
+//        adapter.notifyDataSetChangedWithState(
+//            isPlaying = currentState.isPlaying,
+//            currentTimeMillis = currentTimeMillis
+//        )
+//    }
+//
+//
+//    private fun startPolling() {
+//        updateRunnable = Runnable {
+//            if ((viewModel.playbackState.value ?: PlaybackState(false, 0L)).isPlaying) {
+//                handler.postDelayed(updateRunnable!!, 1000)
+//            } else {
+//                stopPolling()
+//            }
+//        }
+//        handler.post(updateRunnable!!)
+//    }
+//
+//    private fun stopPolling() {
+//        updateRunnable?.let { handler.removeCallbacks(it) }
+//        updateRunnable = null
+//    }
+//
+//    private fun setupCompletionListener() {
+//        viewModel.setupCompletionListener()
+//    }
+//
+//    override fun onSaveInstanceState(outState: Bundle) {
+//        super.onSaveInstanceState(outState)
+//        outState.putBoolean("isPlaying", (viewModel.playbackState.value ?: PlaybackState(false, 0L)).isPlaying)
+//        outState.putLong("savedPosition", (viewModel.playbackState.value ?: PlaybackState(false, 0L)).position)
+//    }
+//
+//    override fun onPause() {
+//        super.onPause()
+//        stopPolling()
+//        if (isFinishing) {
+//            stopPlaybackAndCleanup()
+//        }
+//    }
+//
+//    override fun onStop() {
+//        super.onStop()
+//    }
+//
+//    override fun onDestroy() {
+//        super.onDestroy()
+//        stopPolling()
+//    }
+//
+//    override fun onResume() {
+//        super.onResume()
+//        if ((viewModel.playbackState.value ?: PlaybackState(false, 0L)).isPlaying) {
+//            startPolling()
+//        }
+//    }
+//
+//    override fun onBackPressed() {
+//        stopPlaybackAndCleanup()
+//        super.onBackPressed()
+//    }
+//
+//    private fun showError(message: String) {
+//        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+//        Log.e("AudioPlayerActivity", "Ошибка: $message")
+//    }
+//
+//    private fun handlePlaybackError(message: String, e: Throwable) {
+//        Log.e("AudioPlayerActivity", message, e)
+//        showError(message)
+//    }
+//}
