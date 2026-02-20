@@ -60,6 +60,9 @@ dependencies {
     implementation(libs.converter.gson)
     implementation(libs.androidx.constraintlayout.v200)
 
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.kotlinx.coroutines.android)
+
     // Hilt
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)

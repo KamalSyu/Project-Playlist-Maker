@@ -23,6 +23,8 @@ import com.practicum.playlistmaker.core.contract.DelayProvider
 import com.practicum.playlistmaker.core.contract.ShareTextProvider
 import com.practicum.playlistmaker.core.usecase.UseCaseCreator
 import com.practicum.playlistmaker.core.constants.Constants.Companion.PREFERENCES
+import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContract
+import com.practicum.playlistmaker.core.utils.FormatTrackDurationUseCase
 import com.practicum.playlistmaker.settings.domain.SwitchThemeUseCase
 import dagger.Module
 import dagger.Provides
@@ -147,7 +149,7 @@ object AppModule {
         settingsRepository: SettingsRepository,
         delayProvider: DelayProvider,
         supportEmailDataProvider: SupportEmailDataProvider,
-        shareTextProvider: ShareTextProvider
+        shareTextProvider: ShareTextProvider,
     ): UseCaseCreator {
         return UseCaseCreator(
             itunesRepository = itunesRepository,
@@ -156,7 +158,7 @@ object AppModule {
             settingsRepository = settingsRepository,
             delayProvider = delayProvider,
             supportEmailDataProvider = supportEmailDataProvider,
-            shareTextProvider = shareTextProvider
+            shareTextProvider = shareTextProvider,
         )
     }
 
@@ -166,6 +168,13 @@ object AppModule {
         settingsRepository: SettingsRepository
     ): SwitchThemeUseCase {
         return SwitchThemeUseCase(settingsRepository)
+    }
+
+
+    @Provides
+    @Singleton
+    fun provideFormatTrackDurationUseCase(): FormatTrackDurationUseCaseContract {
+        return FormatTrackDurationUseCase()
     }
 
 }

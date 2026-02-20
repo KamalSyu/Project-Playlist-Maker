@@ -19,6 +19,9 @@ materialVersion = "1.8.0"
 retrofit = "2.9.0"
 core = "1.51.0"
 hilt = "2.55"
+lifecycle = "2.6.2"
+kotlinx-coroutines = "1.6.4"
+
 
 
 [libraries]
@@ -42,6 +45,9 @@ material-v161 = { module = "com.google.android.material:material", version.ref =
 material-v180 = { module = "com.google.android.material:material", version.ref = "materialVersion" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 core = { group = "com.google.ar", name = "core", version.ref = "core" }
+androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
+kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

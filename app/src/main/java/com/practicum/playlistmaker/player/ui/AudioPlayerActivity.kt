@@ -6,31 +6,29 @@ import android.os.Looper
 import android.util.Log
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.R
-import com.practicum.playlistmaker.search.data.mapper.DtoMapper
+import com.practicum.playlistmaker.core.constants.Constants
+import com.practicum.playlistmaker.core.models.PlaybackState
 import com.practicum.playlistmaker.core.models.Track
-import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContract
-import com.practicum.playlistmaker.core.contract.GetCurrentPositionUseCaseContract
-import com.practicum.playlistmaker.core.contract.HandlePlaybackCompletionUseCaseContract
-import com.practicum.playlistmaker.core.contract.PreparePlaybackUseCaseContract
-import com.practicum.playlistmaker.core.contract.SetPlaybackCompletionListenerUseCaseContract
-import com.practicum.playlistmaker.core.contract.StopPlaybackUseCaseContract
-import com.practicum.playlistmaker.core.contract.TogglePlaybackUseCaseContract
 import com.practicum.playlistmaker.core.usecase.UseCaseCreator
+import com.practicum.playlistmaker.search.data.mapper.DtoMapper
 import com.practicum.playlistmaker.search.ui.adapter.TrackAdapter
 import com.practicum.playlistmaker.search.ui.parcel.ParcelableTrack
-import com.practicum.playlistmaker.core.constants.Constants
-import com.practicum.playlistmaker.core.contract.GetPlaybackPositionUseCaseContract
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+
+
 @AndroidEntryPoint
 class AudioPlayerActivity : AppCompatActivity() {
+
+    private val viewModel: AudioPlayerViewModel by viewModels()
 
     @Inject
     lateinit var useCaseCreator: UseCaseCreator
@@ -41,86 +39,51 @@ class AudioPlayerActivity : AppCompatActivity() {
     private lateinit var adapter: TrackAdapter
     private val handler = Handler(Looper.getMainLooper())
     private var updateRunnable: Runnable? = null
-    private var isPlaying = false
-    private var savedPosition: Long = 0L
-    private var isTrackFromIntent: Boolean = false
 
 
-    // Use Cases через интерфейсы
-    private lateinit var preparePlaybackUseCase: PreparePlaybackUseCaseContract
-    private lateinit var togglePlaybackUseCase: TogglePlaybackUseCaseContract
-    private lateinit var stopPlaybackUseCase: StopPlaybackUseCaseContract
-    private lateinit var getCurrentPositionUseCase: GetCurrentPositionUseCaseContract
-    private lateinit var handleCompletionUseCase: HandlePlaybackCompletionUseCaseContract
-    private lateinit var formatTrackDurationUseCase: FormatTrackDurationUseCaseContract
-    private lateinit var setCompletionListenerUseCase: SetPlaybackCompletionListenerUseCaseContract
-    private lateinit var getPlaybackPositionUseCase : GetPlaybackPositionUseCaseContract
+    // Локальное поле playbackState удалено — все данные берём из LiveData
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_audioplayer)
 
-        initUseCases()
-        val track = getTrackFromIntentOrSavedState(savedInstanceState)
-        setupRecyclerView(track)
+        setupRecyclerView(getTrackFromIntent())
+        setupBackButton()
 
-        if (savedInstanceState == null) {
-            isPlaying = false
-            savedPosition = 0L
-            lifecycleScope.launch {
-                try {
-                    if (track.previewUrl.isNullOrBlank()) {
-                        showError("Отрывок недоступен")
-                    } else {
-                        val result = preparePlaybackUseCase(track.previewUrl)
-                        if (!result.isSuccess) {
-                            handlePlaybackError("Не удалось подготовить воспроизведение", result.exceptionOrNull() ?: return@launch)
-                        }
-                    }
-                } catch (e: Exception) {
-                    handlePlaybackError("Ошибка при подготовке воспроизведения", e)
-                }
-            }
+        // Подписываемся на изменения состояния воспроизведения
+        viewModel.playbackState.observe(this) { newState ->
             updateUI()
-        } else {
-            isPlaying = savedInstanceState.getBoolean("isPlaying")
-            savedPosition = savedInstanceState.getLong("savedPosition")
-            updateUI(resetTime = false)
+        }
 
+        // Подписываемся на событие завершения воспроизведения
+        viewModel.playbackCompleted.observe(this) {
+            lifecycleScope.launch {
+                stopPolling()
+                updateUI()
+            }
+        }
+
+        // Инициализация при первом запуске
+        if (savedInstanceState == null) {
+            val track = getTrackFromIntent()
+            viewModel.initPlayback(track.previewUrl)
+            setupCompletionListener()
+        } else {
+            // Восстановление состояния воспроизведения
+            val isPlaying = savedInstanceState.getBoolean("isPlaying")
+            val savedPosition = savedInstanceState.getLong("savedPosition")
             if (isPlaying) {
                 startPolling()
             }
         }
-
-        setupPlaybackListener()
-        setupBackButton()
     }
 
-    private fun initUseCases() {
-        preparePlaybackUseCase = useCaseCreator.createPreparePlaybackUseCase()
-        togglePlaybackUseCase = useCaseCreator.createTogglePlaybackUseCase()
-        stopPlaybackUseCase = useCaseCreator.createStopPlaybackUseCase()
-        getCurrentPositionUseCase = useCaseCreator.createGetCurrentPositionUseCase()
-        handleCompletionUseCase = useCaseCreator.createHandlePlaybackCompletionUseCase()
-        formatTrackDurationUseCase = useCaseCreator.createFormatTrackDurationUseCase()
-        setCompletionListenerUseCase = useCaseCreator.createSetPlaybackCompletionListenerUseCase()
-        getPlaybackPositionUseCase = useCaseCreator.createGetPlaybackPositionUseCase()
-    }
-
-    private fun getTrackFromIntentOrSavedState(savedState: Bundle?): Track {
+    private fun getTrackFromIntent(): Track {
         val parcelable = intent.getParcelableExtra<ParcelableTrack>("track")
         if (parcelable != null) {
             Log.d("AudioPlayer", "Track received from Intent")
             return dtoMapper.toDomain(parcelable)
         }
-        if (savedState != null) {
-            val savedParcelable = savedState.getParcelable<ParcelableTrack>("track")
-            if (savedParcelable != null) {
-                Log.d("AudioPlayer", "Track restored from savedInstanceState (fallback)")
-                return dtoMapper.toDomain(savedParcelable)
-            }
-        }
-
         throw IllegalArgumentException("Track is required but not provided.")
     }
 
@@ -138,60 +101,39 @@ class AudioPlayerActivity : AppCompatActivity() {
             onClickPlayButton = { _ -> togglePlayback() },
             onAddToPlaylist = {},
             onFavorite = {},
-            formatDurationUseCase = formatTrackDurationUseCase
+            formatDurationUseCase = viewModel.getFormatTrackDurationUseCase()
         )
         recyclerViewAudioPlayer.adapter = adapter
     }
 
-    private fun togglePlayback() = lifecycleScope.launch {
-        try {
-            // 1. Определяем позицию для seek
-            val resumePosition = if (isPlaying) {
-                null
-            } else if (savedPosition > 0L && !isPlaying) {
-                savedPosition
-            } else {
-                0L
-            }
-
-            // 2. Вызываем UseCase (логика в domain/data)
-            val result = togglePlaybackUseCase(resumePosition)
-
-            if (result.isSuccess) {
-                isPlaying = result.getOrThrow()
-                if (isPlaying) {
-                    startPolling()
-                    if (resumePosition == 0L) {
-                        savedPosition = 0L
-                    }
-                } else {
-                    savedPosition = getCurrentPositionUseCase()  // ← UseCase, всё ок
-                    stopPolling()
-                }
-                updateUI()
-            } else {
-                handlePlaybackError("Ошибка переключения воспроизведения", result.exceptionOrNull()!!)
-            }
-        } catch (t: Throwable) {
-            handlePlaybackError("Ошибка при переключении воспроизведения", t)
+    private fun togglePlayback() {
+        val currentState = viewModel.playbackState.value ?: PlaybackState(false, 0L)
+        val resumePosition = when {
+            !currentState.isPlaying && currentState.position > 0L -> currentState.position
+            else -> null
         }
+        viewModel.togglePlayback(resumePosition)
     }
 
-
-
-
-
-    private fun updateUI(resetTime: Boolean = false) = lifecycleScope.launch {
-        val currentPosition = getPlaybackPositionUseCase(isPlaying, savedPosition, resetTime)
-
-        adapter.notifyDataSetChangedWithState(isPlaying, currentPosition)
+    private fun stopPlaybackAndCleanup() {
+        viewModel.stopPlayback()
     }
+
+    private fun updateUI() {
+        val currentState = viewModel.playbackState.value ?: PlaybackState(false, 0L)
+        val currentTimeMillis = viewModel.currentPositionMillis.value ?: 0L  // берём Long
+        val formattedTime = viewModel.formattedTime.value ?: "00:00"
+
+        adapter.notifyDataSetChangedWithState(
+            isPlaying = currentState.isPlaying,
+            currentTimeMillis = currentTimeMillis
+        )
+    }
+
 
     private fun startPolling() {
-        Log.d("AudioPlayer", "startPolling called, isPlaying=$isPlaying")
         updateRunnable = Runnable {
-            if (isPlaying) {
-                updateUI()
+            if ((viewModel.playbackState.value ?: PlaybackState(false, 0L)).isPlaying) {
                 handler.postDelayed(updateRunnable!!, 1000)
             } else {
                 stopPolling()
@@ -205,45 +147,21 @@ class AudioPlayerActivity : AppCompatActivity() {
         updateRunnable = null
     }
 
-    private fun setupPlaybackListener() = lifecycleScope.launch {
-        setCompletionListenerUseCase {
-            lifecycleScope.launch {
-                isPlaying = false
-                savedPosition = 0L
-                stopPolling()
-                updateUI(resetTime = true)
-                handleCompletionUseCase()
-            }
-        }
+    private fun setupCompletionListener() {
+        viewModel.setupCompletionListener()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-
-        if (!isTrackFromIntent) {
-            val currentTrack = adapter.getTracks().firstOrNull()
-            if (currentTrack != null) {
-                outState.putParcelable("track", dtoMapper.toParcelableTrack(currentTrack))
-            }
-        }
-
-        outState.putBoolean("isPlaying", isPlaying)
-        outState.putLong("savedPosition", savedPosition)
+        outState.putBoolean("isPlaying", (viewModel.playbackState.value ?: PlaybackState(false, 0L)).isPlaying)
+        outState.putLong("savedPosition", (viewModel.playbackState.value ?: PlaybackState(false, 0L)).position)
     }
-
 
     override fun onPause() {
         super.onPause()
-        lifecycleScope.launch {
-            if (isPlaying) {
-                val pauseResult = togglePlaybackUseCase(null)
-                if (pauseResult.isSuccess) {
-                    isPlaying = false
-                    savedPosition = getCurrentPositionUseCase()
-                }
-            }
-            stopPolling()
-            updateUI()
+        stopPolling()
+        if (isFinishing) {
+            stopPlaybackAndCleanup()
         }
     }
 
@@ -258,8 +176,7 @@ class AudioPlayerActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        updateUI()
-        if (isPlaying) {
+        if ((viewModel.playbackState.value ?: PlaybackState(false, 0L)).isPlaying) {
             startPolling()
         }
     }
@@ -269,28 +186,13 @@ class AudioPlayerActivity : AppCompatActivity() {
         super.onBackPressed()
     }
 
-    private fun stopPlaybackAndCleanup() = lifecycleScope.launch {
-        val result = stopPlaybackUseCase()  // Без параметра!
-        if (result.isSuccess) {
-            isPlaying = false
-            savedPosition = 0L
-            updateUI()
-            stopPolling()
-        } else {
-            handlePlaybackError("Ошибка остановки", result.exceptionOrNull()!!)
-        }
-    }
-
-
-
-
     private fun showError(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
         Log.e("AudioPlayerActivity", "Ошибка: $message")
     }
+
     private fun handlePlaybackError(message: String, e: Throwable) {
         Log.e("AudioPlayerActivity", message, e)
         showError(message)
     }
-
 }
