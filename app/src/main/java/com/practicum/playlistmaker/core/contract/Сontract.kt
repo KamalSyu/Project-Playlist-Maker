@@ -87,6 +87,9 @@ interface DelayProvider {
 interface ShareTextProvider {
     fun getShareText(): String
 }
+interface ResetPlaybackUseCaseContract {
+    suspend operator fun invoke()
+}
 
 
 

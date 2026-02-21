@@ -119,16 +119,22 @@ class AudioPlayerViewModel @Inject constructor(
                     )
                 }
             } else {
-                // Запускаем воспроизведение через Use Case
-                val result = togglePlaybackUseCase(resumePosition)
+                // Запуск с начала при первом нажатии после возврата
+                val effectivePosition = if (currentState.position == 0L) {
+                    null // Запускаем с 00:00
+                } else {
+                    resumePosition ?: currentState.position
+                }
+
+                val result = togglePlaybackUseCase(effectivePosition)
                 if (result.isSuccess) {
-                    // Определяем позицию для UI
-                    val effectivePosition = resumePosition ?: currentState.position
+                    val finalPosition = effectivePosition ?: 0L
                     _uiState.value = _uiState.value?.copy(
                         playbackState = currentState.copy(
                             isPlaying = true,
-                            position = effectivePosition
+                            position = finalPosition
                         ),
+                        formattedTime = formatTrackDurationUseCase(finalPosition),
                         shouldPoll = true
                     )
                 }
@@ -186,220 +192,28 @@ class AudioPlayerViewModel @Inject constructor(
             }
         }
     }
+    fun resetPlaybackToStart() = viewModelScope.launch {
+        try {
+            // Сначала останавливаем воспроизведение
+            stopPlaybackUseCase().isSuccess
+
+            // Сбрасываем состояние в репозитории
+            useCaseCreator.createResetPlaybackUseCase().invoke()
+
+            // Обновляем UI‑состояние
+            _uiState.value = PlayerUiState(
+                playbackState = PlaybackState(isPlaying = false, position = 0L),
+                formattedTime = formatTrackDurationUseCase(0L),
+                playbackCompleted = false,
+                shouldPoll = false,
+                error = null,
+                isInitialized = false
+            )
+        } catch (e: Exception) {
+            Log.e("AudioPlayerViewModel", "Ошибка сброса воспроизведения до начала", e)
+            _uiState.value = _uiState.value?.copy(error = e)
+        }
+    }
+
+
 }
-
-
-
-//@HiltViewModel
-//class AudioPlayerViewModel @Inject constructor(
-//    private val useCaseCreator: UseCaseCreator
-//) : ViewModel() {
-//
-//    private val preparePlaybackUseCase = useCaseCreator.createPreparePlaybackUseCase()
-//    private val togglePlaybackUseCase = useCaseCreator.createTogglePlaybackUseCase()
-//    private val stopPlaybackUseCase = useCaseCreator.createStopPlaybackUseCase()
-//    private val getCurrentPositionUseCase = useCaseCreator.createGetCurrentPositionUseCase()
-//    private val handleCompletionUseCase = useCaseCreator.createHandlePlaybackCompletionUseCase()
-//    private val setCompletionListenerUseCase = useCaseCreator.createSetPlaybackCompletionListenerUseCase()
-//    private val getPlaybackPositionUseCase = useCaseCreator.createGetPlaybackPositionUseCase()
-//
-//    val formatTrackDurationUseCase: FormatTrackDurationUseCaseContract =
-//        useCaseCreator.createFormatTrackDurationUseCase()
-//
-//    // LiveData для передачи состояния в Activity
-//    private val _playbackState = MutableLiveData<PlaybackState>()
-//    val playbackState: LiveData<PlaybackState> = _playbackState
-//
-//    // LiveData для форматированного времени
-//    private val _formattedTime = MutableLiveData<String>()
-//    val formattedTime: LiveData<String> = _formattedTime
-//
-//    private val _playbackCompleted = MutableLiveData<Unit>()
-//    val playbackCompleted: LiveData<Unit> = _playbackCompleted
-//
-//    private val _currentPositionMillis = MutableLiveData<Long>()
-//    val currentPositionMillis: LiveData<Long> = _currentPositionMillis
-//
-//    /**
-//     * Восстанавливает состояние воспроизведения из savedInstanceState
-//     */
-//    fun restorePlaybackState(isPlaying: Boolean, savedPosition: Long) {
-//        _playbackState.value = PlaybackState(isPlaying, savedPosition)
-//        _currentPositionMillis.value = savedPosition
-//        _formattedTime.value = formatTrackDurationUseCase(savedPosition)
-//    }
-//
-//    /**
-//     * Сохраняет текущую позицию воспроизведения
-//     */
-//    fun saveCurrentPosition() = viewModelScope.launch {
-//        try {
-//            val currentPosition = getCurrentPositionUseCase()
-//            _playbackState.value = PlaybackState(
-//                isPlaying = (_playbackState.value ?: PlaybackState(false, 0L)).isPlaying,
-//                position = currentPosition
-//            )
-//            _currentPositionMillis.value = currentPosition
-//            _formattedTime.value = formatTrackDurationUseCase(currentPosition)
-//        } catch (e: Exception) {
-//            Log.e("AudioPlayerViewModel", "Ошибка сохранения позиции", e)
-//        }
-//    }
-//
-//    /**
-//     * Обновляет текущую позицию для polling
-//     */
-//    fun updateCurrentPosition() = viewModelScope.launch {
-//        try {
-//            val currentPosition = getCurrentPositionUseCase()
-//            _currentPositionMillis.value = currentPosition
-//            _formattedTime.value = formatTrackDurationUseCase(currentPosition)
-//        } catch (e: Exception) {
-//            Log.e("AudioPlayerViewModel", "Ошибка обновления позиции", e)
-//        }
-//    }
-//
-//    fun initPlayback(previewUrl: String?) = viewModelScope.launch {
-//        val result = preparePlaybackUseCase(previewUrl)
-//        if (result.isSuccess) {
-//            _playbackState.value = PlaybackState(isPlaying = false, position = 0L)
-//            _currentPositionMillis.value = 0L
-//            _formattedTime.value = formatTrackDurationUseCase(0L)
-//        } else {
-//            // Оставляем состояние по умолчанию, но логируем ошибку
-//            Log.e("AudioPlayerViewModel", "Не удалось подготовить воспроизведение: ${result.exceptionOrNull()?.message}")
-//        }
-//    }
-//
-//    fun togglePlayback(resumePosition: Long? = null) = viewModelScope.launch {
-//        try {
-//            val result = togglePlaybackUseCase(resumePosition)
-//            if (result.isSuccess) {
-//                val isPlaying = result.getOrThrow()
-//                // Получаем актуальную позицию только если не воспроизводим с resumePosition
-//                val currentPosition = if (resumePosition != null) resumePosition else getCurrentPositionUseCase()
-//                _playbackState.value = PlaybackState(isPlaying, currentPosition)
-//                _currentPositionMillis.value = currentPosition
-//                _formattedTime.value = formatTrackDurationUseCase(currentPosition)
-//            }
-//        } catch (e: Exception) {
-//            Log.e("AudioPlayerViewModel", "Ошибка переключения воспроизведения", e)
-//        }
-//    }
-//
-//    fun stopPlayback() = viewModelScope.launch {
-//        try {
-//            val result = stopPlaybackUseCase()
-//            if (result.isSuccess) {
-//                _playbackState.value = PlaybackState(false, 0L)
-//                _currentPositionMillis.value = 0L
-//                _formattedTime.value = formatTrackDurationUseCase(0L)
-//            }
-//        } catch (e: Exception) {
-//            Log.e("AudioPlayerViewModel", "Ошибка остановки воспроизведения", e)
-//        }
-//    }
-//
-//    fun setupCompletionListener() = viewModelScope.launch {
-//        try {
-//            setCompletionListenerUseCase {
-//                viewModelScope.launch {
-//                    try {
-//                        val currentPosition = getCurrentPositionUseCase()
-//                        _playbackState.value = PlaybackState(isPlaying = false, position = currentPosition)
-//                        _currentPositionMillis.value = currentPosition
-//                        _formattedTime.value = formatTrackDurationUseCase(currentPosition)
-//                        handleCompletionUseCase()
-//                        _playbackCompleted.value = Unit
-//                    } catch (e: Exception) {
-//                        Log.e("AudioPlayerViewModel", "Ошибка в колбэке завершения", e)
-//                    }
-//                }
-//            }
-//        } catch (e: Exception) {
-//            Log.e("AudioPlayerViewModel", "Ошибка настройки слушателя завершения", e)
-//        }
-//    }
-//}
-
-//@HiltViewModel
-//class AudioPlayerViewModel @Inject constructor(
-//    private val useCaseCreator: UseCaseCreator
-//) : ViewModel() {
-//
-//    private val preparePlaybackUseCase = useCaseCreator.createPreparePlaybackUseCase()
-//    private val togglePlaybackUseCase = useCaseCreator.createTogglePlaybackUseCase()
-//    private val stopPlaybackUseCase = useCaseCreator.createStopPlaybackUseCase()
-//    private val getCurrentPositionUseCase = useCaseCreator.createGetCurrentPositionUseCase()
-//    private val handleCompletionUseCase = useCaseCreator.createHandlePlaybackCompletionUseCase()
-//    private val formatTrackDurationUseCase = useCaseCreator.createFormatTrackDurationUseCase()
-//    private val setCompletionListenerUseCase = useCaseCreator.createSetPlaybackCompletionListenerUseCase()
-//    private val getPlaybackPositionUseCase = useCaseCreator.createGetPlaybackPositionUseCase()
-//
-//    // LiveData для передачи состояния в Activity
-//    private val _playbackState = MutableLiveData<PlaybackState>()
-//    val playbackState: LiveData<PlaybackState> = _playbackState
-//
-//    // LiveData для форматированного времени (новое!)
-//    private val _formattedTime = MutableLiveData<String>()
-//    val formattedTime: LiveData<String> = _formattedTime
-//
-//    private val _playbackCompleted = MutableLiveData<Unit>()
-//    val playbackCompleted: LiveData<Unit> = _playbackCompleted
-//
-//    private val _currentPositionMillis = MutableLiveData<Long>()
-//    val currentPositionMillis: LiveData<Long> = _currentPositionMillis
-//
-//    fun getFormatTrackDurationUseCase(): FormatTrackDurationUseCaseContract {
-//        return formatTrackDurationUseCase
-//    }
-//
-//    fun initPlayback(previewUrl: String?) = viewModelScope.launch {
-//        val result = preparePlaybackUseCase(previewUrl)
-//        if (result.isSuccess) {
-//            _playbackState.value = PlaybackState(isPlaying = false, position = 0L)
-//            _currentPositionMillis.value = 0L  // добавляем
-//            _formattedTime.value = formatTrackDurationUseCase(0L)
-//        } else {
-//            _playbackState.value = PlaybackState(isPlaying = false, position = 0L)
-//            _currentPositionMillis.value = 0L  // добавляем
-//            _formattedTime.value = formatTrackDurationUseCase(0L)
-//        }
-//    }
-//
-//
-//    fun togglePlayback(resumePosition: Long? = null) = viewModelScope.launch {
-//        val result = togglePlaybackUseCase(resumePosition)
-//        if (result.isSuccess) {
-//            val isPlaying = result.getOrThrow()
-//            val currentPosition = if (isPlaying) 0L else getCurrentPositionUseCase()
-//            _playbackState.value = PlaybackState(isPlaying, currentPosition)
-//            _currentPositionMillis.value = currentPosition  // добавляем
-//            _formattedTime.value = formatTrackDurationUseCase(currentPosition)
-//        }
-//    }
-//
-//    fun stopPlayback() = viewModelScope.launch {
-//        val result = stopPlaybackUseCase()
-//        if (result.isSuccess) {
-//            _playbackState.value = PlaybackState(false, 0L)
-//            _currentPositionMillis.value = 0L  // добавляем
-//            _formattedTime.value = formatTrackDurationUseCase(0L)
-//        }
-//    }
-//
-//    fun setupCompletionListener() = viewModelScope.launch {
-//        setCompletionListenerUseCase {
-//            viewModelScope.launch {
-//                val currentPosition = getCurrentPositionUseCase()
-//                _playbackState.value = PlaybackState(isPlaying = false, position = currentPosition)
-//                _currentPositionMillis.value = currentPosition  // добавляем
-//                _formattedTime.value = formatTrackDurationUseCase(currentPosition)
-//                handleCompletionUseCase()
-//                _playbackCompleted.value = Unit
-//            }
-//        }
-//    }
-//
-//
-//}

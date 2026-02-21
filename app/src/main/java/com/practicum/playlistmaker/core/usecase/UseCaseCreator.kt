@@ -83,6 +83,11 @@ class UseCaseCreator @Inject constructor(
     // Utils
     fun createFormatTrackDurationUseCase(): FormatTrackDurationUseCaseContract =
         FormatTrackDurationUseCase()
+
+    fun createResetPlaybackUseCase(): ResetPlaybackUseCaseContract =
+        ResetPlaybackUseCase(playerRepository)
+
+
 }
 
 
