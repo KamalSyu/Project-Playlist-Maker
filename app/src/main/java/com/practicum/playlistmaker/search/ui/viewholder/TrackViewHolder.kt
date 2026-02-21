@@ -10,11 +10,11 @@ import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContract
 
+
 class TrackViewHolder(
     itemView: View,
     private val formatDurationUseCase: FormatTrackDurationUseCaseContract
 ) : RecyclerView.ViewHolder(itemView) {
-
 
     private val artworkImageView: ImageView = itemView.findViewById(R.id.artwork_image)
     private val trackNameTextView: TextView = itemView.findViewById(R.id.track_name)
@@ -45,10 +45,12 @@ class TrackViewHolder(
             .into(artworkImageView)
     }
 
-    fun showPlayingState(isPlaying: Boolean, currentTimeMillis: Long) {
-        if (currentTimeMillis > 0) {
-            trackTimeTextView.text = formatDurationUseCase.invoke(currentTimeMillis)
-        }
+    /**
+     * ИЗМЕНЕНО: добавлен параметр formattedTime для отображения готового форматированного времени
+     */
+    fun showPlayingState(isPlaying: Boolean, currentTimeMillis: Long, formattedTime: String) {
+        // Используем готовое форматированное время из состояния ViewModel
+        trackTimeTextView.text = formattedTime
     }
 
     fun hidePlayingState() {
@@ -59,3 +61,52 @@ class TrackViewHolder(
         }
     }
 }
+//class TrackViewHolder(
+//    itemView: View,
+//    private val formatDurationUseCase: FormatTrackDurationUseCaseContract
+//) : RecyclerView.ViewHolder(itemView) {
+//
+//
+//    private val artworkImageView: ImageView = itemView.findViewById(R.id.artwork_image)
+//    private val trackNameTextView: TextView = itemView.findViewById(R.id.track_name)
+//    private val artistNameTextView: TextView = itemView.findViewById(R.id.artist_name)
+//    private val trackTimeTextView: TextView = itemView.findViewById(R.id.track_time)
+//
+//    private var track: Track? = null
+//
+//    fun bind(track: Track) {
+//        this.track = track
+//
+//        trackNameTextView.text = track.trackName
+//        artistNameTextView.text = track.artistName
+//
+//        track.trackTimeMillis?.let { timeMillis ->
+//            trackTimeTextView.text = formatDurationUseCase.invoke(timeMillis)
+//        } ?: run {
+//            trackTimeTextView.text = ""
+//        }
+//
+//        // Загружаем обложку
+//        Glide.with(itemView.context)
+//            .load(track.artworkUrl100)
+//            .placeholder(R.drawable.ic_placeholder_45)
+//            .error(R.drawable.ic_placeholder_45)
+//            .centerCrop()
+//            .transform(RoundedCorners(2))
+//            .into(artworkImageView)
+//    }
+//
+//    fun showPlayingState(isPlaying: Boolean, currentTimeMillis: Long) {
+//        if (currentTimeMillis > 0) {
+//            trackTimeTextView.text = formatDurationUseCase.invoke(currentTimeMillis)
+//        }
+//    }
+//
+//    fun hidePlayingState() {
+//        track?.trackTimeMillis?.let { timeMillis ->
+//            trackTimeTextView.text = formatDurationUseCase.invoke(timeMillis)
+//        } ?: run {
+//            trackTimeTextView.text = ""
+//        }
+//    }
+//}

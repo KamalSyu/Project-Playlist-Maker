@@ -6,6 +6,7 @@ interface PlayerRepository {
     suspend fun pause()
     suspend fun stop()
     suspend fun reset()
+    suspend fun playWithPosition(resumePosition: Long?) // новый метод с позицией
     fun seekTo(position: Long)
     fun isPlaying(): Boolean
     fun getCurrentPosition(): Long
