@@ -124,9 +124,8 @@ class AudioPlayerActivity : AppCompatActivity() {
             formattedTime = state.formattedTime
         )
 
-        // Обновляем кнопку воспроизведения в UI
-        val currentState = viewModel.uiState.value?.playbackState ?: PlaybackState(false, 0L)
-        (recyclerViewAudioPlayer.findViewHolderForAdapterPosition(0) as? AlbumViewHolder)?.updatePlayButtonState(currentState.isPlaying)
+        val viewHolder = recyclerViewAudioPlayer.findViewHolderForAdapterPosition(0) as? AlbumViewHolder
+        viewHolder?.updatePlayButtonState(state.playbackState.isPlaying)
 
         if (state.shouldPoll && state.playbackState.isPlaying) {
             startPolling()
@@ -204,9 +203,6 @@ class AudioPlayerActivity : AppCompatActivity() {
         viewModel.resetPlaybackToStart()  // Делегируем всю логику ViewModel
         super.onBackPressed()
     }
-
-
-
 
 
     private fun showError(message: String) {

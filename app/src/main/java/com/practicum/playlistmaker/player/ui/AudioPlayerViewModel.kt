@@ -25,8 +25,6 @@ class AudioPlayerViewModel @Inject constructor(
     private val setCompletionListenerUseCase = useCaseCreator.createSetPlaybackCompletionListenerUseCase()
     private val getPlaybackPositionUseCase = useCaseCreator.createGetPlaybackPositionUseCase()
 
-    private var playbackError: Exception? = null
-
     val formatTrackDurationUseCase: FormatTrackDurationUseCaseContract =
         useCaseCreator.createFormatTrackDurationUseCase()
 
@@ -189,9 +187,13 @@ class AudioPlayerViewModel @Inject constructor(
                     playbackState = PlaybackState(isPlaying = false, position = 0L),
                     formattedTime = formatTrackDurationUseCase(0L)
                 )
+                // Явно останавливаем воспроизведение
+                stopPlaybackUseCase().isSuccess
             }
         }
     }
+
+
     fun resetPlaybackToStart() = viewModelScope.launch {
         try {
             // Сначала останавливаем воспроизведение

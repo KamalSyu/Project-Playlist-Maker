@@ -14,7 +14,6 @@ class PlayerRepositoryImpl @Inject constructor() : PlayerRepository {
     private var savedPosition: Long = 0L
     private var isPrepared: Boolean = false
     private var completionListener: (() -> Unit)? = null
-    private val lock = Any()
 
 
     override suspend fun prepare(url: String?) {
@@ -38,6 +37,7 @@ class PlayerRepositoryImpl @Inject constructor() : PlayerRepository {
 
                 setOnCompletionListener {
                     completionListener?.invoke()
+                    savedPosition = 0L
                 }
 
                 prepareAsync()
