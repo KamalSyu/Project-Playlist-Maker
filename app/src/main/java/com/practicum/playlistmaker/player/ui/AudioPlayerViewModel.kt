@@ -12,11 +12,13 @@ import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContr
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
+
 @HiltViewModel
 class AudioPlayerViewModel @Inject constructor(
     private val useCaseCreator: UseCaseCreator
 ) : ViewModel() {
 
+    // Use Case для операций плеера
     private val preparePlaybackUseCase = useCaseCreator.createPreparePlaybackUseCase()
     private val togglePlaybackUseCase = useCaseCreator.createTogglePlaybackUseCase()
     private val stopPlaybackUseCase = useCaseCreator.createStopPlaybackUseCase()
@@ -25,9 +27,11 @@ class AudioPlayerViewModel @Inject constructor(
     private val setCompletionListenerUseCase = useCaseCreator.createSetPlaybackCompletionListenerUseCase()
     private val getPlaybackPositionUseCase = useCaseCreator.createGetPlaybackPositionUseCase()
 
+    // Форматирование времени трека (доступно извне)
     val formatTrackDurationUseCase: FormatTrackDurationUseCaseContract =
         useCaseCreator.createFormatTrackDurationUseCase()
 
+    // Внутреннее состояние UI
     private val _uiState = MutableLiveData<PlayerUiState>(
         PlayerUiState(
             playbackState = PlaybackState(isPlaying = false, position = 0L),
@@ -36,8 +40,10 @@ class AudioPlayerViewModel @Inject constructor(
         )
     )
 
+    // Публичное состояние UI (только чтение)
     val uiState: LiveData<PlayerUiState> = _uiState
 
+    /** Восстановление состояния после поворота экрана */
     fun restorePlaybackState(isPlaying: Boolean, savedPosition: Long) {
         _uiState.value = PlayerUiState(
             playbackState = PlaybackState(isPlaying, savedPosition),
@@ -46,10 +52,12 @@ class AudioPlayerViewModel @Inject constructor(
         )
     }
 
+    /** Очистка ошибки из состояния */
     fun clearError() {
         _uiState.value = _uiState.value?.copy(error = null)
     }
 
+    /** Сохранение текущей позиции воспроизведения */
     fun saveCurrentPosition() = viewModelScope.launch {
         try {
             val currentPosition = getCurrentPositionUseCase()
@@ -61,11 +69,11 @@ class AudioPlayerViewModel @Inject constructor(
         }
     }
 
+    /** Обновление позиции в UI */
     fun updateCurrentPosition() = viewModelScope.launch {
         try {
             val currentPosition = getCurrentPositionUseCase()
             val currentState = _uiState.value ?: return@launch
-
 
             if (currentState.shouldPoll) {
                 _uiState.value = currentState.copy(
@@ -78,6 +86,7 @@ class AudioPlayerViewModel @Inject constructor(
         }
     }
 
+    /** Инициализация воспроизведения трека */
     fun initPlayback(previewUrl: String?) = viewModelScope.launch {
         try {
             val result = preparePlaybackUseCase(previewUrl)
@@ -92,7 +101,6 @@ class AudioPlayerViewModel @Inject constructor(
                 )
             } else {
                 Log.e("AudioPlayerViewModel", "Не удалось подготовить воспроизведение")
-                // Не сбрасываем состояние — сохраняем текущую позицию
                 _uiState.value = _uiState.value?.copy(
                     error = result.exceptionOrNull()
                 )
@@ -103,13 +111,14 @@ class AudioPlayerViewModel @Inject constructor(
         }
     }
 
+    /** Переключение воспроизведения (старт/пауза) */
     fun togglePlayback(resumePosition: Long? = null) = viewModelScope.launch {
         try {
             val currentState = _uiState.value?.playbackState ?: PlaybackState(false, 0L)
 
             if (currentState.isPlaying) {
-                // Ставим на паузу через Use Case
-                val result = togglePlaybackUseCase(null) // пауза не требует позиции
+                // Пауза
+                val result = togglePlaybackUseCase(null)
                 if (result.isSuccess) {
                     _uiState.value = _uiState.value?.copy(
                         playbackState = currentState.copy(isPlaying = false),
@@ -117,13 +126,8 @@ class AudioPlayerViewModel @Inject constructor(
                     )
                 }
             } else {
-                // Запуск с начала при первом нажатии после возврата
-                val effectivePosition = if (currentState.position == 0L) {
-                    null // Запускаем с 00:00
-                } else {
-                    resumePosition ?: currentState.position
-                }
-
+                // Старт воспроизведения
+                val effectivePosition = if (currentState.position == 0L) null else resumePosition ?: currentState.position
                 val result = togglePlaybackUseCase(effectivePosition)
                 if (result.isSuccess) {
                     val finalPosition = effectivePosition ?: 0L
@@ -143,9 +147,9 @@ class AudioPlayerViewModel @Inject constructor(
         }
     }
 
-
+    /** Остановка воспроизведения */
     fun stopPlayback() = viewModelScope.launch {
-        saveCurrentPosition() // Сохраняем текущую позицию
+        saveCurrentPosition()
         try {
             val result = stopPlaybackUseCase()
             if (result.isSuccess) {
@@ -159,6 +163,7 @@ class AudioPlayerViewModel @Inject constructor(
         }
     }
 
+    /** Сброс состояния плеера */
     fun resetPlaybackState() {
         _uiState.value = PlayerUiState(
             playbackState = PlaybackState(isPlaying = false, position = 0L),
@@ -169,6 +174,7 @@ class AudioPlayerViewModel @Inject constructor(
         )
     }
 
+    /** Сброс флага завершения воспроизведения */
     fun onPlaybackCompletedReset() {
         val currentState = _uiState.value ?: PlayerUiState(
             playbackState = PlaybackState(isPlaying = false, position = 0L),
@@ -178,6 +184,7 @@ class AudioPlayerViewModel @Inject constructor(
         _uiState.value = currentState.copy(playbackCompleted = false)
     }
 
+    /** Установка слушателя завершения воспроизведения */
     fun setupPlaybackCompletionListener() = viewModelScope.launch {
         setCompletionListenerUseCase {
             viewModelScope.launch {
@@ -187,13 +194,11 @@ class AudioPlayerViewModel @Inject constructor(
                     playbackState = PlaybackState(isPlaying = false, position = 0L),
                     formattedTime = formatTrackDurationUseCase(0L)
                 )
-                // Явно останавливаем воспроизведение
                 stopPlaybackUseCase().isSuccess
             }
         }
     }
-
-
+    /** Сброс воспроизведения до начала */
     fun resetPlaybackToStart() = viewModelScope.launch {
         try {
             // Сначала останавливаем воспроизведение
@@ -217,3 +222,4 @@ class AudioPlayerViewModel @Inject constructor(
         }
     }
 }
+

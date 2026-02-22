@@ -1,9 +1,7 @@
 package com.practicum.playlistmaker.player.domain
 
-import com.practicum.playlistmaker.core.contract.GetCurrentPositionUseCaseContract
 import com.practicum.playlistmaker.player.domain.repository.PlayerRepository
 import com.practicum.playlistmaker.core.contract.StopPlaybackUseCaseContract
-import com.practicum.playlistmaker.core.contract.TogglePlaybackUseCaseContract
 import javax.inject.Inject
 
 class StopPlaybackUseCase @Inject constructor(
