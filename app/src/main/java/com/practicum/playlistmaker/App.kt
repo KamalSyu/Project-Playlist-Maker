@@ -15,12 +15,26 @@ class App : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        val isDarkMode = useCaseCreator.createGetThemeStateUseCase()()
-        setTheme(isDarkMode)
+        loadAndApplyTheme()
     }
 
-    private fun setTheme(isDarkMode: Boolean) {
-        val mode = if (isDarkMode) MODE_NIGHT_YES else MODE_NIGHT_NO
+
+    private fun applyTheme(isDarkMode: Boolean) {
+        val mode = if (isDarkMode) {
+            AppCompatDelegate.MODE_NIGHT_YES
+        } else {
+            AppCompatDelegate.MODE_NIGHT_NO
+        }
         AppCompatDelegate.setDefaultNightMode(mode)
     }
+    private fun loadAndApplyTheme() {
+        val isDarkMode = useCaseCreator.createGetThemeStateUseCase()()
+        val currentMode = AppCompatDelegate.getDefaultNightMode()
+        val targetMode = if (isDarkMode) MODE_NIGHT_YES else MODE_NIGHT_NO
+
+        if (currentMode != targetMode) {
+            applyTheme(isDarkMode)
+        }
+    }
+
 }

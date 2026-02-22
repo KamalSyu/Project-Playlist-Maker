@@ -5,7 +5,11 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
+import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
 import androidx.core.net.toUri
+import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.core.contract.GetThemeStateUseCaseContract
@@ -22,34 +26,63 @@ class SettingsActivity : AppCompatActivity() {
     @Inject
     lateinit var useCaseCreator: UseCaseCreator
 
-    private lateinit var switchThemeUseCase: SwitchThemeUseCaseContract
-    private lateinit var getThemeStateUseCase: GetThemeStateUseCaseContract
+    private lateinit var viewModel: SettingsViewModel
     private lateinit var shareAppUseCase: ShareAppUseCaseContract
     private lateinit var sendSupportEmailUseCase: SendSupportEmailUseCaseContract
+    private var isRecreating = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
 
-        switchThemeUseCase = useCaseCreator.createSwitchThemeUseCase()
-        getThemeStateUseCase = useCaseCreator.createGetThemeStateUseCase()
+        setupUseCases()
+        setupViewModel()
+        setupViews()
+        observeUiState()
+    }
+
+    private fun setupUseCases() {
         shareAppUseCase = useCaseCreator.createShareAppUseCase()
         sendSupportEmailUseCase = useCaseCreator.createSendSupportEmailUseCase()
+    }
 
+    private fun setupViewModel() {
+        viewModel = ViewModelProvider(this)[SettingsViewModel::class.java]
+    }
+
+    private fun setupViews() {
         val switchButton = findViewById<SwitchMaterial>(R.id.switch_button)
 
-        switchButton.isChecked = getThemeStateUseCase()
-
         switchButton.setOnCheckedChangeListener { _, isChecked ->
-            switchThemeUseCase(isChecked)  // ← используем полученный UseCase
-            recreate()
+            viewModel.onThemeSwitch(isChecked)
         }
-        // Обработчики кнопок
+
         findViewById<View>(R.id.back).setOnClickListener { finish() }
         findViewById<View>(R.id.btnShare).setOnClickListener { shareApp() }
         findViewById<View>(R.id.supportButton).setOnClickListener { sendEmail() }
         findViewById<View>(R.id.userAgreementButton).setOnClickListener { openUserAgreement() }
     }
+
+
+    private fun observeUiState() {
+        viewModel.uiState.observe(this) { state ->
+            when (state) {
+                is SettingsUiState.Loading -> {
+                    // Показываем индикатор загрузки
+                }
+                is SettingsUiState.Loaded -> {
+                    findViewById<SwitchMaterial>(R.id.switch_button).isChecked = state.isDarkTheme
+                    applyThemeDynamically(state.isDarkTheme)
+                }
+            }
+        }
+    }
+
+    private fun applyThemeDynamically(isDarkMode: Boolean) {
+        val mode = if (isDarkMode) MODE_NIGHT_YES else MODE_NIGHT_NO
+        AppCompatDelegate.setDefaultNightMode(mode)
+    }
+
 
     private fun shareApp() {
         val shareText = shareAppUseCase()
