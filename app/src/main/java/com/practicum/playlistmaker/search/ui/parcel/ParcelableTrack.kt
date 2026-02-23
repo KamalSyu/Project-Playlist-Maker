@@ -18,7 +18,6 @@ data class ParcelableTrack(
     val country: String?,
     val previewUrl: String?
 ) : Parcelable {
-
 }
 
 fun Track.toParcelable() = ParcelableTrack(

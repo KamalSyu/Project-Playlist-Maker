@@ -5,10 +5,26 @@ import com.practicum.playlistmaker.search.domain.repository.ItunesRepository
 import com.practicum.playlistmaker.core.contract.SearchTracksUseCaseContract
 import javax.inject.Inject
 
-class SearchTracksUseCase @Inject constructor (
+/**
+ * UseCase для поиска треков через iTunes API.
+ * Обрабатывает запрос к API и преобразует результат в удобный формат.
+ *
+ * @param itunesRepository репозиторий для взаимодействия с iTunes API
+ */
+class SearchTracksUseCase @Inject constructor(
     private val itunesRepository: ItunesRepository
 ) : SearchTracksUseCaseContract {
 
+    /**
+     * Выполняет поиск треков по запросу через iTunes API.
+     * Обрабатывает возможные ошибки сети и API.
+     *
+     * @param query поисковый запрос
+     * @return Result с:
+     *   - списком найденных треков (успех);
+     *   - пустой список, если результатов нет;
+     *   - ошибкой, если запрос завершился неудачно
+     */
     override suspend operator fun invoke(query: String): Result<List<Track>> {
         return try {
             val response = itunesRepository.search(query)

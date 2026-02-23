@@ -3,7 +3,6 @@ package com.practicum.playlistmaker.search.data.mapper
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.creator.domain.TrackFactory
 import com.practicum.playlistmaker.search.data.dto.TrackDTO
-import com.practicum.playlistmaker.search.ui.parcel.ParcelableTrack
 import javax.inject.Inject
 
 class TrackMapper @Inject constructor(
@@ -38,18 +37,4 @@ class TrackMapper @Inject constructor(
         )
     }
 
-    fun toParcelable(domain: Track): ParcelableTrack {
-        return ParcelableTrack(
-            trackId = domain.trackId,
-            trackName = domain.trackName ?: "",
-            artistName = domain.artistName ?: "",
-            trackTimeMillis = domain.trackTimeMillis ?: 0L,
-            artworkUrl100 = domain.artworkUrl100,
-            releaseDate = domain.releaseDate,
-            collectionName = domain.collectionName,
-            primaryGenreName = domain.primaryGenreName,
-            country = domain.country,
-            previewUrl = domain.previewUrl
-        )
-    }
 }

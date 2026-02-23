@@ -25,7 +25,7 @@ class AudioPlayerViewModel @Inject constructor(
     private val getCurrentPositionUseCase = useCaseCreator.createGetCurrentPositionUseCase()
     private val setCompletionListenerUseCase = useCaseCreator.createSetPlaybackCompletionListenerUseCase()
 
-    // Форматирование времени трека (доступно извне)
+    // Форматирование времени трека
     val formatTrackDurationUseCase: FormatTrackDurationUseCaseContract =
         useCaseCreator.createFormatTrackDurationUseCase()
 
@@ -41,7 +41,7 @@ class AudioPlayerViewModel @Inject constructor(
     // Публичное состояние UI (только чтение)
     val uiState: LiveData<PlayerUiState> = _uiState
 
-    /** Восстановление состояния после поворота экрана */
+    // Восстановление состояния после поворота экрана
     fun restorePlaybackState(isPlaying: Boolean, savedPosition: Long) {
         _uiState.value = PlayerUiState(
             playbackState = PlaybackState(isPlaying, savedPosition),
@@ -50,12 +50,12 @@ class AudioPlayerViewModel @Inject constructor(
         )
     }
 
-    /** Очистка ошибки из состояния */
+    // Очистка ошибки из состояния
     fun clearError() {
         _uiState.value = _uiState.value?.copy(error = null)
     }
 
-    /** Сохранение текущей позиции воспроизведения */
+    // Сохранение текущей позиции воспроизведения
     fun saveCurrentPosition() = viewModelScope.launch {
         try {
             val currentPosition = getCurrentPositionUseCase()
@@ -67,7 +67,7 @@ class AudioPlayerViewModel @Inject constructor(
         }
     }
 
-    /** Обновление позиции в UI */
+    // Обновление позиции в UI
     fun updateCurrentPosition() = viewModelScope.launch {
         try {
             val currentPosition = getCurrentPositionUseCase()
@@ -84,7 +84,7 @@ class AudioPlayerViewModel @Inject constructor(
         }
     }
 
-    /** Инициализация воспроизведения трека */
+    // Инициализация воспроизведения трека
     fun initPlayback(previewUrl: String?) = viewModelScope.launch {
         try {
             val result = preparePlaybackUseCase(previewUrl)
@@ -109,7 +109,7 @@ class AudioPlayerViewModel @Inject constructor(
         }
     }
 
-    /** Переключение воспроизведения (старт/пауза) */
+    // Переключение воспроизведения (старт/пауза)
     fun togglePlayback(resumePosition: Long? = null) = viewModelScope.launch {
         try {
             val currentState = _uiState.value?.playbackState ?: PlaybackState(false, 0L)
@@ -145,7 +145,7 @@ class AudioPlayerViewModel @Inject constructor(
         }
     }
 
-    /** Остановка воспроизведения */
+    // Остановка воспроизведения
     fun stopPlayback() = viewModelScope.launch {
         saveCurrentPosition()
         try {
@@ -161,7 +161,7 @@ class AudioPlayerViewModel @Inject constructor(
         }
     }
 
-    /** Установка слушателя завершения воспроизведения */
+    // Установка слушателя завершения воспроизведения
     fun setupPlaybackCompletionListener() = viewModelScope.launch {
         setCompletionListenerUseCase {
             viewModelScope.launch {
@@ -175,7 +175,7 @@ class AudioPlayerViewModel @Inject constructor(
             }
         }
     }
-    /** Сброс воспроизведения до начала */
+    // Сброс воспроизведения до начала
     fun resetPlaybackToStart() = viewModelScope.launch {
         try {
             // Сначала останавливаем воспроизведение

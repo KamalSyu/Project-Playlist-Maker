@@ -5,22 +5,18 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.R
-import com.practicum.playlistmaker.core.constants.Constants
 import com.practicum.playlistmaker.core.models.PlaybackState
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.player.data.mapper.TrackParcelableMapper
-import com.practicum.playlistmaker.search.ui.adapter.TrackAdapter
 import com.practicum.playlistmaker.search.ui.parcel.ParcelableTrack
-import com.practicum.playlistmaker.search.ui.viewholder.AlbumViewHolder
+import com.practicum.playlistmaker.player.ui.adapter.PlayerTrackAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-
 
 /**
  * Экран аудиоплеера: воспроизведение трека, отображение прогресса, управление воспроизведением.
@@ -34,7 +30,7 @@ class AudioPlayerActivity : AppCompatActivity() {
     private val viewModel: AudioPlayerViewModel by viewModels()
     // UI-компоненты
     private lateinit var recyclerViewAudioPlayer: RecyclerView
-    private lateinit var adapter: TrackAdapter
+    private lateinit var adapter: PlayerTrackAdapter
 
     // Для периодического обновления прогресса воспроизведения
     private val handler = Handler(Looper.getMainLooper())
@@ -53,7 +49,7 @@ class AudioPlayerActivity : AppCompatActivity() {
             updateUI(state)
         }
 
-        viewModel.setupPlaybackCompletionListener() // Слушатель завершения воспроизведения
+        viewModel.setupPlaybackCompletionListener()
 
         if (savedInstanceState == null) {
             // Первое открытие: инициализируем воспроизведение
@@ -63,7 +59,7 @@ class AudioPlayerActivity : AppCompatActivity() {
             val isPlaying = savedInstanceState.getBoolean("isPlaying")
             val savedPosition = savedInstanceState.getLong("savedPosition")
             viewModel.restorePlaybackState(isPlaying, savedPosition)
-            if (isPlaying) startPolling() // Запускаем обновление прогресса
+            if (isPlaying) startPolling()
         }
     }
 
@@ -72,7 +68,7 @@ class AudioPlayerActivity : AppCompatActivity() {
         val parcelable = intent.getParcelableExtra<ParcelableTrack>("track")
         return if (parcelable != null) {
             Log.d("AudioPlayer", "Track received from Intent")
-            trackParcelableMapper.toDomain(parcelable)  // ← Используем маппер фичи player
+            trackParcelableMapper.toDomain(parcelable)
         } else {
             throw IllegalArgumentException("Track is required but not provided.")
         }
@@ -87,17 +83,23 @@ class AudioPlayerActivity : AppCompatActivity() {
     private fun setupRecyclerView(track: Track) {
         recyclerViewAudioPlayer = findViewById(R.id.recyclerViewAudioPlayer)
         recyclerViewAudioPlayer.layoutManager = LinearLayoutManager(this)
-        adapter = TrackAdapter(
+
+        adapter = PlayerTrackAdapter(
             tracks = listOf(track),
-            viewType = Constants.Companion.VIEW_TYPE_ALBUM,
-            onTrackClick = {},
             onClickPlayButton = { _ -> togglePlayback() },
-            onAddToPlaylist = {},
-            onFavorite = {},
+            onAddToPlaylist = { track ->
+                // TODO: реализовать добавление в плейлист
+                Log.d("AudioPlayer", "Add to playlist: ${track.trackName}")
+            },
+            onFavorite = { track ->
+                // TODO: реализовать отметку избранного
+                Log.d("AudioPlayer", "Favorite: ${track.trackName}")
+            },
             formatDurationUseCase = viewModel.formatTrackDurationUseCase
         )
         recyclerViewAudioPlayer.adapter = adapter
     }
+
 
     /** Переключение воспроизведения (старт/пауза) */
     private fun togglePlayback() {
@@ -114,16 +116,14 @@ class AudioPlayerActivity : AppCompatActivity() {
             return
         }
 
-        // Обновляем адаптер и кнопку воспроизведения
+        // Обновляем состояние адаптера — это вызовет bind() в PlayerViewHolder,
+        // который автоматически обновит иконку кнопки воспроизведения
         adapter.notifyDataSetChangedWithState(
             isPlaying = state.playbackState.isPlaying,
             currentTimeMillis = state.playbackState.position,
             position = 0,
             formattedTime = state.formattedTime
         )
-
-        val viewHolder = recyclerViewAudioPlayer.findViewHolderForAdapterPosition(0) as? AlbumViewHolder
-        viewHolder?.updatePlayButtonState(state.playbackState.isPlaying)
 
         // Запускаем/останавливаем опрос прогресса
         if (state.shouldPoll && state.playbackState.isPlaying) {
@@ -133,16 +133,17 @@ class AudioPlayerActivity : AppCompatActivity() {
         }
     }
 
+
     /** Запуск периодического опроса прогресса воспроизведения (каждую секунду) */
     private fun startPolling() {
-        stopPolling() // Останавливаем предыдущий polling
+        stopPolling()
 
         updateRunnable = Runnable {
             viewModel.updateCurrentPosition()
 
             val currentState = viewModel.uiState.value?.playbackState ?: PlaybackState(false, 0L)
             if (currentState.isPlaying) {
-                handler.postDelayed(updateRunnable!!, 1000) // Следующий опрос через 1 с
+                handler.postDelayed(updateRunnable!!, 1000)
             } else {
                 stopPolling()
             }
@@ -169,8 +170,8 @@ class AudioPlayerActivity : AppCompatActivity() {
         super.onPause()
         val currentState = viewModel.uiState.value?.playbackState ?: PlaybackState(false, 0L)
         if (currentState.isPlaying) {
-            viewModel.saveCurrentPosition() // Сохраняем позицию
-            viewModel.stopPlayback() // Останавливаем
+            viewModel.saveCurrentPosition()
+            viewModel.stopPlayback()
         }
         stopPolling()
     }
@@ -202,9 +203,8 @@ class AudioPlayerActivity : AppCompatActivity() {
         super.onBackPressed()
     }
 
-    /** Показать Toast с ошибкой */
+    /** Показать  ошибку */
     private fun showError(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
         Log.e("AudioPlayerActivity", "Ошибка: $message")
     }
 

@@ -10,7 +10,6 @@ class SearchHistoryMapper @Inject constructor(
     fun toDto(tracks: List<Track>): SearchHistoryDTO {
         return SearchHistoryDTO(tracks = tracks.map { trackMapper.toDto(it) })
     }
-
     fun fromDto(dto: SearchHistoryDTO): List<Track> {
         return dto.tracks.map { trackMapper.toDomain(it) }
     }

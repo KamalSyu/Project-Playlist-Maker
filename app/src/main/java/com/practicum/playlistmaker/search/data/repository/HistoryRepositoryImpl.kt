@@ -10,12 +10,28 @@ import com.practicum.playlistmaker.core.constants.Constants
 import javax.inject.Inject
 import kotlin.collections.plus
 
+/**
+ * Реализация репозитория для работы с историей поиска треков.
+ * Сохраняет и извлекает историю из SharedPreferences с использованием GSON для сериализации.
+ *
+ * @param sharedPreferences хранилище настроек для сохранения истории
+ * @param gson конвертер объектов в JSON и обратно
+ * @param searchHistoryMapper маппер для преобразования между доменными моделями и DTO
+ */
 class HistoryRepositoryImpl @Inject constructor(
     private val sharedPreferences: SharedPreferences,
     private val gson: Gson,
     private val searchHistoryMapper: SearchHistoryMapper
 ) : HistoryRepository {
 
+    /**
+     * Добавляет трек в начало истории поиска.
+     * - удаляет дубликаты по trackId;
+     * - ограничивает размер истории MAX_HISTORY_SIZE;
+     * - сохраняет обновлённую историю в SharedPreferences.
+     *
+     * @param track трек для добавления в историю
+     */
     override suspend fun addTrack(track: Track) {
         val currentHistory = getHistory()
         val updatedHistory = (listOf(track) + currentHistory)
@@ -28,6 +44,13 @@ class HistoryRepositoryImpl @Inject constructor(
             .apply()
     }
 
+    /**
+     * Получает историю поиска из SharedPreferences.
+     * - если история отсутствует (null), возвращает пустой список;
+     * - при ошибке парсинга JSON возвращает пустой список.
+     *
+     * @return список треков в порядке добавления (последний — первый)
+     */
     override suspend fun getHistory(): List<Track> {
         val json = sharedPreferences.getString(Constants.Companion.HISTORY_KEY, null)
         if (json == null) return emptyList()
@@ -41,6 +64,9 @@ class HistoryRepositoryImpl @Inject constructor(
         }
     }
 
+    /**
+     * Очищает всю историю поиска, удаляя запись из SharedPreferences.
+     */
     override suspend fun clearHistory() {
         sharedPreferences.edit()
             .remove(Constants.Companion.HISTORY_KEY)
