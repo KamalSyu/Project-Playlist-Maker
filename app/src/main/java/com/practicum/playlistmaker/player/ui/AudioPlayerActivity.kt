@@ -14,7 +14,7 @@ import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.core.constants.Constants
 import com.practicum.playlistmaker.core.models.PlaybackState
 import com.practicum.playlistmaker.core.models.Track
-import com.practicum.playlistmaker.search.data.mapper.DtoMapper
+import com.practicum.playlistmaker.player.data.mapper.TrackParcelableMapper
 import com.practicum.playlistmaker.search.ui.adapter.TrackAdapter
 import com.practicum.playlistmaker.search.ui.parcel.ParcelableTrack
 import com.practicum.playlistmaker.search.ui.viewholder.AlbumViewHolder
@@ -28,11 +28,10 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class AudioPlayerActivity : AppCompatActivity() {
 
-    private val viewModel: AudioPlayerViewModel by viewModels()
-
     @Inject
-    lateinit var dtoMapper: DtoMapper
+    lateinit var trackParcelableMapper: TrackParcelableMapper
 
+    private val viewModel: AudioPlayerViewModel by viewModels()
     // UI-компоненты
     private lateinit var recyclerViewAudioPlayer: RecyclerView
     private lateinit var adapter: TrackAdapter
@@ -73,7 +72,7 @@ class AudioPlayerActivity : AppCompatActivity() {
         val parcelable = intent.getParcelableExtra<ParcelableTrack>("track")
         return if (parcelable != null) {
             Log.d("AudioPlayer", "Track received from Intent")
-            dtoMapper.toDomain(parcelable)
+            trackParcelableMapper.toDomain(parcelable)  // ← Используем маппер фичи player
         } else {
             throw IllegalArgumentException("Track is required but not provided.")
         }
@@ -110,7 +109,7 @@ class AudioPlayerActivity : AppCompatActivity() {
     /** Обновление UI на основе текущего состояния */
     private fun updateUI(state: PlayerUiState) {
         if (state.error != null) {
-            handlePlaybackError("Ошибка воспроизведения", state.error!!)
+            handlePlaybackError("Ошибка воспроизведения", state.error)
             viewModel.clearError()
             return
         }

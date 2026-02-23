@@ -19,7 +19,6 @@ import com.practicum.playlistmaker.search.ui.adapter.TrackAdapter
 import com.practicum.playlistmaker.search.ui.parcel.toParcelable
 import com.practicum.playlistmaker.core.constants.Constants.Companion.SEARCH_QUERY_KEY
 import com.practicum.playlistmaker.core.constants.Constants.Companion.VIEW_TYPE_TRACK
-import com.practicum.playlistmaker.search.data.mapper.DtoMapper
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -28,9 +27,6 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class SearchActivity : AppCompatActivity() {
-
-    @Inject
-    lateinit var dtoMapper: DtoMapper
 
     private val viewModel: SearchViewModel by viewModels()
 

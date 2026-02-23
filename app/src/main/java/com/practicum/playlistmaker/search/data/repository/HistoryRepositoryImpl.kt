@@ -5,7 +5,7 @@ import com.google.gson.Gson
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.search.domain.repository.HistoryRepository
 import com.practicum.playlistmaker.search.data.dto.SearchHistoryDTO
-import com.practicum.playlistmaker.search.data.mapper.DtoMapper
+import com.practicum.playlistmaker.search.data.mapper.SearchHistoryMapper
 import com.practicum.playlistmaker.core.constants.Constants
 import javax.inject.Inject
 import kotlin.collections.plus
@@ -13,7 +13,7 @@ import kotlin.collections.plus
 class HistoryRepositoryImpl @Inject constructor(
     private val sharedPreferences: SharedPreferences,
     private val gson: Gson,
-    private val dtoMapper: DtoMapper
+    private val searchHistoryMapper: SearchHistoryMapper
 ) : HistoryRepository {
 
     override suspend fun addTrack(track: Track) {
@@ -22,7 +22,7 @@ class HistoryRepositoryImpl @Inject constructor(
             .distinctBy { it.trackId }
             .take(Constants.Companion.MAX_HISTORY_SIZE)
 
-        val dto = dtoMapper.toSearchHistoryDto(updatedHistory)
+        val dto = searchHistoryMapper.toDto(updatedHistory)
         sharedPreferences.edit()
             .putString(Constants.Companion.HISTORY_KEY, gson.toJson(dto))
             .apply()
@@ -34,13 +34,14 @@ class HistoryRepositoryImpl @Inject constructor(
 
         try {
             val dto: SearchHistoryDTO = gson.fromJson(json, SearchHistoryDTO::class.java)
-            return dtoMapper.fromSearchHistoryDto(dto)
+            return searchHistoryMapper.fromDto(dto)
         } catch (e: Exception) {
             e.printStackTrace()
             return emptyList()
         }
     }
-    override suspend fun clearHistory() { // Очищает историю поиска
+
+    override suspend fun clearHistory() {
         sharedPreferences.edit()
             .remove(Constants.Companion.HISTORY_KEY)
             .apply()

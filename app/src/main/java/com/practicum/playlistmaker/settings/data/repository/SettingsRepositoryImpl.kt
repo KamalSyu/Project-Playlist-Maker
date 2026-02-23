@@ -5,15 +5,15 @@ import android.util.Log
 import com.google.gson.Gson
 import com.practicum.playlistmaker.settings.domain.model.ThemeSettings
 import com.practicum.playlistmaker.settings.domain.repository.SettingsRepository
-import com.practicum.playlistmaker.search.data.mapper.DtoMapper
 import com.practicum.playlistmaker.settings.data.dto.ThemeSettingsDTO
 import com.practicum.playlistmaker.core.constants.Constants
+import com.practicum.playlistmaker.settings.data.mapper.ThemeSettingsMapper
 import javax.inject.Inject
 
 class SettingsRepositoryImpl @Inject constructor(
     private val sharedPreferences: SharedPreferences,
     private val gson: Gson,
-    private val dtoMapper: DtoMapper
+    private val dtoMapper: ThemeSettingsMapper
 ) : SettingsRepository {
 
     override fun saveTheme(settings: ThemeSettings) {

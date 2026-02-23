@@ -7,6 +7,6 @@ data class PlayerUiState(
     val formattedTime: String,
     val playbackCompleted: Boolean,
     val shouldPoll: Boolean = false,
-    val error: Throwable? = null,  // Было: Exception?
+    val error: Throwable? = null,
     val isInitialized: Boolean = false
 )

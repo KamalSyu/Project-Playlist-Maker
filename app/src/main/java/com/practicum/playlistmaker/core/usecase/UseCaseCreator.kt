@@ -54,12 +54,6 @@ class UseCaseCreator @Inject constructor(
     fun createGetCurrentPositionUseCase(): GetCurrentPositionUseCaseContract =
         GetCurrentPositionUseCase(playerRepository)
 
-    fun createGetPlaybackPositionUseCase(): GetPlaybackPositionUseCaseContract =
-        GetPlaybackPositionUseCase(playerRepository)
-
-    fun createHandlePlaybackCompletionUseCase(): HandlePlaybackCompletionUseCaseContract =
-        HandlePlaybackCompletionUseCase(playerRepository)
-
     fun createSetPlaybackCompletionListenerUseCase(): SetPlaybackCompletionListenerUseCaseContract =
         SetPlaybackCompletionListenerUseCase(playerRepository)
 

@@ -23,9 +23,7 @@ class AudioPlayerViewModel @Inject constructor(
     private val togglePlaybackUseCase = useCaseCreator.createTogglePlaybackUseCase()
     private val stopPlaybackUseCase = useCaseCreator.createStopPlaybackUseCase()
     private val getCurrentPositionUseCase = useCaseCreator.createGetCurrentPositionUseCase()
-    private val handleCompletionUseCase = useCaseCreator.createHandlePlaybackCompletionUseCase()
     private val setCompletionListenerUseCase = useCaseCreator.createSetPlaybackCompletionListenerUseCase()
-    private val getPlaybackPositionUseCase = useCaseCreator.createGetPlaybackPositionUseCase()
 
     // Форматирование времени трека (доступно извне)
     val formatTrackDurationUseCase: FormatTrackDurationUseCaseContract =
@@ -161,27 +159,6 @@ class AudioPlayerViewModel @Inject constructor(
         } catch (e: Exception) {
             Log.e("AudioPlayerViewModel", "Ошибка остановки воспроизведения", e)
         }
-    }
-
-    /** Сброс состояния плеера */
-    fun resetPlaybackState() {
-        _uiState.value = PlayerUiState(
-            playbackState = PlaybackState(isPlaying = false, position = 0L),
-            formattedTime = formatTrackDurationUseCase(0L),
-            playbackCompleted = false,
-            shouldPoll = false,
-            error = null
-        )
-    }
-
-    /** Сброс флага завершения воспроизведения */
-    fun onPlaybackCompletedReset() {
-        val currentState = _uiState.value ?: PlayerUiState(
-            playbackState = PlaybackState(isPlaying = false, position = 0L),
-            formattedTime = formatTrackDurationUseCase(0L),
-            playbackCompleted = false
-        )
-        _uiState.value = currentState.copy(playbackCompleted = false)
     }
 
     /** Установка слушателя завершения воспроизведения */
