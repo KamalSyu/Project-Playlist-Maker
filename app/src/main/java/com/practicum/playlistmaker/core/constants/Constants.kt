@@ -7,5 +7,6 @@ class Constants {
         const val HISTORY_KEY = "search_history"
         const val SEARCH_QUERY_KEY = "SEARCH_QUERY"
         const val MAX_HISTORY_SIZE = 10
+
     }
 }

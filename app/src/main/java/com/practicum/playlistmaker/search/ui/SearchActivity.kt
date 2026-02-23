@@ -19,6 +19,7 @@ import com.practicum.playlistmaker.search.ui.adapter.SearchTrackAdapter
 import com.practicum.playlistmaker.search.ui.parcel.toParcelable
 import com.practicum.playlistmaker.core.constants.Constants.Companion.SEARCH_QUERY_KEY
 import com.practicum.playlistmaker.search.ui.view.HistoryState
+import com.practicum.playlistmaker.search.ui.view.ScreenState
 import com.practicum.playlistmaker.search.ui.view.SearchState
 import com.practicum.playlistmaker.search.ui.view.SearchViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -164,7 +165,7 @@ class SearchActivity : AppCompatActivity() {
                 }
             } else {
                 viewModel.filterAndUpdateTracks(query)
-                showNoResults(true)
+                showNoResults(false)
             }
         }
 
@@ -194,46 +195,54 @@ class SearchActivity : AppCompatActivity() {
      * - trackToOpen: открывает аудиоплеер для выбранного трека.
      */
     private fun observeViewModel() {
-        viewModel.searchState.observe(this) { state ->
+        viewModel.screenState.observe(this) { state ->
             when (state) {
-                SearchState.Idle -> {}
-                is SearchState.Loading -> {
+                ScreenState.Initial -> {
+                    hideLoading()
+                    hideError()
+                    updateTracksList(emptyList())
+                    showNoResults(false)
+                    updateHistoryVisibility()
+                }
+
+                ScreenState.Loading -> {
                     showLoading()
+                    hideError()
+                    showNoResults(false)  // При загрузке не показываем «нет результатов»
                 }
-                is SearchState.Results -> {
+
+                is ScreenState.Idle -> {
                     hideLoading()
-                    updateTracksList(state.tracks)
-                    showNoResults(state.tracks.isEmpty() && searchQuery.isNotEmpty())
+                    updateTracksList(emptyList())
+                    updateHistoryState(state.historyState)
+                    showNoResults(false)
                 }
-                is SearchState.Error -> {
+
+                is ScreenState.Results -> {
                     hideLoading()
+                    val tracks = when (state.searchState) {
+                        is SearchState.Results -> state.searchState.tracks
+                        else -> emptyList()
+                    }
+                    updateTracksList(tracks)
+                    updateHistoryState(state.historyState)
+                    showNoResults(tracks.isEmpty() && searchQuery.isNotEmpty())
+                }
+
+
+                is ScreenState.Error -> {
+                    hideLoading()
+                    updateTracksList(emptyList())
+                    updateHistoryState(HistoryState.Empty)
                     showError()
                 }
-            }
-        }
 
-        viewModel.historyState.observe(this) { state ->
-            when (state) {
-                HistoryState.Loading -> {}
-                HistoryState.Empty -> {
-                    historyAdapter            .updateList(emptyList())
-                    updateHistoryVisibility()
-                }
-                is HistoryState.HistoryLoaded -> {
-                    historyAdapter.updateList(state.history)
-                    updateHistoryVisibility()
-                }
-                HistoryState.HistoryCleared -> {
-                    historyRecyclerViewKit.visibility = View.GONE
-                    updateHistoryVisibility()
-                }
             }
         }
 
         viewModel.trackToOpen.observe(this) { track ->
             track?.let {
                 openAudioPlayer(it)
-                // Сбрасываем состояние после обработки
                 viewModel.resetTrackToOpen()
             }
         }
@@ -286,7 +295,10 @@ class SearchActivity : AppCompatActivity() {
     private fun showError() {
         errorLayout.visibility = View.VISIBLE
         noResultsLayout.visibility = View.GONE
+        recyclerView.visibility = View.GONE
+        historyRecyclerViewKit.visibility = View.GONE
     }
+
 
     /**
      * Управляет видимостью макета «нет результатов» в зависимости от условий.
@@ -298,8 +310,8 @@ class SearchActivity : AppCompatActivity() {
      * @param show флаг, указывающий, нужно ли показать макет
      */
     private fun showNoResults(show: Boolean) {
-        noResultsLayout.visibility = if (show && !viewModel.isLastSearchFailed) View.VISIBLE else View.GONE
-        errorLayout.visibility = View.GONE
+        noResultsLayout.visibility = if (show) View.VISIBLE else View.GONE
+        errorLayout.visibility = View.GONE  // Всегда скрываем ошибку при показе «нет результатов»
     }
 
     /**
@@ -328,6 +340,75 @@ class SearchActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Обновляет список истории и её видимость на основе HistoryState
+     *
+     * @param historyState текущее состояние истории
+     */
+    private fun updateHistoryState(historyState: HistoryState) {
+        when (historyState) {
+            HistoryState.Loading -> {}
+            HistoryState.Empty -> {
+                historyAdapter.updateList(emptyList())
+                updateHistoryVisibility()
+            }
+            is HistoryState.HistoryLoaded -> {
+                historyAdapter.updateList(historyState.history)
+                updateHistoryVisibility()
+            }
+            HistoryState.HistoryCleared -> {
+                historyRecyclerViewKit.visibility = View.GONE
+                updateHistoryVisibility()
+            }
+        }
+    }
+
+    private fun updateUIWithCurrentState() {
+        val currentState = viewModel.screenState.value
+        if (currentState != null) {
+            when (currentState) {
+                ScreenState.Initial -> {
+                    hideLoading()
+                    hideError()
+                    updateTracksList(emptyList())
+                    showNoResults(false)
+                    updateHistoryVisibility()
+                }
+                ScreenState.Loading -> {
+                    showLoading()
+                    hideError()
+                    showNoResults(false)
+                }
+                is ScreenState.Idle -> {
+                    hideLoading()
+                    updateHistoryState(currentState.historyState)
+                    showNoResults(false)
+                }
+                is ScreenState.Results -> {
+                    hideLoading()
+                    val tracks = when (currentState.searchState) {
+                        is SearchState.Results -> currentState.searchState.tracks
+                        else -> emptyList()
+                    }
+                    updateTracksList(tracks)
+                    updateHistoryState(currentState.historyState)
+                    showNoResults(tracks.isEmpty() && searchQuery.isNotEmpty())
+                }
+                is ScreenState.Error -> {
+                    hideLoading()
+                    updateHistoryState(currentState.historyState)
+                    showError()
+                }
+            }
+        }
+    }
+    /**
+     * Скрывает макет с ошибкой
+     */
+    private fun hideError() {
+        errorLayout.visibility = View.GONE
+    }
+
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putString(SEARCH_QUERY_KEY, searchQuery)
@@ -335,9 +416,24 @@ class SearchActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        viewModel.loadHistory()
-        updateHistoryVisibility()
+        // Если есть последний поисковый запрос и текущее состояние не является результатами поиска,
+        // выполняем повторный поиск, чтобы восстановить список треков
+        if (viewModel.lastSearchQuery != null && viewModel.lastSearchQuery!!.isNotEmpty()) {
+            val currentState = viewModel.screenState.value
+            if (currentState !is ScreenState.Results) {
+                viewModel.performSearch(viewModel.lastSearchQuery!!)
+            } else {
+                // Если уже в состоянии Results, просто обновляем UI с текущими данными
+                updateUIWithCurrentState()
+            }
+        } else {
+            // Если нет поискового запроса, просто обновляем UI
+            updateUIWithCurrentState()
+        }
     }
+
+
+
 
     override fun onDestroy() {
         super.onDestroy()
