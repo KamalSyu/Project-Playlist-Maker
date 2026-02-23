@@ -1,17 +1,17 @@
-package com.practicum.playlistmaker.player.ui
+package com.practicum.playlistmaker.player.ui.view
 
 import android.util.Log
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContract
 import com.practicum.playlistmaker.core.models.PlaybackState
 import com.practicum.playlistmaker.core.usecase.UseCaseCreator
-import kotlinx.coroutines.launch
-import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContract
+import com.practicum.playlistmaker.player.ui.PlayerUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
-
 
 @HiltViewModel
 class AudioPlayerViewModel @Inject constructor(
@@ -60,7 +60,10 @@ class AudioPlayerViewModel @Inject constructor(
         try {
             val currentPosition = getCurrentPositionUseCase()
             _uiState.value = _uiState.value?.copy(
-                playbackState = _uiState.value?.playbackState?.copy(position = currentPosition) ?: PlaybackState(false, currentPosition)
+                playbackState = _uiState.value?.playbackState?.copy(position = currentPosition) ?: PlaybackState(
+                    false,
+                    currentPosition
+                )
             )
         } catch (e: Exception) {
             Log.e("AudioPlayerViewModel", "Ошибка сохранения позиции", e)
@@ -152,7 +155,10 @@ class AudioPlayerViewModel @Inject constructor(
             val result = stopPlaybackUseCase()
             if (result.isSuccess) {
                 _uiState.value = _uiState.value?.copy(
-                    playbackState = _uiState.value?.playbackState?.copy(isPlaying = false) ?: PlaybackState(false, 0L),
+                    playbackState = _uiState.value?.playbackState?.copy(isPlaying = false) ?: PlaybackState(
+                        false,
+                        0L
+                    ),
                     shouldPoll = false
                 )
             }
@@ -199,4 +205,3 @@ class AudioPlayerViewModel @Inject constructor(
         }
     }
 }
-

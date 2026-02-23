@@ -1,4 +1,4 @@
-package com.practicum.playlistmaker.player.ui
+package com.practicum.playlistmaker.player.ui.view
 
 import android.util.Log
 import android.view.View

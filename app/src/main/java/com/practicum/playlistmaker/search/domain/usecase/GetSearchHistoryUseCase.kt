@@ -1,8 +1,8 @@
-package com.practicum.playlistmaker.search.domain
+package com.practicum.playlistmaker.search.domain.usecase
 
+import com.practicum.playlistmaker.core.contract.GetSearchHistoryUseCaseContract
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.search.domain.repository.HistoryRepository
-import com.practicum.playlistmaker.core.contract.GetSearchHistoryUseCaseContract
 import javax.inject.Inject
 
 /**

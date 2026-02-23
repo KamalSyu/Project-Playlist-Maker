@@ -15,6 +15,7 @@ import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.core.contract.SendSupportEmailUseCaseContract
 import com.practicum.playlistmaker.core.contract.ShareAppUseCaseContract
 import com.practicum.playlistmaker.core.usecase.UseCaseCreator
+import com.practicum.playlistmaker.settings.ui.view.SettingsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 

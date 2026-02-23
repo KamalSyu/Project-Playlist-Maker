@@ -18,7 +18,9 @@ import com.practicum.playlistmaker.player.ui.AudioPlayerActivity
 import com.practicum.playlistmaker.search.ui.adapter.SearchTrackAdapter
 import com.practicum.playlistmaker.search.ui.parcel.toParcelable
 import com.practicum.playlistmaker.core.constants.Constants.Companion.SEARCH_QUERY_KEY
-import com.practicum.playlistmaker.core.constants.Constants.Companion.VIEW_TYPE_TRACK
+import com.practicum.playlistmaker.search.ui.view.HistoryState
+import com.practicum.playlistmaker.search.ui.view.SearchState
+import com.practicum.playlistmaker.search.ui.view.SearchViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -27,7 +29,7 @@ import kotlinx.coroutines.launch
 /**
  * Активность для поиска треков и отображения истории поиска.
  * Реализует функционал:
- * - поиск треков с задержкой ввода (debounce 2 с);
+ * - поиск треков с задержкой ввода;
  * - отображение результатов поиска, ошибок и состояния загрузки;
  * - управление историей поиска (просмотр, очистка);
  * - навигация к аудиоплееру при клике на трек.
@@ -143,7 +145,7 @@ class SearchActivity : AppCompatActivity() {
      * Настраивает наблюдение за вводом текста в поле поиска:
      * - отображает/скрывает кнопку сброса;
      * - обновляет видимость истории;
-     * - реализует debounce (2 с) перед отправкой запроса;
+     * - реализует debounce  перед отправкой запроса;
      * - фильтрует локальные треки при пустом запросе.
      */
     private fun setupTextWatchers() {
@@ -201,7 +203,6 @@ class SearchActivity : AppCompatActivity() {
                 is SearchState.Results -> {
                     hideLoading()
                     updateTracksList(state.tracks)
-                    // Используем публичный геттер isLastSearchFailed
                     showNoResults(state.tracks.isEmpty() && searchQuery.isNotEmpty())
                 }
                 is SearchState.Error -> {

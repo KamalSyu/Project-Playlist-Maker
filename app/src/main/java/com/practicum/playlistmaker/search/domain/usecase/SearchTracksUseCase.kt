@@ -1,8 +1,8 @@
-package com.practicum.playlistmaker.search.domain
+package com.practicum.playlistmaker.search.domain.usecase
 
+import com.practicum.playlistmaker.core.contract.SearchTracksUseCaseContract
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.search.domain.repository.ItunesRepository
-import com.practicum.playlistmaker.core.contract.SearchTracksUseCaseContract
 import javax.inject.Inject
 
 /**

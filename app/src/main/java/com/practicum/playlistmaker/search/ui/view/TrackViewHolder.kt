@@ -1,4 +1,4 @@
-package com.practicum.playlistmaker.search.ui
+package com.practicum.playlistmaker.search.ui.view
 
 import android.view.View
 import android.widget.ImageView
@@ -16,7 +16,7 @@ import com.practicum.playlistmaker.core.models.Track
  * Поддерживает отображение текущего времени воспроизведения при активном воспроизведении.
  *
  * @param itemView корневой View элемента RecyclerView
- * @param formatDurationUseCase use case для форматирования длительности трека (мс → «ММ:СС»)
+ * @param formatDurationUseCase use case для форматирования длительности трека
  */
 class TrackViewHolder(
     itemView: View,
@@ -71,7 +71,7 @@ class TrackViewHolder(
      *   но оставлен для совместимости с интерфейсом
      * @param currentTimeMillis текущая позиция воспроизведения в миллисекундах — не используется,
      *   так как используется готовое форматированное время
-     * @param formattedTime форматированное время воспроизведения (например, «03:45»)
+     * @param formattedTime форматированное время воспроизведения
      */
     fun showPlayingState(isPlaying: Boolean, currentTimeMillis: Long, formattedTime: String) {
         trackTimeTextView.text = formattedTime

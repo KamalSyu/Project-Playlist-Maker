@@ -6,7 +6,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContract
-import com.practicum.playlistmaker.player.ui.AlbumViewHolder
+import com.practicum.playlistmaker.player.ui.view.AlbumViewHolder
 
 class PlayerTrackAdapter(
     private var tracks: List<Track> = emptyList(),

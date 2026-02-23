@@ -1,4 +1,4 @@
-package com.practicum.playlistmaker.search.ui
+package com.practicum.playlistmaker.search.ui.view
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -33,7 +33,7 @@ class SearchViewModel @Inject constructor(
     private val filterTracksUseCase = useCaseCreator.createFilterTracksUseCase()
     private val delayedTrackActionUseCase = useCaseCreator.createDelayedTrackActionUseCase()
 
-    /** Use case для форматирования длительности трека (доступен извне) */
+    /** Use case для форматирования длительности трека */
     val formatTrackDurationUseCase: FormatTrackDurationUseCaseContract =
         useCaseCreator.createFormatTrackDurationUseCase()
 
@@ -141,7 +141,7 @@ class SearchViewModel @Inject constructor(
 
     /**
      * Обрабатывает клик по треку:
-     * - добавляет трек в историю с задержкой (для UX);
+     * - добавляет трек в историю с задержкой;
      * - перезагружает историю;
      * - передаёт трек в аудиоплеер через LiveData.
      *

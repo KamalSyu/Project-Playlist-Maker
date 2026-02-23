@@ -6,7 +6,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContract
-import com.practicum.playlistmaker.search.ui.TrackViewHolder
+import com.practicum.playlistmaker.search.ui.view.TrackViewHolder
 
 class SearchTrackAdapter(
     private var tracks: List<Track> = emptyList(),
@@ -35,24 +35,6 @@ class SearchTrackAdapter(
     fun updateList(newTracks: List<Track>) {
         tracks = newTracks
         notifyDataSetChanged()
-    }
-
-    fun notifyDataSetChangedWithState(
-        isPlaying: Boolean,
-        currentTimeMillis: Long,
-        position: Int,
-        formattedTime: String
-    ) {
-        this.isPlaying = isPlaying
-        this.currentTimeMillis = currentTimeMillis
-        this.currentPosition = position
-        this.formattedTime = formattedTime
-
-        if (position != -1 && position < itemCount) {
-            notifyItemChanged(position)
-        } else {
-            notifyDataSetChanged()
-        }
     }
 
     inner class SearchViewHolder(

@@ -1,4 +1,4 @@
-package com.practicum.playlistmaker.settings.ui
+package com.practicum.playlistmaker.settings.ui.view
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.practicum.playlistmaker.core.contract.GetThemeStateUseCaseContract
 import com.practicum.playlistmaker.core.contract.SwitchThemeUseCaseContract
 import com.practicum.playlistmaker.core.usecase.UseCaseCreator
+import com.practicum.playlistmaker.settings.ui.SettingsUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject

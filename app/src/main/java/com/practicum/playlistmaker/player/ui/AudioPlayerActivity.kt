@@ -15,6 +15,7 @@ import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.player.data.mapper.TrackParcelableMapper
 import com.practicum.playlistmaker.search.ui.parcel.ParcelableTrack
 import com.practicum.playlistmaker.player.ui.adapter.PlayerTrackAdapter
+import com.practicum.playlistmaker.player.ui.view.AudioPlayerViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 

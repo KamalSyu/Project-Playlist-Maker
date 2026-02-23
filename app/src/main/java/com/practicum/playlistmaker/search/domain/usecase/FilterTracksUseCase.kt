@@ -1,7 +1,7 @@
-package com.practicum.playlistmaker.search.domain
+package com.practicum.playlistmaker.search.domain.usecase
 
-import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.core.contract.FilterTracksUseCaseContract
+import com.practicum.playlistmaker.core.models.Track
 import javax.inject.Inject
 
 /**

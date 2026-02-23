@@ -1,4 +1,4 @@
-package com.practicum.playlistmaker.player.domain
+package com.practicum.playlistmaker.player.domain.usecase
 
 import com.practicum.playlistmaker.core.contract.DelayProvider
 import com.practicum.playlistmaker.core.contract.DelayedTrackActionUseCaseContract
