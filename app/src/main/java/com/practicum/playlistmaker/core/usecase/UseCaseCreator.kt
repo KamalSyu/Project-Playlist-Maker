@@ -22,6 +22,7 @@ import com.practicum.playlistmaker.search.domain.usecase.SearchTracksUseCase
 import com.practicum.playlistmaker.settings.domain.usecase.GetThemeStateUseCase
 import com.practicum.playlistmaker.settings.domain.usecase.SwitchThemeUseCase
 import com.practicum.playlistmaker.settings.domain.repository.SettingsRepository
+import com.practicum.playlistmaker.sharing.domain.provider.ShareTextProvider
 import com.practicum.playlistmaker.sharing.domain.usecase.SendSupportEmailUseCase
 import com.practicum.playlistmaker.sharing.domain.usecase.ShareAppUseCase
 import com.practicum.playlistmaker.sharing.domain.provider.SupportEmailDataProvider

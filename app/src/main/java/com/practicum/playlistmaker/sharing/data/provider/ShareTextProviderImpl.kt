@@ -1,10 +1,11 @@
-package com.practicum.playlistmaker.sharing.domain.provider
+package com.practicum.playlistmaker.sharing.data.provider
 
 import android.content.Context
 import com.practicum.playlistmaker.R
-import com.practicum.playlistmaker.core.contract.ShareTextProvider
+import com.practicum.playlistmaker.sharing.domain.provider.ShareTextProvider
+import javax.inject.Inject
 
-class ShareTextProviderImpl(
+class ShareTextProviderImpl @Inject constructor(
     private val context: Context
 ) : ShareTextProvider {
 

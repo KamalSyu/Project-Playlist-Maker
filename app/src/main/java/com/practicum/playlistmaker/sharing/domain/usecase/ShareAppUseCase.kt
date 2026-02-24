@@ -1,7 +1,7 @@
 package com.practicum.playlistmaker.sharing.domain.usecase
 
 import com.practicum.playlistmaker.core.contract.ShareAppUseCaseContract
-import com.practicum.playlistmaker.core.contract.ShareTextProvider
+import com.practicum.playlistmaker.sharing.domain.provider.ShareTextProvider  // Правильный импорт
 import javax.inject.Inject
 
 /**

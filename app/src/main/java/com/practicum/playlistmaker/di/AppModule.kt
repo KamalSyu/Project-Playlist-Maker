@@ -11,15 +11,13 @@ import com.practicum.playlistmaker.search.data.repository.HistoryRepositoryImpl
 import com.practicum.playlistmaker.search.data.repository.ItunesRepositoryImpl
 import com.practicum.playlistmaker.player.data.repository.PlayerRepositoryImpl
 import com.practicum.playlistmaker.settings.data.repository.SettingsRepositoryImpl
-import com.practicum.playlistmaker.sharing.domain.provider.ShareTextProviderImpl
-import com.practicum.playlistmaker.sharing.domain.provider.SupportEmailDataProviderImpl
+import com.practicum.playlistmaker.sharing.data.provider.SupportEmailDataProviderImpl
 import com.practicum.playlistmaker.creator.domain.TrackFactory
 import com.practicum.playlistmaker.search.domain.repository.HistoryRepository
 import com.practicum.playlistmaker.search.domain.repository.ItunesRepository
 import com.practicum.playlistmaker.player.domain.repository.PlayerRepository
 import com.practicum.playlistmaker.settings.domain.repository.SettingsRepository
 import com.practicum.playlistmaker.core.contract.DelayProvider
-import com.practicum.playlistmaker.core.contract.ShareTextProvider
 import com.practicum.playlistmaker.core.usecase.UseCaseCreator
 import com.practicum.playlistmaker.core.constants.Constants.Companion.PREFERENCES
 import com.practicum.playlistmaker.player.data.mapper.TrackParcelableMapper
@@ -27,6 +25,8 @@ import com.practicum.playlistmaker.search.data.mapper.SearchHistoryMapper
 import com.practicum.playlistmaker.search.data.mapper.SearchResponseMapper
 import com.practicum.playlistmaker.search.data.mapper.TrackMapper
 import com.practicum.playlistmaker.settings.data.mapper.ThemeSettingsMapper
+import com.practicum.playlistmaker.sharing.data.provider.ShareTextProviderImpl
+import com.practicum.playlistmaker.sharing.domain.provider.ShareTextProvider
 import com.practicum.playlistmaker.sharing.domain.provider.SupportEmailDataProvider
 import dagger.Module
 import dagger.Provides
@@ -127,13 +127,16 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideSupportEmailDataProvider(@ApplicationContext context: Context): SupportEmailDataProvider =
-        SupportEmailDataProviderImpl(context)
+    fun provideSupportEmailDataProvider(
+        @ApplicationContext context: Context
+    ): SupportEmailDataProvider = SupportEmailDataProviderImpl(context)
 
     @Provides
     @Singleton
-    fun provideShareTextProvider(@ApplicationContext context: Context): ShareTextProvider =
-        ShareTextProviderImpl(context)
+    fun provideShareTextProvider(
+        @ApplicationContext context: Context
+    ): ShareTextProvider = ShareTextProviderImpl(context)
+
 
     @Provides
     @Singleton
