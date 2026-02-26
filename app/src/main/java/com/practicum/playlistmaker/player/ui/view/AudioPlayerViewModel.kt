@@ -6,8 +6,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContract
-import com.practicum.playlistmaker.core.models.PlaybackState
-import com.practicum.playlistmaker.core.usecase.UseCaseCreator
+import com.practicum.playlistmaker.core.contract.GetCurrentPositionUseCaseContract
+import com.practicum.playlistmaker.core.contract.PreparePlaybackUseCaseContract
+import com.practicum.playlistmaker.core.contract.SetPlaybackCompletionListenerUseCaseContract
+import com.practicum.playlistmaker.core.contract.StopPlaybackUseCaseContract
+import com.practicum.playlistmaker.core.contract.TogglePlaybackUseCaseContract
+import com.practicum.playlistmaker.player.domain.model.PlaybackState
+import com.practicum.playlistmaker.player.domain.usecase.ResetPlaybackUseCase
 import com.practicum.playlistmaker.player.ui.PlayerUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -15,19 +20,15 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AudioPlayerViewModel @Inject constructor(
-    private val useCaseCreator: UseCaseCreator
-) : ViewModel() {
+    private val preparePlaybackUseCase: PreparePlaybackUseCaseContract,
+    private val togglePlaybackUseCase: TogglePlaybackUseCaseContract,
+    private val stopPlaybackUseCase: StopPlaybackUseCaseContract,
+    private val getCurrentPositionUseCase: GetCurrentPositionUseCaseContract,
+    private val setCompletionListenerUseCase: SetPlaybackCompletionListenerUseCaseContract,
+    private val resetPlaybackUseCase: ResetPlaybackUseCase,
+    val formatTrackDurationUseCase: FormatTrackDurationUseCaseContract
+    ) : ViewModel() {
 
-    // Use Case для операций плеера
-    private val preparePlaybackUseCase = useCaseCreator.createPreparePlaybackUseCase()
-    private val togglePlaybackUseCase = useCaseCreator.createTogglePlaybackUseCase()
-    private val stopPlaybackUseCase = useCaseCreator.createStopPlaybackUseCase()
-    private val getCurrentPositionUseCase = useCaseCreator.createGetCurrentPositionUseCase()
-    private val setCompletionListenerUseCase = useCaseCreator.createSetPlaybackCompletionListenerUseCase()
-
-    // Форматирование времени трека
-    val formatTrackDurationUseCase: FormatTrackDurationUseCaseContract =
-        useCaseCreator.createFormatTrackDurationUseCase()
 
     // Внутреннее состояние UI
     private val _uiState = MutableLiveData<PlayerUiState>(
@@ -188,7 +189,7 @@ class AudioPlayerViewModel @Inject constructor(
             stopPlaybackUseCase().isSuccess
 
             // Сбрасываем состояние в репозитории
-            useCaseCreator.createResetPlaybackUseCase().invoke()
+            resetPlaybackUseCase.invoke()
 
             // Обновляем UI‑состояние
             _uiState.value = PlayerUiState(

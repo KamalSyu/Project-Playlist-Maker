@@ -1,16 +1,20 @@
 package com.practicum.playlistmaker.player.ui
 
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.widget.TextView
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.updatePadding
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.R
-import com.practicum.playlistmaker.core.models.PlaybackState
+import com.practicum.playlistmaker.player.domain.model.PlaybackState
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.player.data.mapper.TrackParcelableMapper
 import com.practicum.playlistmaker.search.ui.parcel.ParcelableTrack
@@ -39,7 +43,16 @@ class AudioPlayerActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+
         setContentView(R.layout.activity_audioplayer)
+
+        // Настраиваем отступы под системные панели
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { view, insets ->
+            val statusBar = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+            view.updatePadding(top = statusBar.top)
+            insets
+        }
 
         val track = getTrackFromIntent() // Получаем трек из интента
         setupRecyclerView(track) // Настраиваем RecyclerView с треком
@@ -101,7 +114,6 @@ class AudioPlayerActivity : AppCompatActivity() {
         recyclerViewAudioPlayer.adapter = adapter
     }
 
-
     /** Переключение воспроизведения (старт/пауза) */
     private fun togglePlayback() {
         val currentState = viewModel.uiState.value?.playbackState ?: PlaybackState(false, 0L)
@@ -134,7 +146,6 @@ class AudioPlayerActivity : AppCompatActivity() {
         }
     }
 
-
     /** Запуск периодического опроса прогресса воспроизведения (каждую секунду) */
     private fun startPolling() {
         stopPolling()
@@ -149,7 +160,7 @@ class AudioPlayerActivity : AppCompatActivity() {
                 stopPolling()
             }
         }
-        handler.post(updateRunnable!!) // Первый опрос сразу
+        handler.post(updateRunnable!!)
     }
 
     /** Останавливаем опрос прогресса */

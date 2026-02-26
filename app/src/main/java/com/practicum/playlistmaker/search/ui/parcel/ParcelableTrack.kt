@@ -1,6 +1,5 @@
 package com.practicum.playlistmaker.search.ui.parcel
 
-
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 import com.practicum.playlistmaker.core.models.Track

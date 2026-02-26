@@ -1,13 +1,22 @@
 package com.practicum.playlistmaker.search.ui
 
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.widget.*
+import android.widget.Button
+import android.widget.EditText
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.ProgressBar
+import android.widget.TextView
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.updatePadding
 import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -66,7 +75,16 @@ class SearchActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        enableEdgeToEdge()
+
         setContentView(R.layout.activity_search)
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { view, insets ->
+            val statusBar = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+            view.updatePadding(top = statusBar.top)
+            insets
+        }
 
         initViews()
         setupClickListeners()
@@ -208,7 +226,7 @@ class SearchActivity : AppCompatActivity() {
                 ScreenState.Loading -> {
                     showLoading()
                     hideError()
-                    showNoResults(false)  // При загрузке не показываем «нет результатов»
+                    showNoResults(false)
                 }
 
                 is ScreenState.Idle -> {
@@ -216,6 +234,10 @@ class SearchActivity : AppCompatActivity() {
                     updateTracksList(emptyList())
                     updateHistoryState(state.historyState)
                     showNoResults(false)
+                    state.trackToOpen?.let { track ->
+                        openAudioPlayer(track)
+                        viewModel.resetTrackToOpen()
+                    }
                 }
 
                 is ScreenState.Results -> {
@@ -227,23 +249,22 @@ class SearchActivity : AppCompatActivity() {
                     updateTracksList(tracks)
                     updateHistoryState(state.historyState)
                     showNoResults(tracks.isEmpty() && searchQuery.isNotEmpty())
+                    state.trackToOpen?.let { track ->
+                        openAudioPlayer(track)
+                        viewModel.resetTrackToOpen()
+                    }
                 }
-
 
                 is ScreenState.Error -> {
                     hideLoading()
                     updateTracksList(emptyList())
                     updateHistoryState(HistoryState.Empty)
                     showError()
+                    state.trackToOpen?.let { track ->
+                        openAudioPlayer(track)
+                        viewModel.resetTrackToOpen()
+                    }
                 }
-
-            }
-        }
-
-        viewModel.trackToOpen.observe(this) { track ->
-            track?.let {
-                openAudioPlayer(it)
-                viewModel.resetTrackToOpen()
             }
         }
     }
@@ -286,7 +307,7 @@ class SearchActivity : AppCompatActivity() {
      * Скрывает индикатор загрузки.
      */
     private fun hideLoading() {
-        progressBar.visibility = View.INVISIBLE  // Просто скрываем прогресс‑бар
+        progressBar.visibility = View.INVISIBLE
     }
 
     /**
@@ -299,7 +320,6 @@ class SearchActivity : AppCompatActivity() {
         historyRecyclerViewKit.visibility = View.GONE
     }
 
-
     /**
      * Управляет видимостью макета «нет результатов» в зависимости от условий.
      * Показывает, если:
@@ -311,7 +331,7 @@ class SearchActivity : AppCompatActivity() {
      */
     private fun showNoResults(show: Boolean) {
         noResultsLayout.visibility = if (show) View.VISIBLE else View.GONE
-        errorLayout.visibility = View.GONE  // Всегда скрываем ошибку при показе «нет результатов»
+        errorLayout.visibility = View.GONE
     }
 
     /**
@@ -402,6 +422,7 @@ class SearchActivity : AppCompatActivity() {
             }
         }
     }
+
     /**
      * Скрывает макет с ошибкой
      */
@@ -431,9 +452,6 @@ class SearchActivity : AppCompatActivity() {
             updateUIWithCurrentState()
         }
     }
-
-
-
 
     override fun onDestroy() {
         super.onDestroy()

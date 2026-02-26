@@ -1,6 +1,6 @@
 package com.practicum.playlistmaker.player.ui
 
-import com.practicum.playlistmaker.core.models.PlaybackState
+import com.practicum.playlistmaker.player.domain.model.PlaybackState
 
 data class PlayerUiState(
     val playbackState: PlaybackState,

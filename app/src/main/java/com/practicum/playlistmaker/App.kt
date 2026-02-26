@@ -4,7 +4,7 @@ import android.app.Application
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
-import com.practicum.playlistmaker.core.usecase.UseCaseCreator
+import com.practicum.playlistmaker.core.contract.GetThemeStateUseCaseContract
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
@@ -19,11 +19,7 @@ import javax.inject.Inject
 @HiltAndroidApp
 class App : Application() {
 
-    /**
-     * Фабрика для создания Use Cases бизнес‑логики.
-     * Внедряется через Dagger Hilt.
-     */
-    @Inject lateinit var useCaseCreator: UseCaseCreator
+    @Inject lateinit var getThemeStateUseCase: GetThemeStateUseCaseContract
 
     override fun onCreate() {
         super.onCreate()
@@ -66,7 +62,7 @@ class App : Application() {
      */
     private fun loadAndApplyTheme() {
         // Получаем текущее состояние темы через Use Case
-        val isDarkMode = useCaseCreator.createGetThemeStateUseCase()()
+        val isDarkMode = getThemeStateUseCase()
 
         // Текущий режим темы, установленный в приложении
         val currentMode = AppCompatDelegate.getDefaultNightMode()

@@ -4,17 +4,20 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
 import androidx.core.net.toUri
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.core.contract.SendSupportEmailUseCaseContract
 import com.practicum.playlistmaker.core.contract.ShareAppUseCaseContract
-import com.practicum.playlistmaker.core.usecase.UseCaseCreator
 import com.practicum.playlistmaker.settings.ui.view.SettingsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -33,31 +36,31 @@ import javax.inject.Inject
 class SettingsActivity : AppCompatActivity() {
 
     @Inject
-    lateinit var useCaseCreator: UseCaseCreator
+    lateinit var shareAppUseCase: ShareAppUseCaseContract
+
+    @Inject
+    lateinit var sendSupportEmailUseCase: SendSupportEmailUseCaseContract
 
     private lateinit var viewModel: SettingsViewModel
-    private lateinit var shareAppUseCase: ShareAppUseCaseContract
-    private lateinit var sendSupportEmailUseCase: SendSupportEmailUseCaseContract
 
     // Флаг для отслеживания пересоздания активности (например, при смене конфигурации)
     private var isRecreating = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_settings)
 
-        setupUseCases()
+        enableEdgeToEdge()
+
+        setContentView(R.layout.activity_settings)
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { view, insets ->
+            val statusBar = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+            view.updatePadding(top = statusBar.top)
+            insets
+        }
+
         setupViewModel()
         setupViews()
         observeUiState()
-    }
-
-    /**
-     * Инициализирует Use Cases для шаринга и отправки email.
-     */
-    private fun setupUseCases() {
-        shareAppUseCase = useCaseCreator.createShareAppUseCase()
-        sendSupportEmailUseCase = useCaseCreator.createSendSupportEmailUseCase()
     }
 
     /**

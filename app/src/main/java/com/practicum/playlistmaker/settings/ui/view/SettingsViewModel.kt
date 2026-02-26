@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.practicum.playlistmaker.core.contract.GetThemeStateUseCaseContract
 import com.practicum.playlistmaker.core.contract.SwitchThemeUseCaseContract
-import com.practicum.playlistmaker.core.usecase.UseCaseCreator
 import com.practicum.playlistmaker.settings.ui.SettingsUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -15,20 +14,12 @@ import javax.inject.Inject
 /**
  * ViewModel для экрана настроек приложения.
  * Управляет состоянием UI, взаимодействует с Use Cases для получения и сохранения настроек темы.
- *
- * @param useCaseCreator фабрика для создания Use Cases бизнес‑логики
  */
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val useCaseCreator: UseCaseCreator
+    private val getThemeStateUseCase: GetThemeStateUseCaseContract,
+    private val switchThemeUseCase: SwitchThemeUseCaseContract
 ) : ViewModel() {
-
-    // Use Cases для работы с настройками темы
-    private val getThemeStateUseCase: GetThemeStateUseCaseContract =
-        useCaseCreator.createGetThemeStateUseCase()
-
-    private val switchThemeUseCase: SwitchThemeUseCaseContract =
-        useCaseCreator.createSwitchThemeUseCase()
 
     // Приватное изменяемое состояние UI
     private val _uiState = MutableLiveData<SettingsUiState>()
