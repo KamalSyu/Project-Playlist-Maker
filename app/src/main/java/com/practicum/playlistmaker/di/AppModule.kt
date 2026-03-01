@@ -1,28 +1,66 @@
 package com.practicum.playlistmaker.di
 
+
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
 import com.google.gson.Gson
-import com.practicum.playlistmaker.data.mapper.DtoMapper
-import com.practicum.playlistmaker.data.network.ItunesApi
-import com.practicum.playlistmaker.data.provider.CoroutineDelayProvider
-import com.practicum.playlistmaker.data.repository.HistoryRepositoryImpl
-import com.practicum.playlistmaker.data.repository.ItunesRepositoryImpl
-import com.practicum.playlistmaker.data.repository.PlayerRepositoryImpl
-import com.practicum.playlistmaker.data.repository.SettingsRepositoryImpl
-import com.practicum.playlistmaker.data.repository.ShareTextProviderImpl
-import com.practicum.playlistmaker.data.repository.SupportEmailDataProviderImpl
-import com.practicum.playlistmaker.domain.factory.TrackFactory
-import com.practicum.playlistmaker.domain.provider.SupportEmailDataProvider
-import com.practicum.playlistmaker.domain.repository.HistoryRepository
-import com.practicum.playlistmaker.domain.repository.ItunesRepository
-import com.practicum.playlistmaker.domain.repository.PlayerRepository
-import com.practicum.playlistmaker.domain.repository.SettingsRepository
-import com.practicum.playlistmaker.domain.usecase.DelayProvider
-import com.practicum.playlistmaker.domain.usecase.ShareTextProvider
-import com.practicum.playlistmaker.domain.usecase.UseCaseCreator
-import com.practicum.playlistmaker.utils.Constants.Companion.PREFERENCES
+import com.practicum.playlistmaker.search.data.network.ItunesApi
+import com.practicum.playlistmaker.core.utils.CoroutineDelayProvider
+import com.practicum.playlistmaker.search.data.repository.HistoryRepositoryImpl
+import com.practicum.playlistmaker.search.data.repository.ItunesRepositoryImpl
+import com.practicum.playlistmaker.player.data.repository.PlayerRepositoryImpl
+import com.practicum.playlistmaker.settings.data.repository.SettingsRepositoryImpl
+import com.practicum.playlistmaker.sharing.data.provider.SupportEmailDataProviderImpl
+import com.practicum.playlistmaker.creator.domain.TrackFactory
+import com.practicum.playlistmaker.search.domain.repository.HistoryRepository
+import com.practicum.playlistmaker.search.domain.repository.ItunesRepository
+import com.practicum.playlistmaker.player.domain.repository.PlayerRepository
+import com.practicum.playlistmaker.settings.domain.repository.SettingsRepository
+import com.practicum.playlistmaker.core.contract.DelayProvider
+import com.practicum.playlistmaker.core.constants.Constants.Companion.PREFERENCES
+import com.practicum.playlistmaker.core.contract.AddTrackToHistoryUseCaseContract
+import com.practicum.playlistmaker.core.contract.ClearSearchHistoryUseCaseContract
+import com.practicum.playlistmaker.core.contract.DelayedTrackActionUseCaseContract
+import com.practicum.playlistmaker.core.contract.FilterTracksUseCaseContract
+import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContract
+import com.practicum.playlistmaker.core.contract.GetCurrentPositionUseCaseContract
+import com.practicum.playlistmaker.core.contract.GetSearchHistoryUseCaseContract
+import com.practicum.playlistmaker.core.contract.GetThemeStateUseCaseContract
+import com.practicum.playlistmaker.core.contract.PreparePlaybackUseCaseContract
+import com.practicum.playlistmaker.core.contract.ResetPlaybackUseCaseContract
+import com.practicum.playlistmaker.core.contract.SearchTracksUseCaseContract
+import com.practicum.playlistmaker.core.contract.SendSupportEmailUseCaseContract
+import com.practicum.playlistmaker.core.contract.SetPlaybackCompletionListenerUseCaseContract
+import com.practicum.playlistmaker.core.contract.ShareAppUseCaseContract
+import com.practicum.playlistmaker.core.contract.StopPlaybackUseCaseContract
+import com.practicum.playlistmaker.core.contract.SwitchThemeUseCaseContract
+import com.practicum.playlistmaker.core.contract.TogglePlaybackUseCaseContract
+import com.practicum.playlistmaker.core.utils.FormatTrackDurationUseCase
+import com.practicum.playlistmaker.player.data.mapper.TrackParcelableMapper
+import com.practicum.playlistmaker.player.domain.usecase.DelayedTrackActionUseCase
+import com.practicum.playlistmaker.player.domain.usecase.GetCurrentPositionUseCase
+import com.practicum.playlistmaker.player.domain.usecase.PreparePlaybackUseCase
+import com.practicum.playlistmaker.player.domain.usecase.ResetPlaybackUseCase
+import com.practicum.playlistmaker.player.domain.usecase.SetPlaybackCompletionListenerUseCase
+import com.practicum.playlistmaker.player.domain.usecase.StopPlaybackUseCase
+import com.practicum.playlistmaker.player.domain.usecase.TogglePlaybackUseCase
+import com.practicum.playlistmaker.search.data.mapper.SearchHistoryMapper
+import com.practicum.playlistmaker.search.data.mapper.SearchResponseMapper
+import com.practicum.playlistmaker.search.data.mapper.TrackMapper
+import com.practicum.playlistmaker.search.domain.usecase.AddTrackToHistoryUseCase
+import com.practicum.playlistmaker.search.domain.usecase.ClearSearchHistoryUseCase
+import com.practicum.playlistmaker.search.domain.usecase.FilterTracksUseCase
+import com.practicum.playlistmaker.search.domain.usecase.GetSearchHistoryUseCase
+import com.practicum.playlistmaker.search.domain.usecase.SearchTracksUseCase
+import com.practicum.playlistmaker.settings.data.mapper.ThemeSettingsMapper
+import com.practicum.playlistmaker.settings.domain.usecase.GetThemeStateUseCase
+import com.practicum.playlistmaker.settings.domain.usecase.SwitchThemeUseCase
+import com.practicum.playlistmaker.sharing.data.provider.ShareTextProviderImpl
+import com.practicum.playlistmaker.sharing.domain.provider.ShareTextProvider
+import com.practicum.playlistmaker.sharing.domain.provider.SupportEmailDataProvider
+import com.practicum.playlistmaker.sharing.domain.usecase.SendSupportEmailUseCase
+import com.practicum.playlistmaker.sharing.domain.usecase.ShareAppUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -31,6 +69,7 @@ import dagger.hilt.components.SingletonComponent
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
+
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
@@ -41,11 +80,8 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideSharedPreferences(
-        @ApplicationContext context: Context
-    ): SharedPreferences {
-        return context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE)
-    }
+    fun provideSharedPreferences(@ApplicationContext context: Context): SharedPreferences =
+        context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE)
 
     @Provides
     @Singleton
@@ -53,109 +89,170 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideRetrofit(): Retrofit {
-        return Retrofit.Builder()
-            .baseUrl("https://itunes.apple.com/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-    }
+    fun provideRetrofit(): Retrofit = Retrofit.Builder()
+        .baseUrl("https://itunes.apple.com/")  // Исправлено: корректный протокол
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
 
     @Provides
     @Singleton
-    fun provideItunesApi(retrofit: Retrofit): ItunesApi {
-        return retrofit.create(ItunesApi::class.java)
-    }
+    fun provideItunesApi(retrofit: Retrofit): ItunesApi = retrofit.create(ItunesApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideTrackFactory(): TrackFactory = TrackFactory()
+
+    @Provides
+    @Singleton
+    fun provideTrackMapper(trackFactory: TrackFactory): TrackMapper =
+        TrackMapper(trackFactory)
+
+    @Provides
+    @Singleton
+    fun provideSearchResponseMapper(trackMapper: TrackMapper): SearchResponseMapper =
+        SearchResponseMapper(trackMapper)
+
+    @Provides
+    @Singleton
+    fun provideSearchHistoryMapper(trackMapper: TrackMapper): SearchHistoryMapper =
+        SearchHistoryMapper(trackMapper)
+
+    @Provides
+    @Singleton
+    fun provideThemeSettingsMapper(): ThemeSettingsMapper = ThemeSettingsMapper()
 
     @Provides
     @Singleton
     fun provideItunesRepository(
         api: ItunesApi,
-        dtoMapper: DtoMapper
-    ): ItunesRepository {
-        return ItunesRepositoryImpl(api, dtoMapper)
-    }
+        searchResponseMapper: SearchResponseMapper
+    ): ItunesRepository = ItunesRepositoryImpl(api, searchResponseMapper)
 
     @Provides
     @Singleton
     fun provideHistoryRepository(
         sharedPreferences: SharedPreferences,
         gson: Gson,
-        dtoMapper: DtoMapper
-    ): HistoryRepository {
-        return HistoryRepositoryImpl(sharedPreferences, gson, dtoMapper)
-    }
+        searchHistoryMapper: SearchHistoryMapper
+    ): HistoryRepository = HistoryRepositoryImpl(sharedPreferences, gson, searchHistoryMapper)
 
     @Provides
     @Singleton
-    fun providePlayerRepository(): PlayerRepository {
-        return PlayerRepositoryImpl()
-    }
+    fun providePlayerRepository(): PlayerRepository = PlayerRepositoryImpl()
 
     @Provides
     @Singleton
     fun provideSettingsRepository(
         sharedPreferences: SharedPreferences,
         gson: Gson,
-        dtoMapper: DtoMapper
-    ): SettingsRepository {
-        return SettingsRepositoryImpl(sharedPreferences, gson, dtoMapper)
-    }
+        themeSettingsMapper: ThemeSettingsMapper
+    ): SettingsRepository = SettingsRepositoryImpl(sharedPreferences, gson, themeSettingsMapper)
 
+    // Providers
     @Provides
     @Singleton
-    fun provideDtoMapper(trackFactory: TrackFactory): DtoMapper {
-        return DtoMapper(trackFactory)
-    }
-
-    @Provides
-    @Singleton
-    fun provideTrackFactory(): TrackFactory {
-        return TrackFactory()
-    }
-
-    @Provides
-    @Singleton
-    fun provideDelayProvider(): DelayProvider {
-        return CoroutineDelayProvider()
-    }
+    fun provideDelayProvider(): DelayProvider = CoroutineDelayProvider()
 
     @Provides
     @Singleton
     fun provideSupportEmailDataProvider(
         @ApplicationContext context: Context
-    ): SupportEmailDataProvider {
-        return SupportEmailDataProviderImpl(context)
-    }
+    ): SupportEmailDataProvider = SupportEmailDataProviderImpl(context)
 
     @Provides
     @Singleton
     fun provideShareTextProvider(
         @ApplicationContext context: Context
-    ): ShareTextProvider {
-        return ShareTextProviderImpl(context)
-    }
+    ): ShareTextProvider = ShareTextProviderImpl(context)
 
-    // Теперь все зависимости доступны!
+
     @Provides
     @Singleton
-    fun provideUseCaseCreator(
-        @ApplicationContext context: Context,
-        itunesRepository: ItunesRepository,
-        historyRepository: HistoryRepository,
-        playerRepository: PlayerRepository,
-        settingsRepository: SettingsRepository,
-        delayProvider: DelayProvider,
-        supportEmailDataProvider: SupportEmailDataProvider,
-        shareTextProvider: ShareTextProvider  // ← Добавлен!
-    ): UseCaseCreator {
-        return UseCaseCreator(
-            itunesRepository = itunesRepository,
-            historyRepository = historyRepository,
-            playerRepository = playerRepository,
-            settingsRepository = settingsRepository,
-            delayProvider = delayProvider,
-            supportEmailDataProvider = supportEmailDataProvider,
-            shareTextProvider = shareTextProvider  // ← Передаём дальше
-        )
-    }
+    fun provideTrackParcelableMapper(): TrackParcelableMapper = TrackParcelableMapper()
+
+    @Provides
+    fun provideFormatTrackDurationUseCase(): FormatTrackDurationUseCaseContract =
+        FormatTrackDurationUseCase()
+
+    @Provides
+    @Singleton
+    fun provideSearchTracksUseCase(itunesRepository: ItunesRepository): SearchTracksUseCaseContract =
+        SearchTracksUseCase(itunesRepository)
+
+    @Provides
+    @Singleton
+    fun provideAddTrackToHistoryUseCase(historyRepository: HistoryRepository): AddTrackToHistoryUseCaseContract =
+        AddTrackToHistoryUseCase(historyRepository)
+
+    @Provides
+    @Singleton
+    fun provideClearSearchHistoryUseCase(historyRepository: HistoryRepository): ClearSearchHistoryUseCaseContract =
+        ClearSearchHistoryUseCase(historyRepository)
+
+    @Provides
+    @Singleton
+    fun provideGetSearchHistoryUseCase(historyRepository: HistoryRepository): GetSearchHistoryUseCaseContract =
+        GetSearchHistoryUseCase(historyRepository)
+
+    @Provides
+    @Singleton
+    fun provideFilterTracksUseCase(): FilterTracksUseCaseContract =
+        FilterTracksUseCase()
+
+    @Provides
+    @Singleton
+    fun providePreparePlaybackUseCase(playerRepository: PlayerRepository): PreparePlaybackUseCaseContract =
+        PreparePlaybackUseCase(playerRepository)
+
+
+    @Provides
+    @Singleton
+    fun provideTogglePlaybackUseCase(playerRepository: PlayerRepository): TogglePlaybackUseCaseContract =
+        TogglePlaybackUseCase(playerRepository)
+
+    @Provides
+    @Singleton
+    fun provideStopPlaybackUseCase(playerRepository: PlayerRepository): StopPlaybackUseCaseContract =
+        StopPlaybackUseCase(playerRepository)
+
+    @Provides
+    @Singleton
+    fun provideGetCurrentPositionUseCase(playerRepository: PlayerRepository): GetCurrentPositionUseCaseContract =
+        GetCurrentPositionUseCase(playerRepository)
+
+    @Provides
+    @Singleton
+    fun provideSetPlaybackCompletionListenerUseCase(playerRepository: PlayerRepository): SetPlaybackCompletionListenerUseCaseContract =
+        SetPlaybackCompletionListenerUseCase(playerRepository)
+
+    @Provides
+    @Singleton
+    fun provideDelayedTrackActionUseCase(delayProvider: DelayProvider): DelayedTrackActionUseCaseContract =
+        DelayedTrackActionUseCase(delayProvider)
+
+    @Provides
+    @Singleton
+    fun provideResetPlaybackUseCase(playerRepository: PlayerRepository): ResetPlaybackUseCaseContract =
+        ResetPlaybackUseCase(playerRepository)
+
+    @Provides
+    @Singleton
+    fun provideGetThemeStateUseCase(settingsRepository: SettingsRepository): GetThemeStateUseCaseContract =
+        GetThemeStateUseCase(settingsRepository)
+
+    @Provides
+    @Singleton
+    fun provideSwitchThemeUseCase(settingsRepository: SettingsRepository): SwitchThemeUseCaseContract =
+        SwitchThemeUseCase(settingsRepository)
+
+    @Provides
+    @Singleton
+    fun provideShareAppUseCase(shareTextProvider: ShareTextProvider): ShareAppUseCaseContract =
+        ShareAppUseCase(shareTextProvider)
+
+    @Provides
+    @Singleton
+    fun provideSendSupportEmailUseCase(supportEmailDataProvider: SupportEmailDataProvider): SendSupportEmailUseCaseContract =
+        SendSupportEmailUseCase(supportEmailDataProvider)
+
 }
