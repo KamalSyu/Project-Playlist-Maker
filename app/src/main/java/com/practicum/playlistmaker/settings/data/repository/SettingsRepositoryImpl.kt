@@ -8,7 +8,6 @@ import com.practicum.playlistmaker.settings.domain.repository.SettingsRepository
 import com.practicum.playlistmaker.settings.data.dto.ThemeSettingsDTO
 import com.practicum.playlistmaker.core.constants.Constants
 import com.practicum.playlistmaker.settings.data.mapper.ThemeSettingsMapper
-import javax.inject.Inject
 
 /**
  * Реализация репозитория для управления настройками темы приложения.
@@ -19,7 +18,7 @@ import javax.inject.Inject
  * @param gson экземпляр Gson для работы с JSON
  * @param dtoMapper маппер для преобразования между доменными моделями и DTO
  */
-class SettingsRepositoryImpl @Inject constructor(
+class SettingsRepositoryImpl (
     private val sharedPreferences: SharedPreferences,
     private val gson: Gson,
     private val dtoMapper: ThemeSettingsMapper

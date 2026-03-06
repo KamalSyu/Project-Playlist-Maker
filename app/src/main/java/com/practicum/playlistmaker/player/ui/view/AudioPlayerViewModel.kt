@@ -5,30 +5,31 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.practicum.playlistmaker.core.contract.DelayedTrackActionUseCaseContract
 import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContract
 import com.practicum.playlistmaker.core.contract.GetCurrentPositionUseCaseContract
 import com.practicum.playlistmaker.core.contract.PreparePlaybackUseCaseContract
+import com.practicum.playlistmaker.core.contract.ResetPlaybackUseCaseContract
 import com.practicum.playlistmaker.core.contract.SetPlaybackCompletionListenerUseCaseContract
 import com.practicum.playlistmaker.core.contract.StopPlaybackUseCaseContract
 import com.practicum.playlistmaker.core.contract.TogglePlaybackUseCaseContract
+import com.practicum.playlistmaker.core.models.Track
+import com.practicum.playlistmaker.player.data.mapper.TrackParcelableMapper
 import com.practicum.playlistmaker.player.domain.model.PlaybackState
-import com.practicum.playlistmaker.player.domain.usecase.ResetPlaybackUseCase
 import com.practicum.playlistmaker.player.ui.PlayerUiState
-import dagger.hilt.android.lifecycle.HiltViewModel
+import com.practicum.playlistmaker.search.ui.parcel.ParcelableTrack
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-@HiltViewModel
-class AudioPlayerViewModel @Inject constructor(
+class AudioPlayerViewModel(
     private val preparePlaybackUseCase: PreparePlaybackUseCaseContract,
     private val togglePlaybackUseCase: TogglePlaybackUseCaseContract,
     private val stopPlaybackUseCase: StopPlaybackUseCaseContract,
     private val getCurrentPositionUseCase: GetCurrentPositionUseCaseContract,
     private val setCompletionListenerUseCase: SetPlaybackCompletionListenerUseCaseContract,
-    private val resetPlaybackUseCase: ResetPlaybackUseCase,
-    val formatTrackDurationUseCase: FormatTrackDurationUseCaseContract
-    ) : ViewModel() {
-
+    private val resetPlaybackUseCase: ResetPlaybackUseCaseContract,
+    val formatTrackDurationUseCase: FormatTrackDurationUseCaseContract,
+    private val trackParcelableMapper: TrackParcelableMapper // Добавляем сюда
+) : ViewModel() {
 
     // Внутреннее состояние UI
     private val _uiState = MutableLiveData<PlayerUiState>(
@@ -38,6 +39,9 @@ class AudioPlayerViewModel @Inject constructor(
             playbackCompleted = false
         )
     )
+
+    private val _currentTrack = MutableLiveData<Track>()
+    val currentTrack: LiveData<Track> = _currentTrack
 
     // Публичное состояние UI (только чтение)
     val uiState: LiveData<PlayerUiState> = _uiState
@@ -182,6 +186,7 @@ class AudioPlayerViewModel @Inject constructor(
             }
         }
     }
+
     // Сброс воспроизведения до начала
     fun resetPlaybackToStart() = viewModelScope.launch {
         try {
@@ -205,4 +210,14 @@ class AudioPlayerViewModel @Inject constructor(
             _uiState.value = _uiState.value?.copy(error = e)
         }
     }
+
+    fun processTrack(parcelableTrack: ParcelableTrack): Track {
+        return trackParcelableMapper.toDomain(parcelableTrack)
+    }
+
+    fun setCurrentTrack(track: Track) {
+        _currentTrack.value = track
+        initPlayback(track.previewUrl) // Например, начинаем подготовку трека
+    }
+
 }

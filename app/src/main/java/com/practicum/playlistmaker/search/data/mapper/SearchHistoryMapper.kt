@@ -2,9 +2,8 @@ package com.practicum.playlistmaker.search.data.mapper
 
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.search.data.dto.SearchHistoryDTO
-import javax.inject.Inject
 
-class SearchHistoryMapper @Inject constructor(
+class SearchHistoryMapper(
     private val trackMapper: TrackMapper
 ) {
     fun toDto(tracks: List<Track>): SearchHistoryDTO {

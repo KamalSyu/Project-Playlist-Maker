@@ -14,7 +14,6 @@ import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.updatePadding
 import androidx.core.widget.doOnTextChanged
@@ -31,10 +30,10 @@ import com.practicum.playlistmaker.search.ui.view.HistoryState
 import com.practicum.playlistmaker.search.ui.view.ScreenState
 import com.practicum.playlistmaker.search.ui.view.SearchState
 import com.practicum.playlistmaker.search.ui.view.SearchViewModel
-import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 /**
  * Активность для поиска треков и отображения истории поиска.
@@ -46,11 +45,10 @@ import kotlinx.coroutines.launch
  *
  * Использует ViewModel для управления состоянием и взаимодействия с бизнес‑логикой.
  */
-@AndroidEntryPoint
 class SearchActivity : AppCompatActivity() {
 
     /** ViewModel для управления поиском и историей */
-    private val viewModel: SearchViewModel by viewModels()
+    private val viewModel: SearchViewModel by viewModel()
 
     // UI‑компоненты активности
     private lateinit var backTextView: TextView

@@ -1,9 +1,8 @@
 package com.practicum.playlistmaker.core.utils
 
 import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContract
-import javax.inject.Inject
 
-class FormatTrackDurationUseCase @Inject constructor(
+class FormatTrackDurationUseCase (
 ) : FormatTrackDurationUseCaseContract {
 
     override operator fun invoke(durationMillis: Long): String {

@@ -2,20 +2,19 @@ package com.practicum.playlistmaker.player.domain.usecase
 
 import com.practicum.playlistmaker.core.contract.TogglePlaybackUseCaseContract
 import com.practicum.playlistmaker.player.domain.repository.PlayerRepository
-import javax.inject.Inject
 
 /**
  * UseCase для переключения состояния воспроизведения: play ↔ pause.
  * Если воспроизведение не идёт — запускает его.
  * Если идёт — приостанавливает.
  */
-class TogglePlaybackUseCase @Inject constructor(
+class TogglePlaybackUseCase (
     private val playerRepository: PlayerRepository
 ) : TogglePlaybackUseCaseContract {
 
     /**
      * Переключает состояние воспроизведения:
-     * - если не играло: запускает воспроизведение ;
+     * - если не играло: запускает воспроизведение;
      * - если играло: приостанавливает воспроизведение.
      * @param seekPosition позиция для seekTo перед запуском (опционально);
      * @return Result.success(isPlaying) — текущее состояние воспроизведения после операции;

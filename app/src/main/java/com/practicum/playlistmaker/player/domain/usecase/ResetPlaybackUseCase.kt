@@ -2,13 +2,12 @@ package com.practicum.playlistmaker.player.domain.usecase
 
 import com.practicum.playlistmaker.core.contract.ResetPlaybackUseCaseContract
 import com.practicum.playlistmaker.player.domain.repository.PlayerRepository
-import javax.inject.Inject
 
 /**
  * UseCase для полного сброса состояния медиаплеера.
  * Освобождает ресурсы медиаплеера и сбрасывает все внутренние состояния.
  */
-class ResetPlaybackUseCase @Inject constructor(
+class ResetPlaybackUseCase (
     private val playerRepository: PlayerRepository
 ) : ResetPlaybackUseCaseContract {
 

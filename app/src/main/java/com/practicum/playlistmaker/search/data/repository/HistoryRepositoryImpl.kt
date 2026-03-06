@@ -7,7 +7,6 @@ import com.practicum.playlistmaker.search.domain.repository.HistoryRepository
 import com.practicum.playlistmaker.search.data.dto.SearchHistoryDTO
 import com.practicum.playlistmaker.search.data.mapper.SearchHistoryMapper
 import com.practicum.playlistmaker.core.constants.Constants
-import javax.inject.Inject
 import kotlin.collections.plus
 
 /**
@@ -18,7 +17,7 @@ import kotlin.collections.plus
  * @param gson конвертер объектов в JSON и обратно
  * @param searchHistoryMapper маппер для преобразования между доменными моделями и DTO
  */
-class HistoryRepositoryImpl @Inject constructor(
+class HistoryRepositoryImpl (
     private val sharedPreferences: SharedPreferences,
     private val gson: Gson,
     private val searchHistoryMapper: SearchHistoryMapper

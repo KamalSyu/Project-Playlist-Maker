@@ -2,7 +2,6 @@ package com.practicum.playlistmaker.sharing.domain.usecase
 
 import com.practicum.playlistmaker.core.contract.ShareAppUseCaseContract
 import com.practicum.playlistmaker.sharing.domain.provider.ShareTextProvider
-import javax.inject.Inject
 
 /**
  * Use Case для получения текста для шаринга приложения.
@@ -11,7 +10,7 @@ import javax.inject.Inject
  *
  * @param shareTextProvider провайдер, отвечающий за предоставление текста для шаринга
  */
-class ShareAppUseCase @Inject constructor(
+class ShareAppUseCase (
     private val shareTextProvider: ShareTextProvider
 ) : ShareAppUseCaseContract {
 

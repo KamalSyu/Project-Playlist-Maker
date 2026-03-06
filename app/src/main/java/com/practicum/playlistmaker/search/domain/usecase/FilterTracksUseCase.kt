@@ -2,13 +2,12 @@ package com.practicum.playlistmaker.search.domain.usecase
 
 import com.practicum.playlistmaker.core.contract.FilterTracksUseCaseContract
 import com.practicum.playlistmaker.core.models.Track
-import javax.inject.Inject
 
 /**
  * UseCase для фильтрации списка треков по поисковому запросу.
  * Выполняет поиск по названию трека и имени исполнителя (без учёта регистра).
  */
-class FilterTracksUseCase @Inject constructor() : FilterTracksUseCaseContract {
+class FilterTracksUseCase () : FilterTracksUseCaseContract {
 
     /**
      * Фильтрует список треков по поисковому запросу.

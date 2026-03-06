@@ -3,7 +3,6 @@ package com.practicum.playlistmaker.search.domain.usecase
 import com.practicum.playlistmaker.core.contract.SearchTracksUseCaseContract
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.search.domain.repository.ItunesRepository
-import javax.inject.Inject
 
 /**
  * UseCase для поиска треков через iTunes API.
@@ -11,7 +10,7 @@ import javax.inject.Inject
  *
  * @param itunesRepository репозиторий для взаимодействия с iTunes API
  */
-class SearchTracksUseCase @Inject constructor(
+class SearchTracksUseCase (
     private val itunesRepository: ItunesRepository
 ) : SearchTracksUseCaseContract {
 

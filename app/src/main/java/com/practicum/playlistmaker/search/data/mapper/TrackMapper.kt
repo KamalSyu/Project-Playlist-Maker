@@ -3,9 +3,8 @@ package com.practicum.playlistmaker.search.data.mapper
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.creator.domain.TrackFactory
 import com.practicum.playlistmaker.search.data.dto.TrackDTO
-import javax.inject.Inject
 
-class TrackMapper @Inject constructor(
+class TrackMapper(
     private val trackFactory: TrackFactory
 ) {
 
