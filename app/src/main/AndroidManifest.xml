@@ -31,7 +31,7 @@
         </activity>
         <activity android:name=".settings.ui.SettingsActivity" />
         <activity android:name=".search.ui.SearchActivity" />
-        <activity android:name=".search.ui.MediatekaActivity" />
+        <activity android:name=".mediateka.MediatekaActivity" />
         <activity android:name=".player.ui.AudioPlayerActivity" />
 
     </application>

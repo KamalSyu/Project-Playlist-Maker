@@ -27,6 +27,8 @@ import com.practicum.playlistmaker.core.utils.CoroutineDelayProvider
 import com.practicum.playlistmaker.core.utils.DateFormatter
 import com.practicum.playlistmaker.core.utils.FormatTrackDurationUseCase
 import com.practicum.playlistmaker.creator.domain.TrackFactory
+import com.practicum.playlistmaker.mediateka.ui.view.FragmentFavoritesViewModel
+import com.practicum.playlistmaker.mediateka.ui.view.FragmentPlaylistsViewModel
 import com.practicum.playlistmaker.player.ui.view.AudioPlayerViewModel
 import com.practicum.playlistmaker.search.data.network.ItunesApi
 import com.practicum.playlistmaker.search.data.repository.HistoryRepositoryImpl
@@ -188,4 +190,8 @@ val appModule = module {
         get(), // shareAppUseCase
         get()  // sendSupportEmailUseCase
     ) }
+
+    // Добавляем ViewModel для фрагментов медиатеки
+    viewModel { FragmentPlaylistsViewModel() }
+    viewModel { FragmentFavoritesViewModel() }
 }
