@@ -2,13 +2,12 @@ package com.practicum.playlistmaker.player.domain.usecase
 
 import com.practicum.playlistmaker.core.contract.SetPlaybackCompletionListenerUseCaseContract
 import com.practicum.playlistmaker.player.domain.repository.PlayerRepository
-import javax.inject.Inject
 
 /**
  * UseCase для установки слушателя события завершения воспроизведения.
  * Позволяет реагировать на окончание воспроизведения аудио.
  */
-class SetPlaybackCompletionListenerUseCase @Inject constructor(
+class SetPlaybackCompletionListenerUseCase (
     private val playerRepository: PlayerRepository
 ) : SetPlaybackCompletionListenerUseCaseContract {
 

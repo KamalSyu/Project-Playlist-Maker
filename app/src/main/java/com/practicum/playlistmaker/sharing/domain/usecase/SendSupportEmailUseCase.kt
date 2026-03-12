@@ -3,7 +3,6 @@ package com.practicum.playlistmaker.sharing.domain.usecase
 import com.practicum.playlistmaker.core.contract.SendSupportEmailUseCaseContract
 import com.practicum.playlistmaker.sharing.domain.model.SupportEmailIntentData
 import com.practicum.playlistmaker.sharing.domain.provider.SupportEmailDataProvider
-import javax.inject.Inject
 
 /**
  * Use Case для получения данных для отправки email в поддержку.
@@ -15,7 +14,7 @@ import javax.inject.Inject
  *
  * @param supportEmailDataProvider провайдер, предоставляющий данные для email (адрес, тема, тело письма)
  */
-class SendSupportEmailUseCase @Inject constructor(
+class SendSupportEmailUseCase (
     private val supportEmailDataProvider: SupportEmailDataProvider
 ) : SendSupportEmailUseCaseContract {
 

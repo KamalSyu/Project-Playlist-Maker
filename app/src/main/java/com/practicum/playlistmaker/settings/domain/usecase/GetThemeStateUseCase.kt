@@ -2,7 +2,6 @@ package com.practicum.playlistmaker.settings.domain.usecase
 
 import com.practicum.playlistmaker.core.contract.GetThemeStateUseCaseContract
 import com.practicum.playlistmaker.settings.domain.repository.SettingsRepository
-import javax.inject.Inject
 
 /**
  * Use case для получения текущего состояния темы приложения (тёмная/светлая).
@@ -10,7 +9,7 @@ import javax.inject.Inject
  *
  * @param settingsRepository репозиторий для доступа к настройкам темы
  */
-class GetThemeStateUseCase @Inject constructor(
+class GetThemeStateUseCase (
     private val settingsRepository: SettingsRepository
 ) : GetThemeStateUseCaseContract {
 

@@ -4,9 +4,8 @@ import android.content.Context
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.sharing.domain.model.SupportEmailIntentData
 import com.practicum.playlistmaker.sharing.domain.provider.SupportEmailDataProvider
-import javax.inject.Inject
 
-class SupportEmailDataProviderImpl @Inject constructor(
+class SupportEmailDataProviderImpl (
     private val context: Context
 ) : SupportEmailDataProvider {
 

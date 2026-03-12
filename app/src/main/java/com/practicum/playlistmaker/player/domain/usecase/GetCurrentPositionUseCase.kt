@@ -2,13 +2,12 @@ package com.practicum.playlistmaker.player.domain.usecase
 
 import com.practicum.playlistmaker.core.contract.GetCurrentPositionUseCaseContract
 import com.practicum.playlistmaker.player.domain.repository.PlayerRepository
-import javax.inject.Inject
 
 /**
  * UseCase для получения текущей позиции воспроизведения в миллисекундах.
  * Позволяет узнать, на каком моменте сейчас находится воспроизведение.
  */
-class GetCurrentPositionUseCase @Inject constructor (
+class GetCurrentPositionUseCase  (
     private val playerRepository: PlayerRepository
 ) : GetCurrentPositionUseCaseContract {
 

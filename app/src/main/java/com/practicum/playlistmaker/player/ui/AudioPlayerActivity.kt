@@ -8,7 +8,6 @@ import android.os.Looper
 import android.util.Log
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.updatePadding
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -16,24 +15,19 @@ import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.player.domain.model.PlaybackState
 import com.practicum.playlistmaker.core.models.Track
-import com.practicum.playlistmaker.player.data.mapper.TrackParcelableMapper
 import com.practicum.playlistmaker.search.ui.parcel.ParcelableTrack
 import com.practicum.playlistmaker.player.ui.adapter.PlayerTrackAdapter
 import com.practicum.playlistmaker.player.ui.view.AudioPlayerViewModel
-import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 /**
  * Экран аудиоплеера: воспроизведение трека, отображение прогресса, управление воспроизведением.
  */
-@AndroidEntryPoint
 class AudioPlayerActivity : AppCompatActivity() {
 
-    @Inject
-    lateinit var trackParcelableMapper: TrackParcelableMapper
+    private val viewModel: AudioPlayerViewModel by viewModel()
 
-    private val viewModel: AudioPlayerViewModel by viewModels()
-    // UI-компоненты
+    // UI‑компоненты
     private lateinit var recyclerViewAudioPlayer: RecyclerView
     private lateinit var adapter: PlayerTrackAdapter
 
@@ -55,7 +49,8 @@ class AudioPlayerActivity : AppCompatActivity() {
         }
 
         val track = getTrackFromIntent() // Получаем трек из интента
-        setupRecyclerView(track) // Настраиваем RecyclerView с треком
+        viewModel.setCurrentTrack(track) // Передаём данные в ViewModel
+        setupRecyclerView(track) // Настраиваем UI в Activity
         setupBackButton() // Кнопка «Назад»
 
         // Подписываемся на изменения состояния UI
@@ -66,7 +61,6 @@ class AudioPlayerActivity : AppCompatActivity() {
         viewModel.setupPlaybackCompletionListener()
 
         if (savedInstanceState == null) {
-            // Первое открытие: инициализируем воспроизведение
             viewModel.initPlayback(track.previewUrl)
         } else {
             // Восстановление состояния после поворота экрана
@@ -79,13 +73,14 @@ class AudioPlayerActivity : AppCompatActivity() {
 
     /** Получаем трек из интента и преобразуем в доменную модель */
     private fun getTrackFromIntent(): Track {
-        val parcelable = intent.getParcelableExtra<ParcelableTrack>("track")
-        return if (parcelable != null) {
-            Log.d("AudioPlayer", "Track received from Intent")
-            trackParcelableMapper.toDomain(parcelable)
-        } else {
+        // Используем старый метод getParcelableExtra() без указания класса
+        val parcelableTrack: ParcelableTrack? = intent.getParcelableExtra("track")
+
+        if (parcelableTrack == null) {
             throw IllegalArgumentException("Track is required but not provided.")
         }
+
+        return viewModel.processTrack(parcelableTrack)
     }
 
     /** Настройка кнопки «Назад» */
@@ -141,7 +136,7 @@ class AudioPlayerActivity : AppCompatActivity() {
         // Запускаем/останавливаем опрос прогресса
         if (state.shouldPoll && state.playbackState.isPlaying) {
             startPolling()
-        } else {
+        }        else {
             stopPolling()
         }
     }
@@ -215,7 +210,7 @@ class AudioPlayerActivity : AppCompatActivity() {
         super.onBackPressed()
     }
 
-    /** Показать  ошибку */
+    /** Показать ошибку */
     private fun showError(message: String) {
         Log.e("AudioPlayerActivity", "Ошибка: $message")
     }

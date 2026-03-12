@@ -3,11 +3,8 @@ package com.practicum.playlistmaker.player.data.repository
 import android.media.MediaPlayer
 import android.util.Log
 import com.practicum.playlistmaker.player.domain.repository.PlayerRepository
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class PlayerRepositoryImpl @Inject constructor() : PlayerRepository {
+class PlayerRepositoryImpl () : PlayerRepository {
 
     private var mediaPlayer: MediaPlayer? = null
     private var savedPosition: Long = 0L

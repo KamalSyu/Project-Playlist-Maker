@@ -2,13 +2,12 @@ package com.practicum.playlistmaker.player.domain.usecase
 
 import com.practicum.playlistmaker.core.contract.PreparePlaybackUseCaseContract
 import com.practicum.playlistmaker.player.domain.repository.PlayerRepository
-import javax.inject.Inject
 
 /**
  * UseCase для подготовки аудиофайла к воспроизведению.
  * Инициализирует медиаплеер и подготавливает трек по указанному URL.
  */
-class PreparePlaybackUseCase @Inject constructor(
+class PreparePlaybackUseCase (
     private val playerRepository: PlayerRepository
 ) : PreparePlaybackUseCaseContract {
 

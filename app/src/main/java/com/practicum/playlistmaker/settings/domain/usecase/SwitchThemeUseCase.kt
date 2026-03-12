@@ -3,7 +3,6 @@ package com.practicum.playlistmaker.settings.domain.usecase
 import com.practicum.playlistmaker.core.contract.SwitchThemeUseCaseContract
 import com.practicum.playlistmaker.settings.domain.model.ThemeSettings
 import com.practicum.playlistmaker.settings.domain.repository.SettingsRepository
-import javax.inject.Inject
 
 /**
  * Use case для переключения темы приложения (тёмная/светлая).
@@ -11,7 +10,7 @@ import javax.inject.Inject
  *
  * @param settingsRepository репозиторий для сохранения настроек темы
  */
-class SwitchThemeUseCase @Inject constructor(
+class SwitchThemeUseCase (
     private val settingsRepository: SettingsRepository
 ) : SwitchThemeUseCaseContract {
 

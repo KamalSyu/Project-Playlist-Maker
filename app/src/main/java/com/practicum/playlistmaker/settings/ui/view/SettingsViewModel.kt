@@ -1,25 +1,28 @@
 package com.practicum.playlistmaker.settings.ui.view
 
+import android.content.Intent
+import androidx.core.net.toUri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.practicum.playlistmaker.core.contract.GetThemeStateUseCaseContract
+import com.practicum.playlistmaker.core.contract.SendSupportEmailUseCaseContract
+import com.practicum.playlistmaker.core.contract.ShareAppUseCaseContract
 import com.practicum.playlistmaker.core.contract.SwitchThemeUseCaseContract
 import com.practicum.playlistmaker.settings.ui.SettingsUiState
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 /**
  * ViewModel для экрана настроек приложения.
  * Управляет состоянием UI, взаимодействует с Use Cases для получения и сохранения настроек темы.
  */
-@HiltViewModel
-class SettingsViewModel @Inject constructor(
+class SettingsViewModel (
     private val getThemeStateUseCase: GetThemeStateUseCaseContract,
-    private val switchThemeUseCase: SwitchThemeUseCaseContract
-) : ViewModel() {
+    private val switchThemeUseCase: SwitchThemeUseCaseContract,
+    private val shareAppUseCase: ShareAppUseCaseContract,
+    private val sendSupportEmailUseCase: SendSupportEmailUseCaseContract
+    ) : ViewModel() {
 
     // Приватное изменяемое состояние UI
     private val _uiState = MutableLiveData<SettingsUiState>()
@@ -30,6 +33,12 @@ class SettingsViewModel @Inject constructor(
      */
     val uiState: LiveData<SettingsUiState> = _uiState
 
+    // События для UI
+    private val _shareApp = MutableLiveData<Intent>()
+    val shareApp: LiveData<Intent> = _shareApp
+
+    private val _sendEmail = MutableLiveData<Intent>()
+    val sendEmail: LiveData<Intent> = _sendEmail
     /**
      * Инициализация ViewModel: при создании автоматически загружает текущее состояние темы.
      */
@@ -75,5 +84,24 @@ class SettingsViewModel @Inject constructor(
             // Немедленно обновляем состояние UI для отображения изменений
             _uiState.value = SettingsUiState.Loaded(isDarkMode)
         }
+    }
+    fun onShareRequested() {
+        val shareText = shareAppUseCase()
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, shareText)
+        }
+        _shareApp.value = intent
+    }
+
+    fun onEmailRequested() {
+        val emailData = sendSupportEmailUseCase()
+        val intent = Intent(Intent.ACTION_SENDTO).apply {
+            data = "mailto:".toUri()
+            putExtra(Intent.EXTRA_EMAIL, arrayOf(emailData.email))
+            putExtra(Intent.EXTRA_SUBJECT, emailData.subject)
+            putExtra(Intent.EXTRA_TEXT, emailData.body)
+        }
+        _sendEmail.value = intent
     }
 }

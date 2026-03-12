@@ -27,7 +27,7 @@ class PlayerTrackAdapter(
             .inflate(R.layout.item_audioplayer, parent, false)
         return PlayerViewHolder(AlbumViewHolder(
             view,
-            { }, // onTrackClick не нужен в плеере
+            { },
             onClickPlayButton,
             onAddToPlaylist,
             onFavorite,

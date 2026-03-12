@@ -2,13 +2,12 @@ package com.practicum.playlistmaker.player.domain.usecase
 
 import com.practicum.playlistmaker.core.contract.StopPlaybackUseCaseContract
 import com.practicum.playlistmaker.player.domain.repository.PlayerRepository
-import javax.inject.Inject
 
 /**
  * UseCase для остановки воспроизведения аудио.
  * Приостанавливает медиаплеер и сохраняет текущую позицию.
  */
-class StopPlaybackUseCase @Inject constructor(
+class StopPlaybackUseCase (
     private val playerRepository: PlayerRepository
 ) : StopPlaybackUseCaseContract {
 

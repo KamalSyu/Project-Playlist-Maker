@@ -2,9 +2,8 @@ package com.practicum.playlistmaker.search.data.mapper
 
 import com.practicum.playlistmaker.search.data.dto.SearchResponseDTO
 import com.practicum.playlistmaker.search.domain.model.SearchResponse
-import javax.inject.Inject
 
-class SearchResponseMapper @Inject constructor(
+class SearchResponseMapper (
     private val trackMapper: TrackMapper
 ) {
 

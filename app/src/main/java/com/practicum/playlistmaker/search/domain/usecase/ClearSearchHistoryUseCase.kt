@@ -2,7 +2,6 @@ package com.practicum.playlistmaker.search.domain.usecase
 
 import com.practicum.playlistmaker.core.contract.ClearSearchHistoryUseCaseContract
 import com.practicum.playlistmaker.search.domain.repository.HistoryRepository
-import javax.inject.Inject
 
 /**
  * UseCase для очистки истории поиска.
@@ -10,7 +9,7 @@ import javax.inject.Inject
  *
  * @param historyRepository репозиторий для работы с историей поиска
  */
-class ClearSearchHistoryUseCase @Inject constructor(
+class ClearSearchHistoryUseCase (
     private val historyRepository: HistoryRepository
 ) : ClearSearchHistoryUseCaseContract {
 

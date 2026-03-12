@@ -12,12 +12,9 @@ import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContr
 import com.practicum.playlistmaker.core.contract.GetSearchHistoryUseCaseContract
 import com.practicum.playlistmaker.core.contract.SearchTracksUseCaseContract
 import com.practicum.playlistmaker.core.models.Track
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-@HiltViewModel
-class SearchViewModel @Inject constructor(
+class SearchViewModel (
     private val searchTracksUseCase: SearchTracksUseCaseContract,
     private val addTrackToHistoryUseCase: AddTrackToHistoryUseCaseContract,
     private val getSearchHistoryUseCase: GetSearchHistoryUseCaseContract,

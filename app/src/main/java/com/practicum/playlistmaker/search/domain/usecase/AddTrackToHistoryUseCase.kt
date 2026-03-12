@@ -3,7 +3,6 @@ package com.practicum.playlistmaker.search.domain.usecase
 import com.practicum.playlistmaker.core.contract.AddTrackToHistoryUseCaseContract
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.search.domain.repository.HistoryRepository
-import javax.inject.Inject
 
 /**
  * UseCase для добавления трека в историю поиска.
@@ -11,7 +10,7 @@ import javax.inject.Inject
  *
  * @param historyRepository репозиторий для работы с историей поиска
  */
-class AddTrackToHistoryUseCase @Inject constructor(
+class AddTrackToHistoryUseCase (
     private val historyRepository: HistoryRepository
 ) : AddTrackToHistoryUseCaseContract {
 

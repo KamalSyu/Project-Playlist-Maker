@@ -5,7 +5,6 @@ import com.practicum.playlistmaker.search.domain.repository.ItunesRepository
 import com.practicum.playlistmaker.search.data.dto.SearchResponseDTO
 import com.practicum.playlistmaker.search.data.mapper.SearchResponseMapper
 import com.practicum.playlistmaker.search.data.network.ItunesApi
-import javax.inject.Inject
 
 /**
  * Реализация репозитория для взаимодействия с iTunes API.
@@ -14,7 +13,7 @@ import javax.inject.Inject
  * @param api клиент для запросов к iTunes API
  * @param searchResponseMapper маппер для преобразования DTO в доменную модель
  */
-class ItunesRepositoryImpl @Inject constructor(
+class ItunesRepositoryImpl(
     private val api: ItunesApi,
     private val searchResponseMapper: SearchResponseMapper
 ) : ItunesRepository {
