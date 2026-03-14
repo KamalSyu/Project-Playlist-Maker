@@ -77,7 +77,7 @@ dependencies {
     implementation(libs.javapoet)
 
     implementation ("androidx.viewpager2:viewpager2:1.1.0")
-    implementation ("com.google.android.material:material:1.10.0")
+    implementation ("com.google.android.material:material:1.11.0")
 
     // ИЛИ: implementation("com.squareup:javapoet:1.13.0")
 

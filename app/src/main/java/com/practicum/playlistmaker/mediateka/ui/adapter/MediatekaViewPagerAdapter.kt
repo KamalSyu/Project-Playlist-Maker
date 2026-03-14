@@ -14,8 +14,8 @@ class MediatekaViewPagerAdapter(
 
     override fun createFragment(position: Int): Fragment {
         return when (position) {
-            0 -> FragmentPlaylists.newInstance()
-            1 -> FragmentFavorites.newInstance()
+            0 -> FragmentFavorites.newInstance()
+            1 -> FragmentPlaylists.newInstance()
             else -> throw IllegalArgumentException("Invalid position: $position")
         }
     }

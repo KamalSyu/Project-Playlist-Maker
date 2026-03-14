@@ -2,9 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
-
+    android:orientation="vertical">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/favoritesRecyclerView"
@@ -22,18 +20,12 @@
         android:visibility="visible">
 
         <ImageView
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:src="@drawable/ic_empty_favorites"
-            android:contentDescription="@string/empty_favorites_image" />
+            android:id="@+id/emptyStateImage"
+            style="@style/EmptyStateImage" />
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/no_favorites_message"
-            android:textSize="16sp"
-            android:textColor="#666"
-            android:gravity="center" />
+            android:id="@+id/emptyStateText"
+            style="@style/EmptyStateText"
+            android:text="@string/no_favorites_message" />
     </LinearLayout>
 </LinearLayout>
-

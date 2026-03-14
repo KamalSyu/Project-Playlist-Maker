@@ -19,8 +19,8 @@ class MediatekaActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         enableEdgeToEdge()
+
         setContentView(R.layout.activity_mediateca)
 
         // Восстановление позиции ViewPager, если Activity пересоздаётся
@@ -53,8 +53,8 @@ class MediatekaActivity : AppCompatActivity() {
 
         TabLayoutMediator(tabLayout, viewPager) { tab, position ->
             when (position) {
-                0 -> tab.text = getString(R.string.playlists)
-                1 -> tab.text = getString(R.string.favorites)
+                0 -> tab.text = getString(R.string.favorites)
+                1 -> tab.text = getString(R.string.playlists)
             }
         }.attach()
 

@@ -9,7 +9,9 @@
     <dimen name="error_text_size">19sp</dimen>
     <dimen name="history_text_size">19sp</dimen>
     <dimen name="mediateca_text_size">13sp</dimen>
-
+    <dimen name="empty_state_icon_margin_top">106dp</dimen>
+    <dimen name="empty_state_icon_margin_bottom">16dp</dimen>
+    <dimen name="empty_state_text_margin_horizontal">24dp</dimen>
 
     "
 </resources>
