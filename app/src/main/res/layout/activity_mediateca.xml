@@ -2,19 +2,34 @@
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/BackgroundMediateсa"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:fitsSystemWindows="true">
 
-    <TextView
+
+<TextView
         android:id="@+id/back"
         style="@style/TextStyleTopScreen"
-        android:text="@string/back"
-        app:drawableStartCompat="@drawable/ic_back_arrow_48" />
+        app:drawableStartCompat="@drawable/ic_back_arrow_48"
+        android:text="@string/mediateka"
+        android:layout_marginBottom="0dp"/>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView"
+    <!-- TabLayout -->
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayout"
+        style="@style/TabLayoutStyle"
+        app:tabTextAppearance="@style/TabTextAppearance"
+        />
+
+    <!-- ViewPager -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewPager"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="16dp" />
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
 </LinearLayout>
+
+
