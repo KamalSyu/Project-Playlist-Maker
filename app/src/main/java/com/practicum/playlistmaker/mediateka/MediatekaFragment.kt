@@ -33,10 +33,9 @@ class MediatekaFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Оставляем вызов WindowCompat.enableEdgeToEdge() только здесь — это оптимальное место
-        requireActivity().window.let { window ->
-            WindowCompat.enableEdgeToEdge(window)
-        }
+//        requireActivity().window.let { window ->
+//            WindowCompat.enableEdgeToEdge(window)
+//        }
 
         if (savedInstanceState != null) {
             currentPosition = savedInstanceState.getInt(SAVED_VIEWPAGER_POSITION, 0)
@@ -45,6 +44,7 @@ class MediatekaFragment : Fragment() {
         setupViewPager(view)
         viewPager.setCurrentItem(currentPosition, false)
     }
+
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)

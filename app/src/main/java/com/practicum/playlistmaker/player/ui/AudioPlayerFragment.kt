@@ -9,8 +9,11 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.core.view.updatePadding
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.R
@@ -50,6 +53,22 @@ class AudioPlayerFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // 1. Обработка нажатия экранной кнопки «Назад»
+        val backButton: TextView = requireView().findViewById(R.id.back)
+        backButton.setOnClickListener {
+            handleBackPress()
+        }
+
+
+        // 2. Обработка аппаратной кнопки «Back»
+        val callback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                handleBackPress()
+            }
+        }
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
+
+
         // Настраиваем отступы под системные панели
         ViewCompat.setOnApplyWindowInsetsListener(view) { view, insets ->
             val statusBar = insets.getInsets(WindowInsetsCompat.Type.statusBars())
@@ -81,19 +100,10 @@ class AudioPlayerFragment : Fragment() {
 
     /** Получаем трек из интента и преобразуем в доменную модель */
     private fun getTrackFromIntent(): Track {
-        // Сначала пробуем получить из аргументов фрагмента
-        val parcelableTrack: ParcelableTrack? = arguments?.getParcelable("track")
+        val parcelableTrack: ParcelableTrack = arguments?.getParcelable("track")
+            ?: throw IllegalArgumentException("Track is required but not provided in arguments.")
 
-        // Если нет аргументов, пробуем получить из интента (для обратной совместимости)
-        val fromIntent: ParcelableTrack? = requireActivity().intent.getParcelableExtra("track")
-
-        val finalTrack = parcelableTrack ?: fromIntent
-
-        if (finalTrack == null) {
-            throw IllegalArgumentException("Track is required but not provided.")
-        }
-
-        return viewModel.processTrack(finalTrack)
+        return viewModel.processTrack(parcelableTrack)
     }
 
     /** Инициализация RecyclerView с адаптером */
@@ -221,5 +231,10 @@ class AudioPlayerFragment : Fragment() {
     private fun handlePlaybackError(message: String, e: Throwable) {
         Log.e("AudioPlayerFragment", message, e)
         showError(message)
+    }
+
+    private fun handleBackPress() {
+        viewModel.resetPlaybackToStart()
+        findNavController().popBackStack()
     }
 }

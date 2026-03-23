@@ -8,8 +8,9 @@
 
     <TextView
         android:id="@+id/back"
-        style="@style/TextStyleTopScreen"
+        style="@style/TextStyleTopScreen2"
         android:text="@string/back"
+        app:drawableStartCompat="@drawable/ic_back_arrow_48"
         android:layout_marginBottom="26dp" />
 
     <LinearLayout android:id="@+id/no_results_layout"
