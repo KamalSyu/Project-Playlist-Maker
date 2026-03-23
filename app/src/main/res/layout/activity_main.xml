@@ -13,7 +13,8 @@
         android:visibility="gone"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_scrollFlags="scroll|enterAlways"/>
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/nav_host_fragment"
@@ -37,5 +38,8 @@
         app:menu="@menu/menu_bottom_navigation"
         app:labelVisibilityMode="labeled"
         app:itemIconTint="@color/bottom_nav_colors"
-        app:itemTextColor="@color/bottom_nav_colors"/>
+        app:itemTextColor="@color/bottom_nav_colors"
+        style="@style/CustomBottomNavigation"
+        app:itemTextAppearanceActiveBoldEnabled="false"
+        />
 </androidx.constraintlayout.widget.ConstraintLayout>

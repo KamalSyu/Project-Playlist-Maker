@@ -68,10 +68,8 @@ class MainActivity : AppCompatActivity() {
     private fun updateToolbarAndBottomNavVisibility(destinationId: Int?) {
         when (destinationId) {
             R.id.audioPlayerFragment -> {
-                // Показываем тулбар только на экране трека
-                toolbar.visibility = View.VISIBLE
-                setSupportActionBar(toolbar)
-                supportActionBar?.show()
+                toolbar.visibility = View.GONE  // Скрываем по умолчанию
+                supportActionBar?.hide()
                 bottomNavigationView.visibility = View.GONE
             }
             else -> {
@@ -104,4 +102,8 @@ class MainActivity : AppCompatActivity() {
             super.onBackPressed()
         }
     }
+    fun getToolbar(): Toolbar {
+        return toolbar
+    }
+
 }

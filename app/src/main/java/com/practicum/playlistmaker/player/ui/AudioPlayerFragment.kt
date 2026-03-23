@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.player.domain.model.PlaybackState
 import com.practicum.playlistmaker.core.models.Track
+import com.practicum.playlistmaker.main.ui.MainActivity
 import com.practicum.playlistmaker.search.ui.parcel.ParcelableTrack
 import com.practicum.playlistmaker.player.ui.adapter.PlayerTrackAdapter
 import com.practicum.playlistmaker.player.ui.view.AudioPlayerViewModel
@@ -125,6 +126,32 @@ class AudioPlayerFragment : Fragment() {
             formatDurationUseCase = viewModel.formatTrackDurationUseCase
         )
         recyclerViewAudioPlayer.adapter = adapter
+
+        // Добавляем прослушиватель прокрутки
+        recyclerViewAudioPlayer.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+
+                val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+                val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
+                val firstItem = layoutManager.findViewByPosition(firstVisibleItemPosition)
+
+                // Условия для показа Toolbar:
+                // 1. Первый элемент в зоне видимости (позиция 0 или -1)
+                // 2. Прокрутка вверх (dy < -5 — порог чувствительности)
+                // 3. Первый элемент частично или полностью виден
+                if ((firstVisibleItemPosition <= 0) &&
+                    dy < -5 &&
+                    firstItem != null) {
+
+                    // Проверяем, что первый элемент виден хотя бы на 50 %
+                    val visibleHeight = firstItem.height - firstItem.top
+                    if (visibleHeight > firstItem.height * 0.5f) {
+                        showToolbarWithAutoHide()
+                    }
+                }
+            }
+        })
     }
 
     /** Переключение воспроизведения (старт/пауза) */
@@ -237,4 +264,27 @@ class AudioPlayerFragment : Fragment() {
         viewModel.resetPlaybackToStart()
         findNavController().popBackStack()
     }
+
+    private fun showToolbarWithAutoHide() {
+        val activity = requireActivity() as MainActivity
+        val toolbar = activity.getToolbar()
+
+        // 1. Назначаем Toolbar как ActionBar
+        activity.setSupportActionBar(toolbar)
+
+        // 2. Показываем Toolbar
+        toolbar.visibility = View.VISIBLE
+        activity.supportActionBar?.show()
+
+        // 3. Добавляем логирование для отладки
+        Log.d("AudioPlayerFragment", "Toolbar shown")
+
+        // 4. Автоскрываем через 2 секунды
+        handler.postDelayed({
+            toolbar.visibility = View.GONE
+            activity.supportActionBar?.hide()
+            Log.d("AudioPlayerFragment", "Toolbar hidden")
+        }, 2000)
+    }
+
 }

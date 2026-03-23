@@ -12,6 +12,8 @@
     <dimen name="empty_state_icon_margin_top">106dp</dimen>
     <dimen name="empty_state_icon_margin_bottom">16dp</dimen>
     <dimen name="empty_state_text_margin_horizontal">24dp</dimen>
+    <dimen name="panel">12dp</dimen>
+
 
     "
 </resources>
