@@ -1,40 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    style="@style/BackgroundHomeScreen"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
-    <TextView
-        android:text="@string/app_name"
-        style="@style/TextStyleTopScreen"
-        android:paddingStart="16dp"
-        android:paddingTop="14dp"
-        android:textColor="@color/white"
-        android:gravity="start" />
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/nav_host_fragment"
+        android:name="androidx.navigation.fragment.NavHostFragment"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:defaultNavHost="true"
+        app:navGraph="@navigation/nav_graph"
+        app:layout_constraintBottom_toTopOf="@+id/bottom_navigation"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/search_button"
-        style="@style/ButtonStyleHomeScreen"
-        android:text="@string/search_button"
-        app:icon="@drawable/ic_vector_19"
-        android:onClick="goToSearchActivity"/>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/mediateca"
-        style="@style/ButtonStyleHomeScreen"
-        android:text="@string/mediateca"
-        app:icon="@drawable/ic_mediateca_24"
-        android:onClick="goToMediatekaActivity"/>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/setting"
-        android:layout_marginBottom="28dp"
-        style="@style/ButtonStyleHomeScreen"
-        android:text="@string/setting"
-        app:icon="@drawable/ic_setting_24"
-        android:onClick="goToSettingsActivity" />
-
-</LinearLayout>
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:menu="@menu/menu_bottom_navigation"
+        app:labelVisibilityMode="labeled"
+        app:itemIconTint="@color/bottom_nav_colors"
+        app:itemTextColor="@color/bottom_nav_colors"/>
+</androidx.constraintlayout.widget.ConstraintLayout>

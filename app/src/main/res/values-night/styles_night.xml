@@ -74,6 +74,7 @@
         <item name="android:drawableTint">@color/white</item>
         <item name="android:textFontWeight">500</item>
         <item name="android:drawablePadding">12dp</item>
+        <item name="android:paddingStart">12dp</item>
 
     </style>
 
