@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -8,10 +7,10 @@
 
     <TextView
         android:id="@+id/back"
-        style="@style/TextStyleTopScreen2"
-        android:text="@string/back"
+        style="@style/TextStyleTopScreen"
         app:drawableStartCompat="@drawable/ic_back_arrow_48"
-        android:layout_marginBottom="26dp" />
+        android:layout_marginBottom="26dp"
+        android:text="@string/back"/>
 
     <LinearLayout android:id="@+id/no_results_layout"
         android:layout_width="match_parent"
@@ -19,8 +18,7 @@
         android:orientation="vertical"
         android:paddingTop="86dp"
         android:gravity="center"
-        android:visibility="gone"
-        xmlns:android="http://schemas.android.com/apk/res/android">
+        android:visibility="gone">
 
         <ImageView
             android:id="@+id/no_results_image"
@@ -30,15 +28,18 @@
             android:id="@+id/no_results_text"
             style="@style/ErrorSearch"
             android:text="@string/no_results"/>
-
     </LinearLayout>
 
-    <!-- Список результатов поиска -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewAudioPlayer"
+    <!-- Обернули RecyclerView в ScrollView -->
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
-
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewAudioPlayer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+    </ScrollView>
 </LinearLayout>

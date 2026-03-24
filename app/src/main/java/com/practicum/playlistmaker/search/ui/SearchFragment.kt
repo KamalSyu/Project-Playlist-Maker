@@ -3,7 +3,6 @@ package com.practicum.playlistmaker.search.ui
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -15,7 +14,6 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
-import androidx.core.os.bundleOf
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.core.widget.doOnTextChanged
@@ -28,7 +26,6 @@ import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.search.ui.adapter.SearchTrackAdapter
 import com.practicum.playlistmaker.search.ui.parcel.toParcelable
 import com.practicum.playlistmaker.core.constants.Constants.Companion.SEARCH_QUERY_KEY
-import com.practicum.playlistmaker.player.ui.AudioPlayerFragment
 import com.practicum.playlistmaker.search.ui.view.HistoryState
 import com.practicum.playlistmaker.search.ui.view.ScreenState
 import com.practicum.playlistmaker.search.ui.view.SearchState
@@ -37,7 +34,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import kotlin.jvm.java
 
 /**
  * Фрагмент для поиска треков и отображения истории поиска.
@@ -86,8 +82,19 @@ class SearchFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         ViewCompat.setOnApplyWindowInsetsListener(view) { v, insets ->
+            // 1. Обработка статус‑бара (ваш оригинальный код)
             val statusBar = insets.getInsets(WindowInsetsCompat.Type.statusBars())
             v.updatePadding(top = statusBar.top)
+
+            // 2. Проверка видимости клавиатуры
+            val isKeyboardVisible = insets.isVisible(WindowInsetsCompat.Type.ime())
+
+            // 3. Проверка фокуса на поисковой строке
+            val hasSearchFocus = searchEditText.hasFocus()
+
+            // 4. Обновление видимости BottomNav с учётом обоих условий
+            updateBottomNavVisibility(isKeyboardVisible, hasSearchFocus)
+
             insets
         }
 
@@ -97,6 +104,7 @@ class SearchFragment : Fragment() {
         restoreState(savedInstanceState)
         observeViewModel()
         viewModel.loadHistory()
+
     }
 
     private fun initViews(view: View) {
@@ -255,7 +263,6 @@ class SearchFragment : Fragment() {
         )
     }
 
-
     private fun showLoading() {
         progressBar.visibility = View.VISIBLE
         recyclerView.visibility = View.GONE
@@ -375,4 +382,13 @@ class SearchFragment : Fragment() {
         super.onDestroy()
         clickJob?.cancel()
     }
+
+    private fun updateBottomNavVisibility(isKeyboardVisible: Boolean, hasSearchFocus: Boolean) {
+        val bottomNav = requireActivity().findViewById<View>(R.id.bottom_navigation)
+        if (bottomNav != null) {
+            val shouldHide = isKeyboardVisible && hasSearchFocus
+            bottomNav.visibility = if (isKeyboardVisible) View.GONE else View.VISIBLE
+        }
+    }
+
 }

@@ -17,5 +17,6 @@
     <color name="yp_text_gray">#AEAFB4</color>
     <color name="for_point_search">#FFFFFF</color>
     <color name="yp_icon">#FFFFFFFF</color>
+    <color name="yp_audiopleer">#1A1B22</color>
 
 </resources>

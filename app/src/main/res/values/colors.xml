@@ -20,6 +20,7 @@
     <color name="for_point_search">#AEAFB4</color>
     <color name="progressbar_blue">#3772E7</color>
     <color name="yp_icon">#1A1B22</color>
+    <color name="yp_audiopleer">#FFFFFFFF</color>
 
 
 </resources>

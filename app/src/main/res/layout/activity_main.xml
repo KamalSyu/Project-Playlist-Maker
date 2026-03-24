@@ -28,6 +28,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
+
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
         android:layout_width="0dp"
@@ -40,6 +41,17 @@
         app:itemIconTint="@color/bottom_nav_colors"
         app:itemTextColor="@color/bottom_nav_colors"
         style="@style/CustomBottomNavigation"
-        app:itemTextAppearanceActiveBoldEnabled="false"
+
         />
+
+    <!-- Разделитель (серая линия) -->
+    <View
+        app:layout_constraintTop_toTopOf="@+id/bottom_navigation"
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:background="@color/yp_light_gray"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="-1dp"  />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

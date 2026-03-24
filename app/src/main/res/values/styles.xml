@@ -18,6 +18,10 @@
         <item name="android:background">@color/white</item>
     </style>
 
+    <style name="BackgroundAudioplayer" parent="Base.Theme.PlaylistMaker">
+        <item name="android:background">@color/white</item>
+    </style>
+
     <style name="ButtonStyleHomeScreen" parent="Widget.MaterialComponents.Button.UnelevatedButton">
         <item name="backgroundTint">@null</item>
         <item name="android:layout_width">match_parent</item>
@@ -459,7 +463,7 @@
         <item name="android:textFontWeight">400</item>
         <item name="android:fontFamily">@font/ys_display_regular</item>
         <item name="android:gravity">center</item>
-
+        <item name="itemTextAppearanceActiveBoldEnabled">false</item>
     </style>
 
 </resources>
