@@ -18,6 +18,10 @@
         <item name="android:background">@color/white</item>
     </style>
 
+    <style name="BackgroundAudioplayer" parent="Base.Theme.PlaylistMaker">
+        <item name="android:background">@color/white</item>
+    </style>
+
     <style name="ButtonStyleHomeScreen" parent="Widget.MaterialComponents.Button.UnelevatedButton">
         <item name="backgroundTint">@null</item>
         <item name="android:layout_width">match_parent</item>
@@ -95,7 +99,23 @@
         <item name="android:drawableTint">@color/yp_black</item>
         <item name="android:textFontWeight">500</item>
         <item name="android:drawablePadding">12dp</item>
+        <item name="android:paddingStart">12dp</item>
 
+    </style>
+
+    <style name="TextStyleTopScreen2" parent="Widget.MaterialComponents.TextView">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:textColor">@color/yp_black</item>
+        <item name="android:textSize">@dimen/primary_text_size</item>
+        <item name="android:minHeight">56dp</item>
+        <item name="android:layout_marginBottom">24dp</item>
+        <item name="android:fontFamily">@font/ys_display_medium</item>
+        <item name="android:elevation">0dp</item>
+        <item name="android:drawableTint">@color/yp_black</item>
+        <item name="android:textFontWeight">500</item>
+        <item name="android:drawablePadding">12dp</item>
     </style>
 
     <style name="TabLayoutStyle" parent="Widget.MaterialComponents.TabLayout">
@@ -438,7 +458,13 @@
         <item name="android:layout_marginEnd">24dp</item>
     </style>
 
-
+    <style name="CustomBottomNavigation" >
+        <item name="android:textSize">@dimen/panel</item>
+        <item name="android:textFontWeight">400</item>
+        <item name="android:fontFamily">@font/ys_display_regular</item>
+        <item name="android:gravity">center</item>
+        <item name="itemTextAppearanceActiveBoldEnabled">false</item>
+    </style>
 
 </resources>
 

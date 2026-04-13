@@ -6,24 +6,29 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.TextView
-import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.OnBackPressedCallback
+import androidx.fragment.app.Fragment
 import androidx.core.view.updatePadding
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.player.domain.model.PlaybackState
 import com.practicum.playlistmaker.core.models.Track
+import com.practicum.playlistmaker.main.ui.MainActivity
 import com.practicum.playlistmaker.search.ui.parcel.ParcelableTrack
 import com.practicum.playlistmaker.player.ui.adapter.PlayerTrackAdapter
 import com.practicum.playlistmaker.player.ui.view.AudioPlayerViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 /**
- * Экран аудиоплеера: воспроизведение трека, отображение прогресса, управление воспроизведением.
+ * Фрагмент аудиоплеера: воспроизведение трека, отображение прогресса, управление воспроизведением.
  */
-class AudioPlayerActivity : AppCompatActivity() {
+class AudioPlayerFragment : Fragment() {
 
     private val viewModel: AudioPlayerViewModel by viewModel()
 
@@ -35,26 +40,49 @@ class AudioPlayerActivity : AppCompatActivity() {
     private val handler = Handler(Looper.getMainLooper())
     private var updateRunnable: Runnable? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+    // Трек, который воспроизводится
+    private lateinit var track: Track
 
-        setContentView(R.layout.activity_audioplayer)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        return inflater.inflate(R.layout.fragment_audio_player, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        // 1. Обработка нажатия экранной кнопки «Назад»
+        val backButton: TextView = requireView().findViewById(R.id.back)
+        backButton.setOnClickListener {
+            handleBackPress()
+        }
+
+
+        // 2. Обработка аппаратной кнопки «Back»
+        val callback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                handleBackPress()
+            }
+        }
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
+
 
         // Настраиваем отступы под системные панели
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { view, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(view) { view, insets ->
             val statusBar = insets.getInsets(WindowInsetsCompat.Type.statusBars())
             view.updatePadding(top = statusBar.top)
             insets
         }
 
-        val track = getTrackFromIntent() // Получаем трек из интента
+        track = getTrackFromIntent() // Получаем трек из интента
         viewModel.setCurrentTrack(track) // Передаём данные в ViewModel
-        setupRecyclerView(track) // Настраиваем UI в Activity
-        setupBackButton() // Кнопка «Назад»
+        setupRecyclerView(track) // Настраиваем UI в фрагменте
 
         // Подписываемся на изменения состояния UI
-        viewModel.uiState.observe(this) { state ->
+        viewModel.uiState.observe(viewLifecycleOwner) { state ->
             updateUI(state)
         }
 
@@ -73,25 +101,16 @@ class AudioPlayerActivity : AppCompatActivity() {
 
     /** Получаем трек из интента и преобразуем в доменную модель */
     private fun getTrackFromIntent(): Track {
-        // Используем старый метод getParcelableExtra() без указания класса
-        val parcelableTrack: ParcelableTrack? = intent.getParcelableExtra("track")
-
-        if (parcelableTrack == null) {
-            throw IllegalArgumentException("Track is required but not provided.")
-        }
+        val parcelableTrack: ParcelableTrack = arguments?.getParcelable("track")
+            ?: throw IllegalArgumentException("Track is required but not provided in arguments.")
 
         return viewModel.processTrack(parcelableTrack)
     }
 
-    /** Настройка кнопки «Назад» */
-    private fun setupBackButton() {
-        findViewById<TextView>(R.id.back).setOnClickListener { onBackPressed() }
-    }
-
     /** Инициализация RecyclerView с адаптером */
     private fun setupRecyclerView(track: Track) {
-        recyclerViewAudioPlayer = findViewById(R.id.recyclerViewAudioPlayer)
-        recyclerViewAudioPlayer.layoutManager = LinearLayoutManager(this)
+        recyclerViewAudioPlayer = requireView().findViewById(R.id.recyclerViewAudioPlayer)
+        recyclerViewAudioPlayer.layoutManager = LinearLayoutManager(requireContext())
 
         adapter = PlayerTrackAdapter(
             tracks = listOf(track),
@@ -107,6 +126,32 @@ class AudioPlayerActivity : AppCompatActivity() {
             formatDurationUseCase = viewModel.formatTrackDurationUseCase
         )
         recyclerViewAudioPlayer.adapter = adapter
+
+        // Добавляем прослушиватель прокрутки
+        recyclerViewAudioPlayer.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+
+                val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+                val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
+                val firstItem = layoutManager.findViewByPosition(firstVisibleItemPosition)
+
+                // Условия для показа Toolbar:
+                // 1. Первый элемент в зоне видимости (позиция 0 или -1)
+                // 2. Прокрутка вверх (dy < -5 — порог чувствительности)
+                // 3. Первый элемент частично или полностью виден
+                if ((firstVisibleItemPosition <= 0) &&
+                    dy < -5 &&
+                    firstItem != null) {
+
+                    // Проверяем, что первый элемент виден хотя бы на 50 %
+                    val visibleHeight = firstItem.height - firstItem.top
+                    if (visibleHeight > firstItem.height * 0.5f) {
+                        showToolbarWithAutoHide()
+                    }
+                }
+            }
+        })
     }
 
     /** Переключение воспроизведения (старт/пауза) */
@@ -136,7 +181,7 @@ class AudioPlayerActivity : AppCompatActivity() {
         // Запускаем/останавливаем опрос прогресса
         if (state.shouldPoll && state.playbackState.isPlaying) {
             startPolling()
-        }        else {
+        } else {
             stopPolling()
         }
     }
@@ -190,8 +235,8 @@ class AudioPlayerActivity : AppCompatActivity() {
     }
 
     /** Полная очистка ресурсов при уничтожении */
-    override fun onDestroy() {
-        super.onDestroy()
+    override fun onDestroyView() {
+        super.onDestroyView()
         stopPolling()
         handler.removeCallbacksAndMessages(null)
     }
@@ -204,20 +249,42 @@ class AudioPlayerActivity : AppCompatActivity() {
         if (currentState.playbackState.isPlaying) startPolling()
     }
 
-    /** Обработка нажатия кнопки «Назад»: сбрасываем воспроизведение */
-    override fun onBackPressed() {
-        viewModel.resetPlaybackToStart()
-        super.onBackPressed()
-    }
-
     /** Показать ошибку */
     private fun showError(message: String) {
-        Log.e("AudioPlayerActivity", "Ошибка: $message")
+        Log.e("AudioPlayerFragment", "Ошибка: $message")
     }
 
     /** Логируем и показываем ошибку воспроизведения */
     private fun handlePlaybackError(message: String, e: Throwable) {
-        Log.e("AudioPlayerActivity", message, e)
+        Log.e("AudioPlayerFragment", message, e)
         showError(message)
     }
+
+    private fun handleBackPress() {
+        viewModel.resetPlaybackToStart()
+        findNavController().popBackStack()
+    }
+
+    private fun showToolbarWithAutoHide() {
+        val activity = requireActivity() as MainActivity
+        val toolbar = activity.getToolbar()
+
+        // 1. Назначаем Toolbar как ActionBar
+        activity.setSupportActionBar(toolbar)
+
+        // 2. Показываем Toolbar
+        toolbar.visibility = View.VISIBLE
+        activity.supportActionBar?.show()
+
+        // 3. Добавляем логирование для отладки
+        Log.d("AudioPlayerFragment", "Toolbar shown")
+
+        // 4. Автоскрываем через 2 секунды
+        handler.postDelayed({
+            toolbar.visibility = View.GONE
+            activity.supportActionBar?.hide()
+            Log.d("AudioPlayerFragment", "Toolbar hidden")
+        }, 2000)
+    }
+
 }
