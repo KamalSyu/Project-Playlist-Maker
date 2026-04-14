@@ -123,7 +123,7 @@ val appModule = module {
         HistoryRepositoryImpl(
             get(), // sharedPreferences
             get(), // gson
-            get()  // searchHistoryMapper
+//            get()  // searchHistoryMapper
         )
     }
 

@@ -1,28 +1,31 @@
 package com.practicum.playlistmaker.player.ui
 
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.core.view.updatePadding
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.R
-import com.practicum.playlistmaker.player.domain.model.PlaybackState
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.main.ui.MainActivity
-import com.practicum.playlistmaker.search.ui.parcel.ParcelableTrack
+import com.practicum.playlistmaker.player.domain.model.PlaybackState
 import com.practicum.playlistmaker.player.ui.adapter.PlayerTrackAdapter
 import com.practicum.playlistmaker.player.ui.view.AudioPlayerViewModel
+import com.practicum.playlistmaker.search.ui.parcel.ParcelableTrack
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 /**
@@ -32,13 +35,15 @@ class AudioPlayerFragment : Fragment() {
 
     private val viewModel: AudioPlayerViewModel by viewModel()
 
-    // UI‑компоненты
+    // UI-компоненты
     private lateinit var recyclerViewAudioPlayer: RecyclerView
     private lateinit var adapter: PlayerTrackAdapter
 
-    // Для периодического обновления прогресса воспроизведения
-    private val handler = Handler(Looper.getMainLooper())
-    private var updateRunnable: Runnable? = null
+    // Для отслеживания состояния воспроизведения
+    private var lastKnownIsPlaying: Boolean = false
+
+    // Для периодического обновления прогресса воспроизведения (корутины)
+    private var pollingJob: Job? = null
 
     // Трек, который воспроизводится
     private lateinit var track: Track
@@ -60,7 +65,6 @@ class AudioPlayerFragment : Fragment() {
             handleBackPress()
         }
 
-
         // 2. Обработка аппаратной кнопки «Back»
         val callback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -68,7 +72,6 @@ class AudioPlayerFragment : Fragment() {
             }
         }
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
-
 
         // Настраиваем отступы под системные панели
         ViewCompat.setOnApplyWindowInsetsListener(view) { view, insets ->
@@ -116,11 +119,9 @@ class AudioPlayerFragment : Fragment() {
             tracks = listOf(track),
             onClickPlayButton = { _ -> togglePlayback() },
             onAddToPlaylist = { track ->
-                // TODO: реализовать добавление в плейлист
                 Log.d("AudioPlayer", "Add to playlist: ${track.trackName}")
             },
             onFavorite = { track ->
-                // TODO: реализовать отметку избранного
                 Log.d("AudioPlayer", "Favorite: ${track.trackName}")
             },
             formatDurationUseCase = viewModel.formatTrackDurationUseCase
@@ -144,7 +145,7 @@ class AudioPlayerFragment : Fragment() {
                     dy < -5 &&
                     firstItem != null) {
 
-                    // Проверяем, что первый элемент виден хотя бы на 50 %
+                    // Проверяем, что первый элемент виден хотя бы на 50 %
                     val visibleHeight = firstItem.height - firstItem.top
                     if (visibleHeight > firstItem.height * 0.5f) {
                         showToolbarWithAutoHide()
@@ -169,44 +170,49 @@ class AudioPlayerFragment : Fragment() {
             return
         }
 
-        // Обновляем состояние адаптера — это вызовет bind() в PlayerViewHolder,
-        // который автоматически обновит иконку кнопки воспроизведения
-        adapter.notifyDataSetChangedWithState(
-            isPlaying = state.playbackState.isPlaying,
-            currentTimeMillis = state.playbackState.position,
-            position = 0,
-            formattedTime = state.formattedTime
-        )
+        // ✅ Обновляем ТОЛЬКО время — без перерисовки элемента
+        adapter.updateCurrentTime(state.formattedTime)
 
-        // Запускаем/останавливаем опрос прогресса
-        if (state.shouldPoll && state.playbackState.isPlaying) {
+        // ✅ Обновляем кнопку Play/Pause ТОЛЬКО если состояние изменилось
+        val isPlaying = state.playbackState.isPlaying
+        if (lastKnownIsPlaying != isPlaying) {
+            adapter.notifyDataSetChangedWithState(
+                isPlaying = isPlaying,
+                currentTimeMillis = state.playbackState.position,
+                position = 0,
+                formattedTime = state.formattedTime
+            )
+        }
+        lastKnownIsPlaying = isPlaying
+
+        // ✅ Управляем опросом прогресса
+        if (state.shouldPoll && isPlaying) {
             startPolling()
         } else {
             stopPolling()
         }
     }
 
-    /** Запуск периодического опроса прогресса воспроизведения (каждую секунду) */
+    /** Запуск периодического опроса прогресса воспроизведения (каждые 300 мс) */
     private fun startPolling() {
         stopPolling()
+        pollingJob = viewLifecycleOwner.lifecycleScope.launch {
+            while (isActive) {
+                delay(300) // Обновляем каждые 300 мс
+                viewModel.updateCurrentPosition()
 
-        updateRunnable = Runnable {
-            viewModel.updateCurrentPosition()
-
-            val currentState = viewModel.uiState.value?.playbackState ?: PlaybackState(false, 0L)
-            if (currentState.isPlaying) {
-                handler.postDelayed(updateRunnable!!, 1000)
-            } else {
-                stopPolling()
+                val currentState = viewModel.uiState.value?.playbackState ?: PlaybackState(false, 0L)
+                if (!currentState.isPlaying || !isActive) {
+                    break
+                }
             }
         }
-        handler.post(updateRunnable!!)
     }
 
     /** Останавливаем опрос прогресса */
     private fun stopPolling() {
-        updateRunnable?.let { handler.removeCallbacks(it) }
-        updateRunnable = null
+        pollingJob?.cancel()
+        pollingJob = null
     }
 
     /** Сохраняем состояние при повороте экрана */
@@ -238,7 +244,6 @@ class AudioPlayerFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         stopPolling()
-        handler.removeCallbacksAndMessages(null)
     }
 
     /** Обновляем UI при возврате на экран */
@@ -276,15 +281,17 @@ class AudioPlayerFragment : Fragment() {
         toolbar.visibility = View.VISIBLE
         activity.supportActionBar?.show()
 
-        // 3. Добавляем логирование для отладки
+        // 3. Логируем
         Log.d("AudioPlayerFragment", "Toolbar shown")
 
-        // 4. Автоскрываем через 2 секунды
-        handler.postDelayed({
-            toolbar.visibility = View.GONE
-            activity.supportActionBar?.hide()
-            Log.d("AudioPlayerFragment", "Toolbar hidden")
-        }, 2000)
+        // 4. Автоскрываем через 2 секунды
+        viewLifecycleOwner.lifecycleScope.launch {
+            delay(2000)
+            if (isResumed) {
+                toolbar.visibility = View.GONE
+                activity.supportActionBar?.hide()
+                Log.d("AudioPlayerFragment", "Toolbar hidden")
+            }
+        }
     }
-
 }

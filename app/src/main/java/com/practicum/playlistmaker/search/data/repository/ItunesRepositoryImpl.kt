@@ -5,6 +5,10 @@ import com.practicum.playlistmaker.search.domain.repository.ItunesRepository
 import com.practicum.playlistmaker.search.data.dto.SearchResponseDTO
 import com.practicum.playlistmaker.search.data.mapper.SearchResponseMapper
 import com.practicum.playlistmaker.search.data.network.ItunesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 
 /**
  * Реализация репозитория для взаимодействия с iTunes API.
@@ -19,17 +23,28 @@ class ItunesRepositoryImpl(
 ) : ItunesRepository {
 
     /**
-     * Выполняет поиск треков по запросу через iTunes API.
-     * - отправляет запрос к API;
-     * - преобразует полученный DTO-объект в доменную модель SearchResponse;
-     * - возвращает результат для дальнейшего использования в бизнес‑логике.
+     * Выполняет поиск треков по запросу через iTunes API и возвращает поток данных.
+     * Поток излучает один элемент: результат запроса (успех или ошибка).
      *
-     * @param query поисковый запрос (название трека, исполнителя и т. д.)
-     * @return объект SearchResponse с результатами поиска
-     * @throws Exception если запрос к API завершился ошибкой
+     * @param query поисковый запрос
+     * @return Flow<Result<SearchResponse>> — поток с результатом
      */
-    override suspend fun search(query: String): SearchResponse {
-        val response: SearchResponseDTO = api.searchTracks(query)
-        return searchResponseMapper.toDomain(response)
+    override fun search(query: String): Flow<Result<SearchResponse>> = flow {
+        try {
+            // 1. Выполняем сетевой запрос
+            val responseDto: SearchResponseDTO = api.searchTracks(query)
+
+            // 2. Преобразуем DTO в доменную модель
+            val domainResponse: SearchResponse = searchResponseMapper.toDomain(responseDto)
+
+            // 3. Отправляем успешный результат в поток
+            emit(Result.success(domainResponse))
+
+        } catch (e: Exception) {
+            // 4. В случае ошибки — отправляем ошибку в поток
+            emit(Result.failure(e))
+        }
     }
+        .flowOn(Dispatchers.IO) // Выполняем в фоновом потоке
 }
+

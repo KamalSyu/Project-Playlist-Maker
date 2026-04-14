@@ -12,9 +12,11 @@ import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContr
 import com.practicum.playlistmaker.core.contract.GetSearchHistoryUseCaseContract
 import com.practicum.playlistmaker.core.contract.SearchTracksUseCaseContract
 import com.practicum.playlistmaker.core.models.Track
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 
-class SearchViewModel (
+class SearchViewModel(
     private val searchTracksUseCase: SearchTracksUseCaseContract,
     private val addTrackToHistoryUseCase: AddTrackToHistoryUseCaseContract,
     private val getSearchHistoryUseCase: GetSearchHistoryUseCaseContract,
@@ -24,75 +26,70 @@ class SearchViewModel (
     val formatTrackDurationUseCase: FormatTrackDurationUseCaseContract
 ) : ViewModel() {
 
-    // Единое состояние экрана
     private val _screenState = MutableLiveData<ScreenState>(ScreenState.Initial)
-    /** Единое состояние экрана для наблюдения из UI */
     val screenState: LiveData<ScreenState> = _screenState
 
-    // Вспомогательные данные
     private var filteredTracks: List<Track> = emptyList()
-    /** Последний поисковый запрос (публичное поле) */
     var lastSearchQuery: String? = null
     private var _isLastSearchFailed = false
 
-    /** Флаг, указывающий, завершился ли последний поиск ошибкой */
     val isLastSearchFailed: Boolean
         get() = _isLastSearchFailed
+
+    private var searchJob: Job? = null
+
+    init {
+        viewModelScope.launch {
+            getSearchHistoryUseCase()
+                .collect { history ->
+                    updateHistoryOnly(history)
+                }
+        }
+    }
 
     fun performSearch(query: String) {
         if (query.isEmpty()) return
         lastSearchQuery = query
         _isLastSearchFailed = false
-        viewModelScope.launch {
+
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch {
             _screenState.value = ScreenState.Loading
-            val result = searchTracksUseCase(query)
 
-            // Извлекаем trackToOpen из текущего состояния
-            val currentTrackToOpen = when (val current = _screenState.value) {
-                is ScreenState.Results -> current.trackToOpen
-                is ScreenState.Error -> current.trackToOpen
-                is ScreenState.Idle -> current.trackToOpen
-                else -> null
-            }
+            val currentTrackToOpen = getCurrentTrackToOpen()
 
-            _screenState.value = if (result.isSuccess) {
-                val tracks = result.getOrNull() ?: emptyList()
-                filteredTracks = tracks
-                ScreenState.Results(
-                    SearchState.Results(tracks),
-                    loadHistoryState(),
-                    currentTrackToOpen
-                )
-            } else {
-                _isLastSearchFailed = true
-                val exception = result.exceptionOrNull() as? Exception
-                ScreenState.Error(
-                    SearchState.Error(exception),
-                    loadHistoryState(),
-                    currentTrackToOpen
-                )
-            }
+            searchTracksUseCase(query)
+                .catch { e ->
+                    _isLastSearchFailed = true
+                    _screenState.value = ScreenState.Error(
+                        SearchState.Error(e as? Exception),
+                        getHistoryState(),
+                        currentTrackToOpen
+                    )
+                }
+                .collect { result ->
+                    _screenState.value = result.fold(
+                        onSuccess = { tracks: List<Track> -> // ← Получаем List<Track>, а не SearchResponse
+                            filteredTracks = tracks
+                            ScreenState.Results(
+                                SearchState.Results(tracks),
+                                getHistoryState(),
+                                currentTrackToOpen
+                            )
+                        },
+                        onFailure = { error: Throwable ->
+                            _isLastSearchFailed = true
+                            ScreenState.Error(
+                                SearchState.Error(error as? Exception),
+                                getHistoryState(),
+                                currentTrackToOpen
+                            )
+                        }
+                    )
+                }
         }
     }
 
-    fun loadHistory() {
-        viewModelScope.launch {
-            // Сохраняем текущее состояние поиска и trackToOpen
-            val (currentSearchState, currentTrackToOpen) = when (val current = _screenState.value) {
-                is ScreenState.Results -> current.searchState to current.trackToOpen
-                is ScreenState.Error -> current.searchState to current.trackToOpen
-                is ScreenState.Idle -> current.searchState to current.trackToOpen
-                else -> SearchState.Idle to null
-            }
-            _screenState.value = ScreenState.Idle(currentSearchState, HistoryState.Loading, currentTrackToOpen)
-
-            val history = getSearchHistoryUseCase()
-            _screenState.value = when {
-                history.isEmpty() -> ScreenState.Idle(currentSearchState, HistoryState.Empty, currentTrackToOpen)
-                else -> ScreenState.Idle(currentSearchState, HistoryState.HistoryLoaded(history), currentTrackToOpen)
-            }
-        }
-    }
 
     fun retryLastSearch() {
         if (_isLastSearchFailed && lastSearchQuery != null) {
@@ -104,30 +101,15 @@ class SearchViewModel (
     fun clearHistory() {
         viewModelScope.launch {
             clearSearchHistoryUseCase()
-            // Сохраняем текущее состояние поиска и trackToOpen
-            val (currentSearchState, currentTrackToOpen) = when (val current = _screenState.value) {
-                is ScreenState.Results -> current.searchState to current.trackToOpen
-                is ScreenState.Error -> current.searchState to current.trackToOpen
-                else -> SearchState.Idle to null
-            }
-            _screenState.value = ScreenState.Idle(currentSearchState, HistoryState.HistoryCleared, currentTrackToOpen)
-            _isLastSearchFailed = false
-            loadHistory()
         }
     }
 
     fun filterAndUpdateTracks(query: String) {
         filteredTracks = filterTracksUseCase(tracks = filteredTracks, query = query)
-        // Сохраняем текущий trackToOpen
-        val currentTrackToOpen = when (val current = _screenState.value) {
-            is ScreenState.Results -> current.trackToOpen
-            is ScreenState.Error -> current.trackToOpen
-            is ScreenState.Idle -> current.trackToOpen
-            else -> null
-        }
+        val currentTrackToOpen = getCurrentTrackToOpen()
         _screenState.value = ScreenState.Results(
             SearchState.Results(filteredTracks),
-            loadHistoryState(),
+            getHistoryState(),
             currentTrackToOpen
         )
     }
@@ -140,13 +122,15 @@ class SearchViewModel (
                 onDelayedAction = { delayedTrack ->
                     viewModelScope.launch {
                         addTrackToHistoryUseCase(delayedTrack)
-                        loadHistory()
-                        _screenState.value = when (val current = _screenState.value) {
-                            is ScreenState.Results -> current.copy(trackToOpen = delayedTrack)
-                            is ScreenState.Error -> current.copy(trackToOpen = delayedTrack)
-                            is ScreenState.Idle -> current.copy(trackToOpen = delayedTrack)
-                            else -> ScreenState.Initial
-                        }
+                        _screenState.value = _screenState.value?.let { current ->
+                            when (current) {
+                                is ScreenState.Results -> current.copy(trackToOpen = delayedTrack)
+                                is ScreenState.Error -> current.copy(trackToOpen = delayedTrack)
+                                is ScreenState.Idle -> current.copy(trackToOpen = delayedTrack)
+                                null -> ScreenState.Initial
+                                else -> current
+                            }
+                        } ?: ScreenState.Initial
                     }
                 }
             )
@@ -161,44 +145,66 @@ class SearchViewModel (
                 is ScreenState.Idle -> current.copy(trackToOpen = null)
                 else -> current
             }
-        } ?: _screenState.value
+        } ?: ScreenState.Initial
     }
 
-    private fun loadHistoryState(): HistoryState {
-        return when (val currentState = _screenState.value) {
-            is ScreenState.Results -> currentState.historyState
-            is ScreenState.Error -> currentState.historyState
-            is ScreenState.Idle -> currentState.historyState
-            else -> HistoryState.Loading
+
+    private fun updateHistoryOnly(history: List<Track>) {
+        val newHistoryState = if (history.isEmpty()) HistoryState.Empty else HistoryState.HistoryLoaded(history)
+        val current = _screenState.value
+
+        _screenState.value = when (current) {
+            is ScreenState.Results -> current.copy(historyState = newHistoryState)
+            is ScreenState.Error -> current.copy(historyState = newHistoryState)
+            is ScreenState.Idle -> current.copy(historyState = newHistoryState)
+            ScreenState.Initial, ScreenState.Loading -> {
+                ScreenState.Idle(
+                    searchState = SearchState.Idle,
+                    historyState = newHistoryState
+                )
+            }
+            null -> ScreenState.Initial
+        }
+    }
+
+    private fun getHistoryState(): HistoryState {
+        return when (val current = _screenState.value) {
+            is ScreenState.Results -> current.historyState
+            is ScreenState.Error -> current.historyState
+            is ScreenState.Idle -> current.historyState
+            ScreenState.Initial, ScreenState.Loading -> HistoryState.Loading
+            null -> HistoryState.Loading
+        }
+    }
+
+    private fun getCurrentTrackToOpen(): Track? {
+        return when (val current = _screenState.value) {
+            is ScreenState.Results -> current.trackToOpen
+            is ScreenState.Error -> current.trackToOpen
+            is ScreenState.Idle -> current.trackToOpen
+            else -> null
         }
     }
 }
 
-/**
- * Объединённое состояние экрана для наблюдения из UI.
- */
-sealed class ScreenState {
-    /** Начальное состояние */
-    object Initial : ScreenState()
+// === Состояния экрана ===
 
-    /** Состояние загрузки */
+sealed class ScreenState {
+    object Initial : ScreenState()
     object Loading : ScreenState()
 
-    /** Простое состояние без результатов поиска */
     data class Idle(
         val searchState: SearchState,
         val historyState: HistoryState,
         val trackToOpen: Track? = null
     ) : ScreenState()
 
-    /** Успешный результат поиска с списком треков и состоянием истории */
     data class Results(
         val searchState: SearchState,
         val historyState: HistoryState,
         val trackToOpen: Track? = null
     ) : ScreenState()
 
-    /** Ошибка поиска с исключением и состоянием истории */
     data class Error(
         val searchState: SearchState,
         val historyState: HistoryState,

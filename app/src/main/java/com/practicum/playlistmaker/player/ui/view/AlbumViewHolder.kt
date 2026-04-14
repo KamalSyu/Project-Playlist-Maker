@@ -131,4 +131,8 @@ class AlbumViewHolder(
             else R.drawable.ic_play_button
         )
     }
+    fun updateCurrentTime(formattedTime: String) {
+        timeTextView.text = formattedTime
+    }
+
 }

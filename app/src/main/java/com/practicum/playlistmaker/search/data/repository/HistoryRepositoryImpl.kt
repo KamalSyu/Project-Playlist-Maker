@@ -4,10 +4,9 @@ import android.content.SharedPreferences
 import com.google.gson.Gson
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.search.domain.repository.HistoryRepository
-import com.practicum.playlistmaker.search.data.dto.SearchHistoryDTO
-import com.practicum.playlistmaker.search.data.mapper.SearchHistoryMapper
-import com.practicum.playlistmaker.core.constants.Constants
-import kotlin.collections.plus
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * Реализация репозитория для работы с историей поиска треков.
@@ -17,58 +16,47 @@ import kotlin.collections.plus
  * @param gson конвертер объектов в JSON и обратно
  * @param searchHistoryMapper маппер для преобразования между доменными моделями и DTO
  */
-class HistoryRepositoryImpl (
+class HistoryRepositoryImpl(
     private val sharedPreferences: SharedPreferences,
-    private val gson: Gson,
-    private val searchHistoryMapper: SearchHistoryMapper
+    private val gson: Gson
 ) : HistoryRepository {
 
-    /**
-     * Добавляет трек в начало истории поиска.
-     * - удаляет дубликаты по trackId;
-     * - ограничивает размер истории MAX_HISTORY_SIZE;
-     * - сохраняет обновлённую историю в SharedPreferences.
-     *
-     * @param track трек для добавления в историю
-     */
+    private val historyKey = "search_history"
+    private val _history = MutableStateFlow<List<Track>>(emptyList())
+
+    init {
+        loadHistory()
+    }
+
+    override fun getHistory(): Flow<List<Track>> = _history.asStateFlow()
+
     override suspend fun addTrack(track: Track) {
-        val currentHistory = getHistory()
-        val updatedHistory = (listOf(track) + currentHistory)
-            .distinctBy { it.trackId }
-            .take(Constants.Companion.MAX_HISTORY_SIZE)
+        val current = _history.value.toMutableList()
+        current.removeAll { it.trackId == track.trackId }
+        current.add(0, track)
+        val limited = current.take(10)
+        _history.value = limited
 
-        val dto = searchHistoryMapper.toDto(updatedHistory)
-        sharedPreferences.edit()
-            .putString(Constants.Companion.HISTORY_KEY, gson.toJson(dto))
-            .apply()
+        val json = gson.toJson(limited)
+        sharedPreferences.edit().putString(historyKey, json).apply()
     }
 
-    /**
-     * Получает историю поиска из SharedPreferences.
-     * - если история отсутствует (null), возвращает пустой список;
-     * - при ошибке парсинга JSON возвращает пустой список.
-     *
-     * @return список треков в порядке добавления (последний — первый)
-     */
-    override suspend fun getHistory(): List<Track> {
-        val json = sharedPreferences.getString(Constants.Companion.HISTORY_KEY, null)
-        if (json == null) return emptyList()
-
-        try {
-            val dto: SearchHistoryDTO = gson.fromJson(json, SearchHistoryDTO::class.java)
-            return searchHistoryMapper.fromDto(dto)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return emptyList()
-        }
-    }
-
-    /**
-     * Очищает всю историю поиска, удаляя запись из SharedPreferences.
-     */
     override suspend fun clearHistory() {
-        sharedPreferences.edit()
-            .remove(Constants.Companion.HISTORY_KEY)
-            .apply()
+        _history.value = emptyList()
+        sharedPreferences.edit().remove(historyKey).apply()
+    }
+
+    private fun loadHistory() {
+        val json = sharedPreferences.getString(historyKey, null)
+        val tracks = if (json != null) {
+            try {
+                gson.fromJson(json, Array<Track>::class.java).toList()
+            } catch (e: Exception) {
+                emptyList()
+            }
+        } else {
+            emptyList()
+        }
+        _history.value = tracks
     }
 }

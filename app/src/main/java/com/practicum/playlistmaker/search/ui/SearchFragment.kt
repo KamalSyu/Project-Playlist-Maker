@@ -103,8 +103,6 @@ class SearchFragment : Fragment() {
         setupTextWatchers()
         restoreState(savedInstanceState)
         observeViewModel()
-        viewModel.loadHistory()
-
     }
 
     private fun initViews(view: View) {

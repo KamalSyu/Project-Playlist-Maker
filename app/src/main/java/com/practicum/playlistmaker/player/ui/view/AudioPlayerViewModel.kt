@@ -217,7 +217,7 @@ class AudioPlayerViewModel(
 
     fun setCurrentTrack(track: Track) {
         _currentTrack.value = track
-        initPlayback(track.previewUrl) // Например, начинаем подготовку трека
+//        initPlayback(track.previewUrl)
     }
 
 }
