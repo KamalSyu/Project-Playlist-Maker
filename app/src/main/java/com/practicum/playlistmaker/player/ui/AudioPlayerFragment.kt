@@ -41,10 +41,6 @@ class AudioPlayerFragment : Fragment() {
 
     // Для отслеживания состояния воспроизведения
     private var lastKnownIsPlaying: Boolean = false
-
-    // Для периодического обновления прогресса воспроизведения (корутины)
-    private var pollingJob: Job? = null
-
     // Трек, который воспроизводится
     private lateinit var track: Track
 
@@ -87,6 +83,12 @@ class AudioPlayerFragment : Fragment() {
         // Подписываемся на изменения состояния UI
         viewModel.uiState.observe(viewLifecycleOwner) { state ->
             updateUI(state)
+
+            if (state.shouldPoll && state.playbackState.isPlaying) {
+                viewModel.startProgressUpdates() // Запускаем обновление прогресса
+            } else {
+                viewModel.stopProgressUpdates() // Останавливаем
+            }
         }
 
         viewModel.setupPlaybackCompletionListener()
@@ -98,7 +100,6 @@ class AudioPlayerFragment : Fragment() {
             val isPlaying = savedInstanceState.getBoolean("isPlaying")
             val savedPosition = savedInstanceState.getLong("savedPosition")
             viewModel.restorePlaybackState(isPlaying, savedPosition)
-            if (isPlaying) startPolling()
         }
     }
 
@@ -170,10 +171,10 @@ class AudioPlayerFragment : Fragment() {
             return
         }
 
-        // ✅ Обновляем ТОЛЬКО время — без перерисовки элемента
+        // Обновляем ТОЛЬКО время — без перерисовки элемента
         adapter.updateCurrentTime(state.formattedTime)
 
-        // ✅ Обновляем кнопку Play/Pause ТОЛЬКО если состояние изменилось
+        // Обновляем кнопку Play/Pause ТОЛЬКО если состояние изменилось
         val isPlaying = state.playbackState.isPlaying
         if (lastKnownIsPlaying != isPlaying) {
             adapter.notifyDataSetChangedWithState(
@@ -184,35 +185,6 @@ class AudioPlayerFragment : Fragment() {
             )
         }
         lastKnownIsPlaying = isPlaying
-
-        // ✅ Управляем опросом прогресса
-        if (state.shouldPoll && isPlaying) {
-            startPolling()
-        } else {
-            stopPolling()
-        }
-    }
-
-    /** Запуск периодического опроса прогресса воспроизведения (каждые 300 мс) */
-    private fun startPolling() {
-        stopPolling()
-        pollingJob = viewLifecycleOwner.lifecycleScope.launch {
-            while (isActive) {
-                delay(300) // Обновляем каждые 300 мс
-                viewModel.updateCurrentPosition()
-
-                val currentState = viewModel.uiState.value?.playbackState ?: PlaybackState(false, 0L)
-                if (!currentState.isPlaying || !isActive) {
-                    break
-                }
-            }
-        }
-    }
-
-    /** Останавливаем опрос прогресса */
-    private fun stopPolling() {
-        pollingJob?.cancel()
-        pollingJob = null
     }
 
     /** Сохраняем состояние при повороте экрана */
@@ -231,19 +203,16 @@ class AudioPlayerFragment : Fragment() {
             viewModel.saveCurrentPosition()
             viewModel.stopPlayback()
         }
-        stopPolling()
     }
 
     /** Очистка при остановке */
     override fun onStop() {
         super.onStop()
-        stopPolling()
     }
 
     /** Полная очистка ресурсов при уничтожении */
     override fun onDestroyView() {
         super.onDestroyView()
-        stopPolling()
     }
 
     /** Обновляем UI при возврате на экран */
@@ -251,7 +220,6 @@ class AudioPlayerFragment : Fragment() {
         super.onResume()
         val currentState = viewModel.uiState.value ?: return
         updateUI(currentState)
-        if (currentState.playbackState.isPlaying) startPolling()
     }
 
     /** Показать ошибку */

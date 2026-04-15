@@ -5,7 +5,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.practicum.playlistmaker.core.contract.DelayedTrackActionUseCaseContract
 import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContract
 import com.practicum.playlistmaker.core.contract.GetCurrentPositionUseCaseContract
 import com.practicum.playlistmaker.core.contract.PreparePlaybackUseCaseContract
@@ -18,6 +17,9 @@ import com.practicum.playlistmaker.player.data.mapper.TrackParcelableMapper
 import com.practicum.playlistmaker.player.domain.model.PlaybackState
 import com.practicum.playlistmaker.player.ui.PlayerUiState
 import com.practicum.playlistmaker.search.ui.parcel.ParcelableTrack
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 class AudioPlayerViewModel(
@@ -72,23 +74,6 @@ class AudioPlayerViewModel(
             )
         } catch (e: Exception) {
             Log.e("AudioPlayerViewModel", "Ошибка сохранения позиции", e)
-        }
-    }
-
-    // Обновление позиции в UI
-    fun updateCurrentPosition() = viewModelScope.launch {
-        try {
-            val currentPosition = getCurrentPositionUseCase()
-            val currentState = _uiState.value ?: return@launch
-
-            if (currentState.shouldPoll) {
-                _uiState.value = currentState.copy(
-                    playbackState = currentState.playbackState.copy(position = currentPosition),
-                    formattedTime = formatTrackDurationUseCase(currentPosition)
-                )
-            }
-        } catch (e: Exception) {
-            Log.e("AudioPlayerViewModel", "Ошибка обновления позиции", e)
         }
     }
 
@@ -218,6 +203,56 @@ class AudioPlayerViewModel(
     fun setCurrentTrack(track: Track) {
         _currentTrack.value = track
 //        initPlayback(track.previewUrl)
+    }
+    /**
+     * Вызывается из фрагмента при старте воспроизведения
+     */
+    fun startProgressUpdates() {
+        startPolling()
+    }
+
+    /**
+     * Вызывается из фрагмента при паузе или остановке
+     */
+    fun stopProgressUpdates() {
+        stopPolling()
+    }
+
+    private var pollingJob: Job? = null
+
+    /**
+     * Запускает периодическое обновление позиции воспроизведения (каждые 300 мс)
+     */
+    private fun startPolling() {
+        stopPolling() // Останавливаем предыдущий job, если есть
+        pollingJob = viewModelScope.launch {
+            while (isActive) {
+                delay(300) // Обновляем раз в 300 мс
+
+                try {
+                    val currentPosition = getCurrentPositionUseCase()
+                    val currentState = _uiState.value ?: return@launch
+
+                    // Обновляем состояние только если нужно (shouldPoll == true)
+                    if (currentState.shouldPoll) {
+                        _uiState.value = currentState.copy(
+                            playbackState = currentState.playbackState.copy(position = currentPosition),
+                            formattedTime = formatTrackDurationUseCase(currentPosition)
+                        )
+                    }
+                } catch (e: Exception) {
+                    Log.e("AudioPlayerViewModel", "Ошибка при обновлении прогресса", e)
+                }
+            }
+        }
+    }
+
+    /**
+     * Останавливает периодическое обновление
+     */
+    private fun stopPolling() {
+        pollingJob?.cancel()
+        pollingJob = null
     }
 
 }
