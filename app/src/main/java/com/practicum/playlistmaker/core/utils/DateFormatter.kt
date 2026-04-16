@@ -18,7 +18,6 @@ class DateFormatter {
 
     fun formatReleaseDate(releaseDateString: String?): String {
         if (releaseDateString == null) return "-"
-
         return try {
             val date = inputFormat.parse(releaseDateString) ?: return "-"
             outputFormat.format(date)

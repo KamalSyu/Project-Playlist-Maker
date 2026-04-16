@@ -3,19 +3,10 @@ package com.practicum.playlistmaker.player.domain.usecase
 import com.practicum.playlistmaker.core.contract.StopPlaybackUseCaseContract
 import com.practicum.playlistmaker.player.domain.repository.PlayerRepository
 
-/**
- * UseCase для остановки воспроизведения аудио.
- * Приостанавливает медиаплеер и сохраняет текущую позицию.
- */
 class StopPlaybackUseCase (
     private val playerRepository: PlayerRepository
 ) : StopPlaybackUseCaseContract {
 
-    /**
-     * Останавливает воспроизведение аудио.
-     * @return Result.success(Unit) при успешной остановке,
-     *         Result.failure(e) при ошибке
-     */
     override suspend fun invoke(): Result<Unit> {
         return try {
             playerRepository.stop()

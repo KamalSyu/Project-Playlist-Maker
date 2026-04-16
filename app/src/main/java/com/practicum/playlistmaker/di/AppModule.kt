@@ -104,33 +104,32 @@ val appModule = module {
     single { TrackParcelableMapper() }
 
     // 4. Мапперы с зависимостями (регистрируются после базовых компонентов)
-    single { TrackMapper(get()) } // Зависит от TrackFactory
-    single { SearchResponseMapper(get()) } // Зависит от TrackMapper
-    single { SearchHistoryMapper(get()) } // Зависит от TrackMapper
+    single { TrackMapper(get()) }
+    single { SearchResponseMapper(get()) }
+    single { SearchHistoryMapper(get()) }
 
     // 5. Репозитории (регистрируются после всех своих зависимостей)
     single<PlayerRepository> { PlayerRepositoryImpl() }
 
     single<SettingsRepository> {
         SettingsRepositoryImpl(
-            get(), // sharedPreferences
-            get(), // gson
-            get()  // themeSettingsMapper
+            sharedPreferences = get(),
+            gson = get(),
+            dtoMapper = get()
         )
     }
 
     single<HistoryRepository> {
         HistoryRepositoryImpl(
-            get(), // sharedPreferences
-            get(), // gson
-//            get()  // searchHistoryMapper
+            sharedPreferences = get(),
+            gson = get(),
         )
     }
 
     single<ItunesRepository> {
         ItunesRepositoryImpl(
-            get(), // api
-            get()  // searchResponseMapper
+            api = get(),
+            searchResponseMapper = get()
         )
     }
 
@@ -164,31 +163,31 @@ val appModule = module {
 
     // 7. ViewModel (регистрируются последними, после всех UseCases)
     viewModel { SearchViewModel(
-        get(), // searchTracksUseCase
-        get(), // addTrackToHistoryUseCase
-        get(), // getSearchHistoryUseCase
-        get(), // clearSearchHistoryUseCase
-        get(), // filterTracksUseCase
-        get(), // delayedTrackActionUseCase
-        get()  // formatTrackDurationUseCase
+        searchTracksUseCase = get(),
+        addTrackToHistoryUseCase = get(),
+        getSearchHistoryUseCase = get(),
+        clearSearchHistoryUseCase = get(),
+        filterTracksUseCase = get(),
+        delayedTrackActionUseCase = get(),
+        formatTrackDurationUseCase = get()
     ) }
 
     viewModel { AudioPlayerViewModel(
-        get(), // preparePlaybackUseCase
-        get(), // togglePlaybackUseCase
-        get(), // stopPlaybackUseCase
-        get(), // getCurrentPositionUseCase
-        get(), // setCompletionListenerUseCase
-        get(), // resetPlaybackUseCase
-        get(),  // formatTrackDurationUseCase
-        get()  // trackParcelableMapper
+        preparePlaybackUseCase = get(),
+        togglePlaybackUseCase = get(),
+        stopPlaybackUseCase = get(),
+        getCurrentPositionUseCase = get(),
+        setCompletionListenerUseCase = get(),
+        resetPlaybackUseCase = get(),
+        formatTrackDurationUseCase = get(),
+        trackParcelableMapper = get()
     ) }
 
     viewModel { SettingsViewModel(
-        get(), // getThemeStateUseCase
-        get(), // switchThemeUseCase
-        get(), // shareAppUseCase
-        get()  // sendSupportEmailUseCase
+        getThemeStateUseCase = get(),
+        switchThemeUseCase = get(),
+        shareAppUseCase = get(),
+        sendSupportEmailUseCase = get()
     ) }
 
     // Добавляем ViewModel для фрагментов медиатеки

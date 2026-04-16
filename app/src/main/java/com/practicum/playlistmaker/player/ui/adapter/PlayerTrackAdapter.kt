@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.R
+import com.practicum.playlistmaker.core.constants.Constants
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContract
 import com.practicum.playlistmaker.player.ui.view.AlbumViewHolder
@@ -16,7 +17,6 @@ class PlayerTrackAdapter(
     private val formatDurationUseCase: FormatTrackDurationUseCaseContract
 ) : RecyclerView.Adapter<PlayerTrackAdapter.PlayerViewHolder>() {
 
-    // Сохраняем все поля состояния
     var isPlaying: Boolean = false
     var currentTimeMillis: Long = 0
     var currentPosition: Int = -1
@@ -41,17 +41,23 @@ class PlayerTrackAdapter(
         holder.bind(tracks[position], position)
     }
 
-    // Перегруженная версия с payload — для оптимизации
     override fun onBindViewHolder(holder: PlayerViewHolder, position: Int, payloads: MutableList<Any>) {
-        if (payloads.isNotEmpty() && payloads[0] == "UPDATE_PLAYBACK_STATE") {
-            holder.viewHolder.updatePlayButtonState(isPlaying)
-            holder.viewHolder.updateCurrentTime(formattedTime)
+        if (payloads.isNotEmpty()) {
+            val payload = payloads[0]
+            when (payload) {
+                is UpdatePlaybackStatePayload -> {
+                    holder.viewHolder.updatePlayButtonState(isPlaying)
+                    holder.viewHolder.updateCurrentTime(formattedTime)
+                }
+                else -> {
+                    super.onBindViewHolder(holder, position, payloads)
+                }
+            }
         } else {
-            // Если payload пустой — делегируем в обычный bind
             super.onBindViewHolder(holder, position, payloads)
         }
-    }
 
+    }
 
     override fun getItemCount(): Int = tracks.size
 
@@ -72,8 +78,7 @@ class PlayerTrackAdapter(
         this.formattedTime = formattedTime
 
         if (position != -1 && position < itemCount) {
-            // Обновляем ТОЛЬКО время и состояние кнопки — без перерисовки всего ViewHolder
-            notifyItemChanged(position, "UPDATE_PLAYBACK_STATE")
+            notifyItemChanged(position, UpdatePlaybackStatePayload)
         } else {
             notifyDataSetChanged()
         }

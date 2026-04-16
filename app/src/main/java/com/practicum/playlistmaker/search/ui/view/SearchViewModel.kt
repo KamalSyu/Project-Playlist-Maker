@@ -90,7 +90,6 @@ class SearchViewModel(
         }
     }
 
-
     fun retryLastSearch() {
         if (_isLastSearchFailed && lastSearchQuery != null) {
             _isLastSearchFailed = false
@@ -188,7 +187,6 @@ class SearchViewModel(
 }
 
 // === Состояния экрана ===
-
 sealed class ScreenState {
     object Initial : ScreenState()
     object Loading : ScreenState()
