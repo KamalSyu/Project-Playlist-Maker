@@ -5,31 +5,25 @@ import com.practicum.playlistmaker.search.domain.repository.ItunesRepository
 import com.practicum.playlistmaker.search.data.dto.SearchResponseDTO
 import com.practicum.playlistmaker.search.data.mapper.SearchResponseMapper
 import com.practicum.playlistmaker.search.data.network.ItunesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 
-/**
- * Реализация репозитория для взаимодействия с iTunes API.
- * Выполняет поиск треков и преобразует ответ API в доменную модель.
- *
- * @param api клиент для запросов к iTunes API
- * @param searchResponseMapper маппер для преобразования DTO в доменную модель
- */
 class ItunesRepositoryImpl(
     private val api: ItunesApi,
     private val searchResponseMapper: SearchResponseMapper
 ) : ItunesRepository {
 
-    /**
-     * Выполняет поиск треков по запросу через iTunes API.
-     * - отправляет запрос к API;
-     * - преобразует полученный DTO-объект в доменную модель SearchResponse;
-     * - возвращает результат для дальнейшего использования в бизнес‑логике.
-     *
-     * @param query поисковый запрос (название трека, исполнителя и т. д.)
-     * @return объект SearchResponse с результатами поиска
-     * @throws Exception если запрос к API завершился ошибкой
-     */
-    override suspend fun search(query: String): SearchResponse {
-        val response: SearchResponseDTO = api.searchTracks(query)
-        return searchResponseMapper.toDomain(response)
+    override fun search(query: String): Flow<Result<SearchResponse>> = flow {
+        try {
+            val responseDto: SearchResponseDTO = api.searchTracks(query)
+            val domainResponse: SearchResponse = searchResponseMapper.toDomain(responseDto)
+            emit(Result.success(domainResponse))
+        } catch (e: Exception) {
+            emit(Result.failure(e))
+        }
     }
+        .flowOn(Dispatchers.IO)
 }
+

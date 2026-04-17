@@ -1,6 +1,7 @@
 package com.practicum.playlistmaker.core.contract
 
 import com.practicum.playlistmaker.core.models.Track
+import kotlinx.coroutines.flow.Flow
 import com.practicum.playlistmaker.sharing.domain.model.SupportEmailIntentData
 
 interface AddTrackToHistoryUseCaseContract {
@@ -24,7 +25,7 @@ interface GetCurrentPositionUseCaseContract {
 }
 
 interface GetSearchHistoryUseCaseContract {
-    suspend operator fun invoke(): List<Track>
+    operator fun invoke(): Flow<List<Track>>
 }
 
 interface GetThemeStateUseCaseContract {
@@ -36,7 +37,7 @@ interface PreparePlaybackUseCaseContract {
 }
 
 interface SearchTracksUseCaseContract {
-    suspend operator fun invoke(query: String): Result<List<Track>>
+    operator fun invoke(query: String): Flow<Result<List<Track>>>
 }
 
 interface SendSupportEmailUseCaseContract {

@@ -35,21 +35,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-/**
- * Фрагмент для поиска треков и отображения истории поиска.
- * Реализует функционал:
- * - поиск треков с задержкой ввода;
- * - отображение результатов поиска, ошибок и состояния загрузки;
- * - управление историей поиска (просмотр, очистка);
- * - навигация к аудиоплееру при клике на трек.
- *
- * Использует ViewModel для управления состоянием и взаимодействия с бизнес‑логикой.
- */
 class SearchFragment : Fragment() {
 
     private val viewModel: SearchViewModel by viewModel()
 
-    // UI‑компоненты фрагмента
     private lateinit var backTextView: TextView
     private lateinit var searchEditText: EditText
     private lateinit var resetButton: ImageView
@@ -62,11 +51,8 @@ class SearchFragment : Fragment() {
     private lateinit var historyRecyclerViewKit: LinearLayout
     private lateinit var progressBar: ProgressBar
 
-    // Адаптеры для RecyclerView
     private lateinit var tracksAdapter: SearchTrackAdapter
     private lateinit var historyAdapter: SearchTrackAdapter
-
-    // Вспомогательные данные
     private var searchQuery: String = ""
     private var clickJob: Job? = null
 
@@ -82,29 +68,19 @@ class SearchFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         ViewCompat.setOnApplyWindowInsetsListener(view) { v, insets ->
-            // 1. Обработка статус‑бара (ваш оригинальный код)
+
             val statusBar = insets.getInsets(WindowInsetsCompat.Type.statusBars())
             v.updatePadding(top = statusBar.top)
-
-            // 2. Проверка видимости клавиатуры
             val isKeyboardVisible = insets.isVisible(WindowInsetsCompat.Type.ime())
-
-            // 3. Проверка фокуса на поисковой строке
             val hasSearchFocus = searchEditText.hasFocus()
-
-            // 4. Обновление видимости BottomNav с учётом обоих условий
             updateBottomNavVisibility(isKeyboardVisible, hasSearchFocus)
-
             insets
         }
-
         initViews(view)
         setupClickListeners()
         setupTextWatchers()
         restoreState(savedInstanceState)
         observeViewModel()
-        viewModel.loadHistory()
-
     }
 
     private fun initViews(view: View) {
@@ -120,7 +96,6 @@ class SearchFragment : Fragment() {
         historyRecyclerViewKit = view.findViewById(R.id.search_history_layout)
         progressBar = view.findViewById(R.id.progressBar)
 
-        // Адаптер для результатов поиска
         tracksAdapter = SearchTrackAdapter(
             tracks = emptyList(),
             onTrackClick = { track -> viewModel.onTrackClicked(track) },
@@ -128,8 +103,6 @@ class SearchFragment : Fragment() {
         )
         recyclerView.adapter = tracksAdapter
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
-
-        // Адаптер для истории поиска
         historyAdapter = SearchTrackAdapter(
             tracks = emptyList(),
             onTrackClick = { track -> openAudioPlayer(track) },
@@ -246,6 +219,7 @@ class SearchFragment : Fragment() {
             }
         }
     }
+
     private fun updateTracksList(tracks: List<Track>) {
         tracksAdapter.updateList(tracks)
         recyclerView.visibility = if (tracks.isNotEmpty()) View.VISIBLE else View.GONE
@@ -283,7 +257,6 @@ class SearchFragment : Fragment() {
 
     private fun showNoResults(show: Boolean) {
         noResultsLayout.visibility = if (show) View.VISIBLE else View.GONE
-        // Важно: не трогаем видимость errorLayout здесь, чтобы не конфликтовать с showError()
     }
 
     private fun hideError() {
@@ -328,13 +301,11 @@ class SearchFragment : Fragment() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putString(SEARCH_QUERY_KEY, searchQuery)
-        // Сохраняем состояние загрузки
         outState.putBoolean("isLoading", progressBar.visibility == View.VISIBLE)
     }
 
     override fun onResume() {
         super.onResume()
-        // При возобновлении проверяем, нужно ли обновить UI
         updateUIWithCurrentState()
     }
 

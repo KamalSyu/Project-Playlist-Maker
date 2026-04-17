@@ -3,6 +3,11 @@ package com.practicum.playlistmaker.search.domain.usecase
 import com.practicum.playlistmaker.core.contract.SearchTracksUseCaseContract
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.search.domain.repository.ItunesRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 
 /**
  * UseCase для поиска треков через iTunes API.
@@ -10,30 +15,17 @@ import com.practicum.playlistmaker.search.domain.repository.ItunesRepository
  *
  * @param itunesRepository репозиторий для взаимодействия с iTunes API
  */
-class SearchTracksUseCase (
+class SearchTracksUseCase(
     private val itunesRepository: ItunesRepository
 ) : SearchTracksUseCaseContract {
 
-    /**
-     * Выполняет поиск треков по запросу через iTunes API.
-     * Обрабатывает возможные ошибки сети и API.
-     *
-     * @param query поисковый запрос
-     * @return Result с:
-     *   - списком найденных треков (успех);
-     *   - пустой список, если результатов нет;
-     *   - ошибкой, если запрос завершился неудачно
-     */
-    override suspend operator fun invoke(query: String): Result<List<Track>> {
-        return try {
-            val response = itunesRepository.search(query)
-            if (response.results.isEmpty()) {
-                Result.success(emptyList())
-            } else {
-                Result.success(response.results)
+    override fun invoke(query: String): Flow<Result<List<Track>>> =
+        itunesRepository.search(query)
+            .map { result ->
+                result.map { searchResponse ->
+                    searchResponse.results
+                }
             }
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
+            .flowOn(Dispatchers.IO)
 }
+

@@ -5,7 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.practicum.playlistmaker.core.contract.DelayedTrackActionUseCaseContract
+import com.practicum.playlistmaker.core.constants.Constants
 import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContract
 import com.practicum.playlistmaker.core.contract.GetCurrentPositionUseCaseContract
 import com.practicum.playlistmaker.core.contract.PreparePlaybackUseCaseContract
@@ -18,6 +18,9 @@ import com.practicum.playlistmaker.player.data.mapper.TrackParcelableMapper
 import com.practicum.playlistmaker.player.domain.model.PlaybackState
 import com.practicum.playlistmaker.player.ui.PlayerUiState
 import com.practicum.playlistmaker.search.ui.parcel.ParcelableTrack
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 class AudioPlayerViewModel(
@@ -28,10 +31,9 @@ class AudioPlayerViewModel(
     private val setCompletionListenerUseCase: SetPlaybackCompletionListenerUseCaseContract,
     private val resetPlaybackUseCase: ResetPlaybackUseCaseContract,
     val formatTrackDurationUseCase: FormatTrackDurationUseCaseContract,
-    private val trackParcelableMapper: TrackParcelableMapper // Добавляем сюда
+    private val trackParcelableMapper: TrackParcelableMapper
 ) : ViewModel() {
 
-    // Внутреннее состояние UI
     private val _uiState = MutableLiveData<PlayerUiState>(
         PlayerUiState(
             playbackState = PlaybackState(isPlaying = false, position = 0L),
@@ -40,13 +42,11 @@ class AudioPlayerViewModel(
         )
     )
 
+    private var pollingJob: Job? = null
     private val _currentTrack = MutableLiveData<Track>()
     val currentTrack: LiveData<Track> = _currentTrack
-
-    // Публичное состояние UI (только чтение)
     val uiState: LiveData<PlayerUiState> = _uiState
 
-    // Восстановление состояния после поворота экрана
     fun restorePlaybackState(isPlaying: Boolean, savedPosition: Long) {
         _uiState.value = PlayerUiState(
             playbackState = PlaybackState(isPlaying, savedPosition),
@@ -55,12 +55,10 @@ class AudioPlayerViewModel(
         )
     }
 
-    // Очистка ошибки из состояния
     fun clearError() {
         _uiState.value = _uiState.value?.copy(error = null)
     }
 
-    // Сохранение текущей позиции воспроизведения
     fun saveCurrentPosition() = viewModelScope.launch {
         try {
             val currentPosition = getCurrentPositionUseCase()
@@ -75,24 +73,6 @@ class AudioPlayerViewModel(
         }
     }
 
-    // Обновление позиции в UI
-    fun updateCurrentPosition() = viewModelScope.launch {
-        try {
-            val currentPosition = getCurrentPositionUseCase()
-            val currentState = _uiState.value ?: return@launch
-
-            if (currentState.shouldPoll) {
-                _uiState.value = currentState.copy(
-                    playbackState = currentState.playbackState.copy(position = currentPosition),
-                    formattedTime = formatTrackDurationUseCase(currentPosition)
-                )
-            }
-        } catch (e: Exception) {
-            Log.e("AudioPlayerViewModel", "Ошибка обновления позиции", e)
-        }
-    }
-
-    // Инициализация воспроизведения трека
     fun initPlayback(previewUrl: String?) = viewModelScope.launch {
         try {
             val result = preparePlaybackUseCase(previewUrl)
@@ -117,13 +97,11 @@ class AudioPlayerViewModel(
         }
     }
 
-    // Переключение воспроизведения (старт/пауза)
     fun togglePlayback(resumePosition: Long? = null) = viewModelScope.launch {
         try {
             val currentState = _uiState.value?.playbackState ?: PlaybackState(false, 0L)
 
             if (currentState.isPlaying) {
-                // Пауза
                 val result = togglePlaybackUseCase(null)
                 if (result.isSuccess) {
                     _uiState.value = _uiState.value?.copy(
@@ -132,7 +110,6 @@ class AudioPlayerViewModel(
                     )
                 }
             } else {
-                // Старт воспроизведения
                 val effectivePosition = if (currentState.position == 0L) null else resumePosition ?: currentState.position
                 val result = togglePlaybackUseCase(effectivePosition)
                 if (result.isSuccess) {
@@ -153,7 +130,6 @@ class AudioPlayerViewModel(
         }
     }
 
-    // Остановка воспроизведения
     fun stopPlayback() = viewModelScope.launch {
         saveCurrentPosition()
         try {
@@ -172,7 +148,6 @@ class AudioPlayerViewModel(
         }
     }
 
-    // Установка слушателя завершения воспроизведения
     fun setupPlaybackCompletionListener() = viewModelScope.launch {
         setCompletionListenerUseCase {
             viewModelScope.launch {
@@ -187,16 +162,10 @@ class AudioPlayerViewModel(
         }
     }
 
-    // Сброс воспроизведения до начала
     fun resetPlaybackToStart() = viewModelScope.launch {
         try {
-            // Сначала останавливаем воспроизведение
             stopPlaybackUseCase().isSuccess
-
-            // Сбрасываем состояние в репозитории
             resetPlaybackUseCase.invoke()
-
-            // Обновляем UI‑состояние
             _uiState.value = PlayerUiState(
                 playbackState = PlaybackState(isPlaying = false, position = 0L),
                 formattedTime = formatTrackDurationUseCase(0L),
@@ -217,7 +186,39 @@ class AudioPlayerViewModel(
 
     fun setCurrentTrack(track: Track) {
         _currentTrack.value = track
-        initPlayback(track.previewUrl) // Например, начинаем подготовку трека
     }
 
+    fun startProgressUpdates() {
+        startPolling()
+    }
+
+    fun stopProgressUpdates() {
+        stopPolling()
+    }
+
+    private fun startPolling() {
+        stopPolling()
+        pollingJob = viewModelScope.launch {
+            while (isActive) {
+                delay(Constants.PROGRESS_UPDATE_INTERVAL_MS)
+                try {
+                    val currentPosition = getCurrentPositionUseCase()
+                    val currentState = _uiState.value ?: return@launch
+                    if (currentState.shouldPoll) {
+                        _uiState.value = currentState.copy(
+                            playbackState = currentState.playbackState.copy(position = currentPosition),
+                            formattedTime = formatTrackDurationUseCase(currentPosition)
+                        )
+                    }
+                } catch (e: Exception) {
+                    Log.e("AudioPlayerViewModel", "Ошибка при обновлении прогресса", e)
+                }
+            }
+        }
+    }
+
+    private fun stopPolling() {
+        pollingJob?.cancel()
+        pollingJob = null
+    }
 }

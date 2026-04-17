@@ -23,11 +23,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge() // Настройка edge-to-edge для всего приложения
+        enableEdgeToEdge()
         setContentView(R.layout.activity_main)
-
         toolbar = findViewById(R.id.toolbar)
-
         try {
             val navHostFragment = supportFragmentManager
                 .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
@@ -42,16 +40,9 @@ class MainActivity : AppCompatActivity() {
                     R.id.audioPlayerFragment
                     )
             )
-
-            // Настраиваем видимость для начального экрана
             updateToolbarAndBottomNavVisibility(navController.currentDestination?.id)
-
-            // Подписываемся на изменения навигации
             setupNavigationVisibility()
-
             bottomNavigationView.setupWithNavController(navController)
-
-            Log.d("MainActivity", "Navigation setup completed successfully")
         } catch (e: Exception) {
             Log.e("MainActivity", "Error initializing navigation", e)
             Toast.makeText(
@@ -62,18 +53,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Обновляет видимость тулбара и BottomNavigation для указанного экрана
-     */
     private fun updateToolbarAndBottomNavVisibility(destinationId: Int?) {
         when (destinationId) {
             R.id.audioPlayerFragment -> {
-                toolbar.visibility = View.GONE  // Скрываем по умолчанию
+                toolbar.visibility = View.GONE
                 supportActionBar?.hide()
                 bottomNavigationView.visibility = View.GONE
             }
             else -> {
-                // Скрываем тулбар на всех остальных экранах
                 toolbar.visibility = View.GONE
                 supportActionBar?.hide()
                 bottomNavigationView.visibility = View.VISIBLE
@@ -81,9 +68,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Отслеживание изменений навигации для управления видимостью элементов
-     */
     private fun setupNavigationVisibility() {
         navController.addOnDestinationChangedListener { _, destination, _ ->
             updateToolbarAndBottomNavVisibility(destination.id)
@@ -105,5 +89,4 @@ class MainActivity : AppCompatActivity() {
     fun getToolbar(): Toolbar {
         return toolbar
     }
-
 }

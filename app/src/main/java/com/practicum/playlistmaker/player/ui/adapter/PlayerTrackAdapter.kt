@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.R
+import com.practicum.playlistmaker.core.constants.Constants
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContract
 import com.practicum.playlistmaker.player.ui.view.AlbumViewHolder
@@ -16,11 +17,12 @@ class PlayerTrackAdapter(
     private val formatDurationUseCase: FormatTrackDurationUseCaseContract
 ) : RecyclerView.Adapter<PlayerTrackAdapter.PlayerViewHolder>() {
 
-    // Сохраняем все поля состояния
     var isPlaying: Boolean = false
     var currentTimeMillis: Long = 0
     var currentPosition: Int = -1
     private var formattedTime: String = "00:00"
+    private var currentPlayerViewHolder: AlbumViewHolder? = null
+
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PlayerViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -37,6 +39,24 @@ class PlayerTrackAdapter(
 
     override fun onBindViewHolder(holder: PlayerViewHolder, position: Int) {
         holder.bind(tracks[position], position)
+    }
+
+    override fun onBindViewHolder(holder: PlayerViewHolder, position: Int, payloads: MutableList<Any>) {
+        if (payloads.isNotEmpty()) {
+            val payload = payloads[0]
+            when (payload) {
+                is UpdatePlaybackStatePayload -> {
+                    holder.viewHolder.updatePlayButtonState(isPlaying)
+                    holder.viewHolder.updateCurrentTime(formattedTime)
+                }
+                else -> {
+                    super.onBindViewHolder(holder, position, payloads)
+                }
+            }
+        } else {
+            super.onBindViewHolder(holder, position, payloads)
+        }
+
     }
 
     override fun getItemCount(): Int = tracks.size
@@ -58,14 +78,14 @@ class PlayerTrackAdapter(
         this.formattedTime = formattedTime
 
         if (position != -1 && position < itemCount) {
-            notifyItemChanged(position)
+            notifyItemChanged(position, UpdatePlaybackStatePayload)
         } else {
             notifyDataSetChanged()
         }
     }
 
     inner class PlayerViewHolder(
-        private val viewHolder: AlbumViewHolder
+        val viewHolder: AlbumViewHolder
     ) : RecyclerView.ViewHolder(viewHolder.itemView) {
 
         fun bind(track: Track, position: Int) {
@@ -75,6 +95,22 @@ class PlayerTrackAdapter(
                 currentTimeMillis = currentTimeMillis,
                 formattedTime = formattedTime
             )
+        }
+    }
+
+    fun updateCurrentTime(formattedTime: String) {
+        currentPlayerViewHolder?.updateCurrentTime(formattedTime)
+    }
+
+    override fun onViewAttachedToWindow(holder: PlayerViewHolder) {
+        super.onViewAttachedToWindow(holder)
+        currentPlayerViewHolder = holder.viewHolder
+    }
+
+    override fun onViewDetachedFromWindow(holder: PlayerViewHolder) {
+        super.onViewDetachedFromWindow(holder)
+        if (currentPlayerViewHolder == holder.viewHolder) {
+            currentPlayerViewHolder = null
         }
     }
 }

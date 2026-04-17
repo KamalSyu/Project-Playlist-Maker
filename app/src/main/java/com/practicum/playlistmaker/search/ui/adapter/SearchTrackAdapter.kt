@@ -14,7 +14,6 @@ class SearchTrackAdapter(
     private val formatDurationUseCase: FormatTrackDurationUseCaseContract
 ) : RecyclerView.Adapter<SearchTrackAdapter.SearchViewHolder>() {
 
-    // Сохраняем все поля состояния из оригинального адаптера
     var isPlaying: Boolean = false
     var currentTimeMillis: Long = 0
     var currentPosition: Int = -1

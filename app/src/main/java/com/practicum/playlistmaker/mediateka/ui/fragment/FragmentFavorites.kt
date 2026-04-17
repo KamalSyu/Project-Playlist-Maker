@@ -14,8 +14,6 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 class FragmentFavorites : Fragment() {
 
     private val viewModel: FragmentFavoritesViewModel by viewModel()
-
-    // Объявляем ссылки на элементы интерфейса
     private lateinit var emptyStateLayout: View
     private lateinit var favoritesRecyclerView: RecyclerView
 
@@ -26,12 +24,8 @@ class FragmentFavorites : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_favorites, container, false)
 
-        // Инициализируем элементы интерфейса
         emptyStateLayout = view.findViewById(R.id.emptyStateLayout)
         favoritesRecyclerView = view.findViewById(R.id.favoritesRecyclerView)
-
-        // Подписываемся на изменения данных из ViewModel
-        // Явно указываем тип tracks: List<Track>
         viewModel.favorites.observe(viewLifecycleOwner) { tracks: List<Track> ->
             if (tracks.isEmpty()) {
                 showEmptyState()
@@ -39,25 +33,17 @@ class FragmentFavorites : Fragment() {
                 showFavoritesList(tracks)
             }
         }
-
         return view
     }
 
-    /**
-     * Показывает заглушку, когда нет избранных треков
-     */
     private fun showEmptyState() {
         favoritesRecyclerView.visibility = View.GONE
         emptyStateLayout.visibility = View.VISIBLE
     }
 
-    /**
-     * Показывает список треков, когда они есть
-     */
     private fun showFavoritesList(tracks: List<Track>) {
         emptyStateLayout.visibility = View.GONE
         favoritesRecyclerView.visibility = View.VISIBLE
-
     }
 
     companion object {

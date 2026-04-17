@@ -7,10 +7,7 @@ import com.practicum.playlistmaker.core.models.Track
 
 class FragmentFavoritesViewModel : ViewModel() {
 
-    // Приватный MutableLiveData для внутреннего использования
     private val _favorites = MutableLiveData<List<Track>>()
-
-    // Публичный LiveData для наблюдения извне
     val favorites: LiveData<List<Track>> = _favorites
 
     init {
