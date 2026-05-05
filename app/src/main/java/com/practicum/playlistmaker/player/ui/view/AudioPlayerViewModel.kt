@@ -12,12 +12,13 @@ import com.practicum.playlistmaker.core.contract.PreparePlaybackUseCaseContract
 import com.practicum.playlistmaker.core.contract.ResetPlaybackUseCaseContract
 import com.practicum.playlistmaker.core.contract.SetPlaybackCompletionListenerUseCaseContract
 import com.practicum.playlistmaker.core.contract.StopPlaybackUseCaseContract
+import com.practicum.playlistmaker.core.contract.ToggleFavoriteUseCaseContract
 import com.practicum.playlistmaker.core.contract.TogglePlaybackUseCaseContract
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.player.data.mapper.TrackParcelableMapper
 import com.practicum.playlistmaker.player.domain.model.PlaybackState
 import com.practicum.playlistmaker.player.ui.PlayerUiState
-import com.practicum.playlistmaker.search.ui.parcel.ParcelableTrack
+import com.practicum.playlistmaker.core.models.parcel.ParcelableTrack
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -31,14 +32,16 @@ class AudioPlayerViewModel(
     private val setCompletionListenerUseCase: SetPlaybackCompletionListenerUseCaseContract,
     private val resetPlaybackUseCase: ResetPlaybackUseCaseContract,
     val formatTrackDurationUseCase: FormatTrackDurationUseCaseContract,
-    private val trackParcelableMapper: TrackParcelableMapper
+    private val trackParcelableMapper: TrackParcelableMapper,
+    private val toggleFavoriteUseCase: ToggleFavoriteUseCaseContract
 ) : ViewModel() {
 
     private val _uiState = MutableLiveData<PlayerUiState>(
         PlayerUiState(
             playbackState = PlaybackState(isPlaying = false, position = 0L),
             formattedTime = formatTrackDurationUseCase(0L),
-            playbackCompleted = false
+            playbackCompleted = false,
+            isFavorite = false
         )
     )
 
@@ -51,7 +54,8 @@ class AudioPlayerViewModel(
         _uiState.value = PlayerUiState(
             playbackState = PlaybackState(isPlaying, savedPosition),
             formattedTime = formatTrackDurationUseCase(savedPosition),
-            playbackCompleted = false
+            playbackCompleted = false,
+            isFavorite = false
         )
     }
 
@@ -83,7 +87,8 @@ class AudioPlayerViewModel(
                     playbackCompleted = false,
                     shouldPoll = false,
                     error = null,
-                    isInitialized = true
+                    isInitialized = true,
+                    isFavorite = false
                 )
             } else {
                 Log.e("AudioPlayerViewModel", "Не удалось подготовить воспроизведение")
@@ -184,9 +189,19 @@ class AudioPlayerViewModel(
         return trackParcelableMapper.toDomain(parcelableTrack)
     }
 
-    fun setCurrentTrack(track: Track) {
-        _currentTrack.value = track
+//    fun setCurrentTrack(track: Track) {
+//        _currentTrack.value = track
+//        checkIfFavorite(track.trackId)
+//    }
+//
+     fun setCurrentTrack(track: Track) {
+    _currentTrack.value = track
+    viewModelScope.launch {
+        val isFavorite = toggleFavoriteUseCase.isFavorite(track.trackId)
+        _uiState.value = _uiState.value?.copy(isFavorite = isFavorite)
     }
+}
+
 
     fun startProgressUpdates() {
         startPolling()
@@ -194,6 +209,35 @@ class AudioPlayerViewModel(
 
     fun stopProgressUpdates() {
         stopPolling()
+    }
+
+    fun onFavoriteClicked(track: Track) = viewModelScope.launch {
+        try {
+            val result = toggleFavoriteUseCase(track)
+            when {
+                result.isSuccess -> {
+                    val newIsFavorite = !_uiState.value?.isFavorite ?: false
+                    _uiState.value = _uiState.value?.copy(isFavorite = newIsFavorite)
+                }
+                else -> {
+                    Log.e("AudioPlayerViewModel", "Ошибка при изменении статуса избранного", result.exceptionOrNull())
+                    _uiState.value = _uiState.value?.copy(error = result.exceptionOrNull())
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("AudioPlayerViewModel", "Неожиданная ошибка при изменении статуса избранного", e)
+            _uiState.value = _uiState.value?.copy(error = e)
+        }
+    }
+
+
+    fun checkIfFavorite(trackId: String) = viewModelScope.launch {
+        try {
+            val isFavorite = toggleFavoriteUseCase.isFavorite(trackId)
+            _uiState.value = _uiState.value?.copy(isFavorite = isFavorite)
+        } catch (e: Exception) {
+            Log.w("AudioPlayerViewModel", "Ошибка проверки статуса избранного", e)
+        }
     }
 
     private fun startPolling() {

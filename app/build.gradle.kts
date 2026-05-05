@@ -4,11 +4,16 @@ plugins {
     alias(libs.plugins.kotlin.kapt)
     id("kotlin-parcelize")
     alias(libs.plugins.hilt.android)
+    id("com.google.devtools.ksp")
 }
 
 android {
     namespace = "com.practicum.playlistmaker"
     compileSdk = 36
+
+    buildFeatures {
+        viewBinding = true
+    }
 
     defaultConfig {
         applicationId = "com.practicum.playlistmaker"
@@ -42,6 +47,7 @@ android {
             force("com.squareup:javapoet:1.13.0")
         }
     }
+
 }
 
 dependencies {
@@ -50,15 +56,14 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
-    implementation(libs.androidx.core.ktx.v190)
-    implementation(libs.material.v180)
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.material)
     implementation(libs.core)
     testImplementation(libs.junit)
-    implementation(libs.material.v161)
     implementation(libs.glide)
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
-    implementation(libs.androidx.constraintlayout.v200)
+    implementation(libs.androidx.constraintlayout)
 
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.kotlinx.coroutines.android)
@@ -70,7 +75,7 @@ dependencies {
     kapt(libs.hilt.compiler)
 
     // Glide annotation processor
-    annotationProcessor(libs.compiler)
+    kapt(libs.compiler)
 
 
     // Явно добавляем JavaPoet (на всякий случай)
@@ -83,4 +88,12 @@ dependencies {
 
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    val room_version = "2.8.4"
+
+    implementation("androidx.room:room-runtime:${room_version}")
+
+// Kotlin Symbol Processing (KSP)
+
+    ksp("androidx.room:room-compiler:2.8.4")
 }

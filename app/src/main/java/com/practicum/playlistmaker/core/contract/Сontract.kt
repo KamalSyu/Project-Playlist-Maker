@@ -79,6 +79,14 @@ interface ResetPlaybackUseCaseContract {
     suspend operator fun invoke()
 }
 
+interface ToggleFavoriteUseCaseContract {
+    suspend operator fun invoke(track: Track): Result<Boolean>
+    suspend fun isFavorite(trackId: String): Boolean
+}
+
+interface GetFavoriteTracksUseCaseContract {
+    fun execute(): Flow<List<Track>>
+}
 
 
 

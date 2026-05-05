@@ -18,11 +18,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.core.constants.Constants
 import com.practicum.playlistmaker.core.models.Track
+import com.practicum.playlistmaker.core.models.parcel.ParcelableTrack
 import com.practicum.playlistmaker.main.ui.MainActivity
 import com.practicum.playlistmaker.player.domain.model.PlaybackState
 import com.practicum.playlistmaker.player.ui.adapter.PlayerTrackAdapter
 import com.practicum.playlistmaker.player.ui.view.AudioPlayerViewModel
-import com.practicum.playlistmaker.search.ui.parcel.ParcelableTrack
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -101,6 +101,7 @@ class AudioPlayerFragment : Fragment() {
                 Log.d("AudioPlayer", "Add to playlist: ${track.trackName}")
             },
             onFavorite = { track ->
+                viewModel.toggleFavorite(track)
                 Log.d("AudioPlayer", "Favorite: ${track.trackName}")
             },
             formatDurationUseCase = viewModel.formatTrackDurationUseCase
@@ -147,7 +148,8 @@ class AudioPlayerFragment : Fragment() {
                 isPlaying = isPlaying,
                 currentTimeMillis = state.playbackState.position,
                 position = 0,
-                formattedTime = state.formattedTime
+                formattedTime = state.formattedTime,
+                isFavorite = state.isFavorite
             )
         }
         lastKnownIsPlaying = isPlaying

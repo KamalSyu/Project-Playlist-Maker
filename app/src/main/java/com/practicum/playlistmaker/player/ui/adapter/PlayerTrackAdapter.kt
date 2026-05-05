@@ -70,7 +70,8 @@ class PlayerTrackAdapter(
         isPlaying: Boolean,
         currentTimeMillis: Long,
         position: Int,
-        formattedTime: String
+        formattedTime: String,
+        isFavorite: Boolean
     ) {
         this.isPlaying = isPlaying
         this.currentTimeMillis = currentTimeMillis

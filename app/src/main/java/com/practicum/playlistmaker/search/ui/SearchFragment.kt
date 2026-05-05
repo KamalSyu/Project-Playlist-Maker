@@ -24,7 +24,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.search.ui.adapter.SearchTrackAdapter
-import com.practicum.playlistmaker.search.ui.parcel.toParcelable
+import com.practicum.playlistmaker.core.models.parcel.toParcelable
 import com.practicum.playlistmaker.core.constants.Constants.Companion.SEARCH_QUERY_KEY
 import com.practicum.playlistmaker.search.ui.view.HistoryState
 import com.practicum.playlistmaker.search.ui.view.ScreenState

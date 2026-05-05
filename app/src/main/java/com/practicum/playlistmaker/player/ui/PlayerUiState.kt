@@ -8,5 +8,6 @@ data class PlayerUiState(
     val playbackCompleted: Boolean,
     val shouldPoll: Boolean = false,
     val error: Throwable? = null,
-    val isInitialized: Boolean = false
+    val isInitialized: Boolean = false,
+    val isFavorite: Boolean = false
 )
