@@ -10,15 +10,9 @@ class ToggleFavoriteUseCase(
 
     override suspend operator fun invoke(track: Track): Result<Boolean> {
         return try {
-            if (track.isFavorite) {
-                repository.removeFromFavorites(track.trackId)
-                track.isFavorite = false
-                Result.success(false)
-            } else {
-                repository.addToFavorites(track)
-                track.isFavorite = true
-                Result.success(true)
-            }
+            repository.addToFavorites(track)
+            track.isFavorite = true
+            Result.success(true)
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -27,4 +21,14 @@ class ToggleFavoriteUseCase(
     override suspend fun isFavorite(trackId: String): Boolean {
         return repository.isTrackFavorite(trackId)
     }
+
+    override suspend fun removeFromFavorites(trackId: String): Result<Unit> {
+        return try {
+            repository.removeFromFavorites(trackId)
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }
+

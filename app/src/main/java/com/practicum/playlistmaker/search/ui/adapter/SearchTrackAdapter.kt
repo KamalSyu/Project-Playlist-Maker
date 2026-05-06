@@ -6,7 +6,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContract
-import com.practicum.playlistmaker.search.ui.view.TrackViewHolder
+import com.practicum.playlistmaker.core.ui.viewholder.TrackViewHolder
 
 class SearchTrackAdapter(
     private var tracks: List<Track> = emptyList(),

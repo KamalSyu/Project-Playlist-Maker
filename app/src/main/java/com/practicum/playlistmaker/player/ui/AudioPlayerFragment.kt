@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.core.view.ViewCompat
@@ -49,6 +50,12 @@ class AudioPlayerFragment : Fragment() {
         backButton.setOnClickListener {
             handleBackPress()
         }
+
+        val favoriteButton = requireView().findViewById<ImageButton>(R.id.ic_button_like)
+        favoriteButton.setOnClickListener {
+            viewModel.toggleFavorite(track)
+        }
+
         val callback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 handleBackPress()
@@ -153,6 +160,9 @@ class AudioPlayerFragment : Fragment() {
             )
         }
         lastKnownIsPlaying = isPlaying
+
+        val favoriteButton = requireView().findViewById<ImageButton>(R.id.ic_button_like)
+        favoriteButton.isSelected = state.isFavorite
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

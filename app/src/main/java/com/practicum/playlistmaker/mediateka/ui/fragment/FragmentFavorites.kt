@@ -13,6 +13,7 @@ import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContr
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.core.models.parcel.toParcelable
 import com.practicum.playlistmaker.mediateka.ui.adapter.FavoriteTrackAdapter
+import com.practicum.playlistmaker.mediateka.ui.view.FavoritesState
 import com.practicum.playlistmaker.mediateka.ui.view.FragmentFavoritesViewModel
 import org.koin.android.ext.android.get
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -34,14 +35,12 @@ class FragmentFavorites : Fragment() {
 
         emptyStateLayout = view.findViewById(R.id.emptyStateLayout)
         favoritesRecyclerView = view.findViewById(R.id.favoritesRecyclerView)
-
         favoritesRecyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        viewModel.favoriteTracks.observe(viewLifecycleOwner) { tracks: List<Track> ->
-            if (tracks.isEmpty()) {
-                showEmptyState()
-            } else {
-                showFavoritesList(tracks)
+        viewModel.state.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is FavoritesState.Empty -> showEmptyState()
+                is FavoritesState.Loaded -> showFavoritesList(state.tracks)
             }
         }
         return view

@@ -213,11 +213,22 @@ class AudioPlayerViewModel(
 
     fun onFavoriteClicked(track: Track) = viewModelScope.launch {
         try {
-            val result = toggleFavoriteUseCase(track)
+            val currentIsFavorite = track.isFavorite
+            val result = if (!currentIsFavorite) {
+                // Если трек не в избранном, добавляем
+                toggleFavoriteUseCase(track)
+            } else {
+                // Если трек в избранном, удаляем
+                toggleFavoriteUseCase.removeFromFavorites(track.trackId)
+                    .let { Result.success(!currentIsFavorite) }
+            }
+
             when {
                 result.isSuccess -> {
-                    val newIsFavorite = !_uiState.value?.isFavorite ?: false
-                    _uiState.value = _uiState.value?.copy(isFavorite = newIsFavorite)
+                    // Обновляем isFavorite у трека
+                    track.isFavorite = result.getOrThrow()
+                    // Отражаем актуальное состояние в UI
+                    _uiState.value = _uiState.value?.copy(isFavorite = track.isFavorite)
                 }
                 else -> {
                     Log.e("AudioPlayerViewModel", "Ошибка при изменении статуса избранного", result.exceptionOrNull())
@@ -229,6 +240,7 @@ class AudioPlayerViewModel(
             _uiState.value = _uiState.value?.copy(error = e)
         }
     }
+
 
 
     fun checkIfFavorite(trackId: String) = viewModelScope.launch {
@@ -265,4 +277,7 @@ class AudioPlayerViewModel(
         pollingJob?.cancel()
         pollingJob = null
     }
+
+    fun toggleFavorite(track: Track) = onFavoriteClicked(track)
+
 }

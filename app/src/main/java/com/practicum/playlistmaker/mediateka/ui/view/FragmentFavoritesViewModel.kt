@@ -12,8 +12,8 @@ class FragmentFavoritesViewModel(
     private val getFavoriteTracksUseCase: GetFavoriteTracksUseCaseContract
 ) : ViewModel() {
 
-    private val _favoriteTracks = MutableLiveData<List<Track>>()
-    val favoriteTracks: LiveData<List<Track>> = _favoriteTracks
+    private val _state = MutableLiveData<FavoritesState>()
+    val state: LiveData<FavoritesState> = _state
 
 
     private val _error = MutableLiveData<Exception?>()
@@ -25,15 +25,12 @@ class FragmentFavoritesViewModel(
 
     fun loadFavoriteTracks() {
         viewModelScope.launch {
-            try {
-                getFavoriteTracksUseCase.execute()
-                    .collect { tracks ->
-                        _favoriteTracks.value = tracks
-                        _error.value = null
-                    }
-            } catch (e: Exception) {
-                _error.value = e
-                _favoriteTracks.value = emptyList()
+            getFavoriteTracksUseCase.execute().collect { tracks ->
+                _state.value = if (tracks.isEmpty()) {
+                    FavoritesState.Empty
+                } else {
+                    FavoritesState.Loaded(tracks)
+                }
             }
         }
     }

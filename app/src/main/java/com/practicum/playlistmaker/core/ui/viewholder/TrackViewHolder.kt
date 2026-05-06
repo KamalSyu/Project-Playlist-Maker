@@ -1,4 +1,4 @@
-package com.practicum.playlistmaker.search.ui.view
+package com.practicum.playlistmaker.core.ui.viewholder
 
 import android.view.View
 import android.widget.ImageView
@@ -12,7 +12,8 @@ import com.practicum.playlistmaker.core.models.Track
 
 class TrackViewHolder(
     itemView: View,
-    private val formatDurationUseCase: FormatTrackDurationUseCaseContract
+    private val formatDurationUseCase: FormatTrackDurationUseCaseContract,
+    private val onItemClick: (Track) -> Unit
 ) : RecyclerView.ViewHolder(itemView) {
 
     private val artworkImageView: ImageView = itemView.findViewById(R.id.artwork_image)
@@ -24,6 +25,7 @@ class TrackViewHolder(
 
     fun bind(track: Track) {
         this.track = track
+        itemView.setOnClickListener { onItemClick(track) }
 
         trackNameTextView.text = track.trackName
         artistNameTextView.text = track.artistName

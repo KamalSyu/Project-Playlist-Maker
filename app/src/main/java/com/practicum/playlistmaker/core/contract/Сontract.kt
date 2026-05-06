@@ -82,6 +82,8 @@ interface ResetPlaybackUseCaseContract {
 interface ToggleFavoriteUseCaseContract {
     suspend operator fun invoke(track: Track): Result<Boolean>
     suspend fun isFavorite(trackId: String): Boolean
+    suspend fun removeFromFavorites(trackId: String): Result<Unit>
+
 }
 
 interface GetFavoriteTracksUseCaseContract {
