@@ -12,7 +12,7 @@ import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContract
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.core.models.parcel.toParcelable
-import com.practicum.playlistmaker.mediateka.ui.adapter.FavoriteTrackAdapter
+import com.practicum.playlistmaker.core.ui.adapter.TrackListAdapter
 import com.practicum.playlistmaker.mediateka.ui.view.FavoritesState
 import com.practicum.playlistmaker.mediateka.ui.view.FragmentFavoritesViewModel
 import org.koin.android.ext.android.get
@@ -23,8 +23,7 @@ class FragmentFavorites : Fragment() {
     private val viewModel: FragmentFavoritesViewModel by viewModel()
     private lateinit var emptyStateLayout: View
     private lateinit var favoritesRecyclerView: RecyclerView
-    private lateinit var adapter: FavoriteTrackAdapter
-
+    private lateinit var adapter: TrackListAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -55,23 +54,27 @@ class FragmentFavorites : Fragment() {
         emptyStateLayout.visibility = View.GONE
         favoritesRecyclerView.visibility = View.VISIBLE
 
-
         val formatDurationUseCase: FormatTrackDurationUseCaseContract = get()
-        adapter = FavoriteTrackAdapter(tracks, formatDurationUseCase) { selectedTrack ->
-            // Преобразуем Track в ParcelableTrack
-            val parcelableTrack = selectedTrack.toParcelable()
 
-            // Создаём Bundle для передачи аргумента
-            val bundle = Bundle().apply {
-                putParcelable("trackParcelable", parcelableTrack)
+        adapter = TrackListAdapter(
+            tracks = tracks,
+            formatDurationUseCase = formatDurationUseCase,
+            onItemClick = { selectedTrack ->
+                // Преобразуем Track в ParcelableTrack
+                val parcelableTrack = selectedTrack.toParcelable()
+
+                // Создаём Bundle для передачи аргумента
+                val bundle = Bundle().apply {
+                    putParcelable("trackParcelable", parcelableTrack)
+                }
+
+                // Выполняем навигацию с передачей Bundle
+                findNavController().navigate(
+                    R.id.action_fragmentFavorites_to_audioPlayerFragment,
+                    bundle
+                )
             }
-
-            // Выполняем навигацию с передачей Bundle
-            findNavController().navigate(
-                R.id.action_fragmentFavorites_to_audioPlayerFragment,
-                bundle
-            )
-        }
+        )
         favoritesRecyclerView.adapter = adapter
     }
 

@@ -95,5 +95,5 @@ dependencies {
 
 // Kotlin Symbol Processing (KSP)
 
-    ksp("androidx.room:room-compiler:2.8.4")
+    ksp("androidx.room:room-compiler:${room_version}")
 }

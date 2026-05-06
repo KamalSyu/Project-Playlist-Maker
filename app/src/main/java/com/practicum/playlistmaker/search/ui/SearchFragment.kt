@@ -23,7 +23,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.core.models.Track
-import com.practicum.playlistmaker.search.ui.adapter.SearchTrackAdapter
+import com.practicum.playlistmaker.core.ui.adapter.TrackListAdapter
 import com.practicum.playlistmaker.core.models.parcel.toParcelable
 import com.practicum.playlistmaker.core.constants.Constants.Companion.SEARCH_QUERY_KEY
 import com.practicum.playlistmaker.search.ui.view.HistoryState
@@ -51,8 +51,8 @@ class SearchFragment : Fragment() {
     private lateinit var historyRecyclerViewKit: LinearLayout
     private lateinit var progressBar: ProgressBar
 
-    private lateinit var tracksAdapter: SearchTrackAdapter
-    private lateinit var historyAdapter: SearchTrackAdapter
+    private lateinit var tracksAdapter: TrackListAdapter
+    private lateinit var historyAdapter: TrackListAdapter
     private var searchQuery: String = ""
     private var clickJob: Job? = null
 
@@ -96,17 +96,19 @@ class SearchFragment : Fragment() {
         historyRecyclerViewKit = view.findViewById(R.id.search_history_layout)
         progressBar = view.findViewById(R.id.progressBar)
 
-        tracksAdapter = SearchTrackAdapter(
+        tracksAdapter = TrackListAdapter(
             tracks = emptyList(),
-            onTrackClick = { track -> viewModel.onTrackClicked(track) },
-            formatDurationUseCase = viewModel.formatTrackDurationUseCase
+            formatDurationUseCase = viewModel.formatTrackDurationUseCase,
+            onItemClick = { track -> viewModel.onTrackClicked(track) }
         )
         recyclerView.adapter = tracksAdapter
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        historyAdapter = SearchTrackAdapter(
+
+        // Инициализация адаптера для истории поиска
+        historyAdapter = TrackListAdapter(
             tracks = emptyList(),
-            onTrackClick = { track -> openAudioPlayer(track) },
-            formatDurationUseCase = viewModel.formatTrackDurationUseCase
+            formatDurationUseCase = viewModel.formatTrackDurationUseCase,
+            onItemClick = { track -> openAudioPlayer(track) }
         )
         historyRecyclerView.adapter = historyAdapter
         historyRecyclerView.layoutManager = LinearLayoutManager(requireContext())
@@ -221,10 +223,11 @@ class SearchFragment : Fragment() {
     }
 
     private fun updateTracksList(tracks: List<Track>) {
-        tracksAdapter.updateList(tracks)
+        tracksAdapter.updateTracks(tracks)
         recyclerView.visibility = if (tracks.isNotEmpty()) View.VISIBLE else View.GONE
         showNoResults(tracks.isEmpty() && searchQuery.isNotEmpty())
     }
+
 
     private fun openAudioPlayer(track: Track) {
         val bundle = Bundle().apply {
@@ -282,13 +285,15 @@ class SearchFragment : Fragment() {
 
     private fun updateHistoryState(historyState: HistoryState) {
         when (historyState) {
-            HistoryState.Loading -> {}
+            HistoryState.Loading -> {
+                // Ничего не делаем — ждём загрузки
+            }
             HistoryState.Empty -> {
-                historyAdapter.updateList(emptyList())
+                historyAdapter.updateTracks(emptyList())
                 updateHistoryVisibility()
             }
             is HistoryState.HistoryLoaded -> {
-                historyAdapter.updateList(historyState.history)
+                historyAdapter.updateTracks(historyState.history)
                 updateHistoryVisibility()
             }
             HistoryState.HistoryCleared -> {
@@ -361,5 +366,18 @@ class SearchFragment : Fragment() {
             bottomNav.visibility = if (isKeyboardVisible) View.GONE else View.VISIBLE
         }
     }
+    fun updatePlayingState(
+        position: Int,
+        isPlaying: Boolean,
+        currentTimeMillis: Long,
+        formattedTime: String
+    ) {
+        tracksAdapter.setPlayingState(position, isPlaying, currentTimeMillis, formattedTime)
+    }
+
+    fun stopPlaying() {
+        tracksAdapter.clearPlayingState()
+    }
+
 
 }

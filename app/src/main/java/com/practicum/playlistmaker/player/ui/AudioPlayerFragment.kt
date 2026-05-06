@@ -33,6 +33,7 @@ class AudioPlayerFragment : Fragment() {
     private val viewModel: AudioPlayerViewModel by viewModel()
     private lateinit var recyclerViewAudioPlayer: RecyclerView
     private lateinit var adapter: PlayerTrackAdapter
+    private lateinit var playButton: ImageButton
     private var lastKnownIsPlaying: Boolean = false
     private lateinit var track: Track
 
@@ -51,10 +52,10 @@ class AudioPlayerFragment : Fragment() {
             handleBackPress()
         }
 
-        val favoriteButton = requireView().findViewById<ImageButton>(R.id.ic_button_like)
-        favoriteButton.setOnClickListener {
-            viewModel.toggleFavorite(track)
-        }
+//        val favoriteButton = requireView().findViewById<ImageButton>(R.id.ic_button_like)
+//        favoriteButton.setOnClickListener {
+//            viewModel.toggleFavorite(track)
+//        }
 
         val callback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -161,8 +162,8 @@ class AudioPlayerFragment : Fragment() {
         }
         lastKnownIsPlaying = isPlaying
 
-        val favoriteButton = requireView().findViewById<ImageButton>(R.id.ic_button_like)
-        favoriteButton.isSelected = state.isFavorite
+//        val favoriteButton = requireView().findViewById<ImageButton>(R.id.ic_button_like)
+//        favoriteButton.isSelected = state.isFavorite
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

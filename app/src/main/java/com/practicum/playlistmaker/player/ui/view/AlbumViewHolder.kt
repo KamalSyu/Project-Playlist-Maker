@@ -34,7 +34,7 @@ class AlbumViewHolder(
     private val countryTextView: TextView = itemView.findViewById(R.id.country)
     private val playButton: ImageButton = itemView.findViewById(R.id.ic_play_button)
     private val plusButton: Button = itemView.findViewById(R.id.ic_button_plus)
-    private val likeButton: Button = itemView.findViewById(R.id.ic_button_like)
+    private val likeButton: ImageButton = itemView.findViewById(R.id.ic_button_like)
 
     private val dateFormatter = DateFormatter()
 
@@ -44,7 +44,8 @@ class AlbumViewHolder(
         track: Track,
         isPlaying: Boolean,
         currentTimeMillis: Long = 0,
-        formattedTime: String = "00:00"
+        formattedTime: String = "00:00",
+        isFavorite: Boolean = false
     ) {
         currentTrack = track
 
@@ -72,6 +73,7 @@ class AlbumViewHolder(
             albumImageView.setImageResource(R.drawable.ic_placeholder_312)
         }
 
+        likeButton.isSelected = isFavorite
         updatePlayButtonState(isPlaying)
         setupClickListeners(track)
     }
