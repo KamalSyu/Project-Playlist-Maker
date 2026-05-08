@@ -9,7 +9,7 @@
     android:fitsSystemWindows="true">
 
 
-<TextView
+    <TextView
         android:id="@+id/back"
         style="@style/TextStyleTopScreen"
         app:drawableStartCompat="@drawable/ic_back_arrow_48"
@@ -31,5 +31,3 @@
         android:layout_weight="1" />
 
 </LinearLayout>
-
-

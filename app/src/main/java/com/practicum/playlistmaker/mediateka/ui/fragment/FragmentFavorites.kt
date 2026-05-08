@@ -12,7 +12,7 @@ import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContract
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.core.models.parcel.toParcelable
-import com.practicum.playlistmaker.core.ui.adapter.TrackListAdapter
+import com.practicum.playlistmaker.mediateka.ui.adapter.FavoriteTrackAdapter
 import com.practicum.playlistmaker.mediateka.ui.view.FavoritesState
 import com.practicum.playlistmaker.mediateka.ui.view.FragmentFavoritesViewModel
 import org.koin.android.ext.android.get
@@ -23,7 +23,7 @@ class FragmentFavorites : Fragment() {
     private val viewModel: FragmentFavoritesViewModel by viewModel()
     private lateinit var emptyStateLayout: View
     private lateinit var favoritesRecyclerView: RecyclerView
-    private lateinit var adapter: TrackListAdapter
+    private lateinit var adapter: FavoriteTrackAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -56,7 +56,7 @@ class FragmentFavorites : Fragment() {
 
         val formatDurationUseCase: FormatTrackDurationUseCaseContract = get()
 
-        adapter = TrackListAdapter(
+        adapter = FavoriteTrackAdapter(
             tracks = tracks,
             formatDurationUseCase = formatDurationUseCase,
             onItemClick = { selectedTrack ->

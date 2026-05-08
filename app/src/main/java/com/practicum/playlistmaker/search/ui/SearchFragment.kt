@@ -23,9 +23,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.core.models.Track
-import com.practicum.playlistmaker.core.ui.adapter.TrackListAdapter
-import com.practicum.playlistmaker.core.models.parcel.toParcelable
+import com.practicum.playlistmaker.search.ui.adapter.SearchTrackAdapter
 import com.practicum.playlistmaker.core.constants.Constants.Companion.SEARCH_QUERY_KEY
+import com.practicum.playlistmaker.core.models.parcel.toParcelable
 import com.practicum.playlistmaker.search.ui.view.HistoryState
 import com.practicum.playlistmaker.search.ui.view.ScreenState
 import com.practicum.playlistmaker.search.ui.view.SearchState
@@ -51,8 +51,8 @@ class SearchFragment : Fragment() {
     private lateinit var historyRecyclerViewKit: LinearLayout
     private lateinit var progressBar: ProgressBar
 
-    private lateinit var tracksAdapter: TrackListAdapter
-    private lateinit var historyAdapter: TrackListAdapter
+    private lateinit var tracksAdapter: SearchTrackAdapter
+    private lateinit var historyAdapter: SearchTrackAdapter
     private var searchQuery: String = ""
     private var clickJob: Job? = null
 
@@ -96,19 +96,17 @@ class SearchFragment : Fragment() {
         historyRecyclerViewKit = view.findViewById(R.id.search_history_layout)
         progressBar = view.findViewById(R.id.progressBar)
 
-        tracksAdapter = TrackListAdapter(
+        tracksAdapter = SearchTrackAdapter(
             tracks = emptyList(),
-            formatDurationUseCase = viewModel.formatTrackDurationUseCase,
-            onItemClick = { track -> viewModel.onTrackClicked(track) }
+            onTrackClick = { track -> viewModel.onTrackClicked(track) },
+            formatDurationUseCase = viewModel.formatTrackDurationUseCase
         )
         recyclerView.adapter = tracksAdapter
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
-
-        // Инициализация адаптера для истории поиска
-        historyAdapter = TrackListAdapter(
+        historyAdapter = SearchTrackAdapter(
             tracks = emptyList(),
-            formatDurationUseCase = viewModel.formatTrackDurationUseCase,
-            onItemClick = { track -> openAudioPlayer(track) }
+            onTrackClick = { track -> openAudioPlayer(track) },
+            formatDurationUseCase = viewModel.formatTrackDurationUseCase
         )
         historyRecyclerView.adapter = historyAdapter
         historyRecyclerView.layoutManager = LinearLayoutManager(requireContext())
@@ -223,11 +221,10 @@ class SearchFragment : Fragment() {
     }
 
     private fun updateTracksList(tracks: List<Track>) {
-        tracksAdapter.updateTracks(tracks)
+        tracksAdapter.updateList(tracks)
         recyclerView.visibility = if (tracks.isNotEmpty()) View.VISIBLE else View.GONE
         showNoResults(tracks.isEmpty() && searchQuery.isNotEmpty())
     }
-
 
     private fun openAudioPlayer(track: Track) {
         val bundle = Bundle().apply {
@@ -285,15 +282,13 @@ class SearchFragment : Fragment() {
 
     private fun updateHistoryState(historyState: HistoryState) {
         when (historyState) {
-            HistoryState.Loading -> {
-                // Ничего не делаем — ждём загрузки
-            }
+            HistoryState.Loading -> {}
             HistoryState.Empty -> {
-                historyAdapter.updateTracks(emptyList())
+                historyAdapter.updateList(emptyList())
                 updateHistoryVisibility()
             }
             is HistoryState.HistoryLoaded -> {
-                historyAdapter.updateTracks(historyState.history)
+                historyAdapter.updateList(historyState.history)
                 updateHistoryVisibility()
             }
             HistoryState.HistoryCleared -> {
@@ -366,18 +361,5 @@ class SearchFragment : Fragment() {
             bottomNav.visibility = if (isKeyboardVisible) View.GONE else View.VISIBLE
         }
     }
-    fun updatePlayingState(
-        position: Int,
-        isPlaying: Boolean,
-        currentTimeMillis: Long,
-        formattedTime: String
-    ) {
-        tracksAdapter.setPlayingState(position, isPlaying, currentTimeMillis, formattedTime)
-    }
-
-    fun stopPlaying() {
-        tracksAdapter.clearPlayingState()
-    }
-
 
 }

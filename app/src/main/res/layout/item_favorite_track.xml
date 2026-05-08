@@ -1,12 +1,12 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:minHeight="61dp"
-    android:background="@drawable/item_selector"
-    >
+    android:background="@drawable/item_selector">
 
     <ImageView
         android:id="@+id/artwork_image"
@@ -17,7 +17,7 @@
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
-        android:layout_marginLeft="13dp" />
+        android:layout_marginStart="13dp" />
 
     <TextView
         android:id="@+id/track_name"
@@ -42,19 +42,23 @@
         <TextView
             android:id="@+id/artist_name"
             style="@style/RecyclerTextViewStyleSearchExecutor"
-            android:text="@string/executor"/>
+            android:text="@string/executor"
+            android:layout_marginEnd="4dp" />
 
         <ImageView
             android:id="@+id/point_image"
             android:layout_width="13dp"
             android:layout_height="13dp"
             android:src="@drawable/ic_point_13"
-            app:tint="@color/for_point_search" />
+            app:tint="@color/for_point_search"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp" />
 
         <TextView
             android:id="@+id/track_time"
             style="@style/RecyclerTextViewStyleSearchExecutor"
-            android:text="@string/duration" />
+            android:text="@string/duration"
+            android:layout_marginStart="4dp" />
     </LinearLayout>
 
     <ImageView
@@ -66,5 +70,5 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginTop="18dp"
-        android:layout_marginRight="12dp"/>
+        android:layout_marginEnd="12dp"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

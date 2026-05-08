@@ -1,6 +1,5 @@
 package com.practicum.playlistmaker.player.data.repository
 
-import android.util.Log
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.player.data.db.FavoriteTrackDao
 import com.practicum.playlistmaker.player.data.mapper.TrackDbMapper
@@ -13,23 +12,15 @@ class FavoriteRepositoryImpl(
 ) : FavoriteRepository {
 
     override suspend fun isTrackFavorite(trackId: String): Boolean {
-        return dao.isTrackFavorite(trackId) > 0
+        return dao.isFavorite(trackId)
     }
 
     override suspend fun addToFavorites(track: Track) {
-        try {
-            dao.insert(mapper.toEntity(track))
-        } catch (e: Exception) {
-            throw RuntimeException("Ошибка добавления в избранное: ${e.message}", e)
-        }
+        dao.insert(mapper.toEntity(track))
     }
 
     override suspend fun removeFromFavorites(trackId: String) {
-        try {
-            dao.deleteById(trackId)
-        } catch (e: Exception) {
-            throw RuntimeException("Ошибка удаления из избранного: ${e.message}", e)
-        }
+        dao.deleteById(trackId)
     }
 
     override fun getFavoriteTracks(): Flow<List<Track>> {
@@ -38,5 +29,4 @@ class FavoriteRepositoryImpl(
                 entities.map { mapper.toDomain(it) }
             }
     }
-
 }

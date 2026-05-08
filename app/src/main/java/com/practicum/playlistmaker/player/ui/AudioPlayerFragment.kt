@@ -36,6 +36,8 @@ class AudioPlayerFragment : Fragment() {
     private lateinit var playButton: ImageButton
     private var lastKnownIsPlaying: Boolean = false
     private lateinit var track: Track
+    private lateinit var favoriteButton: ImageButton
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -47,15 +49,26 @@ class AudioPlayerFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        favoriteButton = view.findViewById(R.id.ic_button_like)
+
+        // Обработчик клика кнопки «Нравится»
+        favoriteButton.setOnClickListener {
+            val currentTrack = viewModel.currentTrack.value
+            currentTrack?.let { track ->
+                viewModel.onFavoriteClicked(track)
+            }
+        }
+
+        // Наблюдаем за изменениями состояния UI
+        viewModel.uiState.observe(viewLifecycleOwner) { state ->
+            updateUI(state)
+        }
+
         val backButton: TextView = requireView().findViewById(R.id.back)
         backButton.setOnClickListener {
             handleBackPress()
         }
-
-//        val favoriteButton = requireView().findViewById<ImageButton>(R.id.ic_button_like)
-//        favoriteButton.setOnClickListener {
-//            viewModel.toggleFavorite(track)
-//        }
 
         val callback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -151,6 +164,9 @@ class AudioPlayerFragment : Fragment() {
         }
         adapter.updateCurrentTime(state.formattedTime)
         val isPlaying = state.playbackState.isPlaying
+
+        favoriteButton.isSelected = state.isFavorite
+
         if (lastKnownIsPlaying != isPlaying) {
             adapter.notifyDataSetChangedWithState(
                 isPlaying = isPlaying,
@@ -161,9 +177,6 @@ class AudioPlayerFragment : Fragment() {
             )
         }
         lastKnownIsPlaying = isPlaying
-
-//        val favoriteButton = requireView().findViewById<ImageButton>(R.id.ic_button_like)
-//        favoriteButton.isSelected = state.isFavorite
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
