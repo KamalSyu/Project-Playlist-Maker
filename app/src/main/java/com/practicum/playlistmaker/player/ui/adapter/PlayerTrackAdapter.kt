@@ -4,7 +4,6 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.R
-import com.practicum.playlistmaker.core.constants.Constants
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContract
 import com.practicum.playlistmaker.player.ui.view.AlbumViewHolder
@@ -45,6 +44,9 @@ class PlayerTrackAdapter(
         if (payloads.isNotEmpty()) {
             val payload = payloads[0]
             when (payload) {
+                is Boolean -> {
+                    holder.viewHolder.updateFavoriteState(payload)
+                }
                 is UpdatePlaybackStatePayload -> {
                     holder.viewHolder.updatePlayButtonState(isPlaying)
                     holder.viewHolder.updateCurrentTime(formattedTime)
@@ -56,7 +58,6 @@ class PlayerTrackAdapter(
         } else {
             super.onBindViewHolder(holder, position, payloads)
         }
-
     }
 
     override fun getItemCount(): Int = tracks.size
@@ -102,8 +103,6 @@ class PlayerTrackAdapter(
         currentPlayerViewHolder?.updateCurrentTime(formattedTime)
     }
 
-
-
     override fun onViewAttachedToWindow(holder: PlayerViewHolder) {
         super.onViewAttachedToWindow(holder)
         currentPlayerViewHolder = holder.viewHolder
@@ -115,4 +114,11 @@ class PlayerTrackAdapter(
             currentPlayerViewHolder = null
         }
     }
+    fun updateFavoriteStateForTrack(trackId: String, isFavorite: Boolean) {
+        val position = tracks.indexOfFirst { it.trackId == trackId }
+        if (position != -1) {
+            notifyItemChanged(position, isFavorite)
+        }
+    }
+
 }

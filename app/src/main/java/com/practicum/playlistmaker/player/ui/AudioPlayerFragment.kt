@@ -36,8 +36,6 @@ class AudioPlayerFragment : Fragment() {
     private lateinit var adapter: PlayerTrackAdapter
     private var lastKnownIsPlaying: Boolean = false
     private lateinit var track: Track
-    private lateinit var favoriteButton: ImageButton
-
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -72,7 +70,6 @@ class AudioPlayerFragment : Fragment() {
         viewModel.setCurrentTrack(track)
 
         setupRecyclerView(track)
-        setupFavoriteButtonClickListener()
 
         viewModel.uiState.observe(viewLifecycleOwner) { state ->
             updateUI(state)
@@ -84,8 +81,9 @@ class AudioPlayerFragment : Fragment() {
         }
 
         viewModel.isFavorite.observe(viewLifecycleOwner) { isFavorite ->
-            updateFavoriteButtonState(isFavorite)
+            adapter.updateFavoriteStateForTrack(track.trackId, isFavorite)
         }
+
 
         viewModel.setupPlaybackCompletionListener()
         if (savedInstanceState == null) {
@@ -141,22 +139,6 @@ class AudioPlayerFragment : Fragment() {
                 }
             }
         })
-    }
-
-    private fun setupFavoriteButtonClickListener() {
-        favoriteButton = requireView().findViewById(R.id.ic_button_like)
-        favoriteButton.setOnClickListener {
-            viewModel.onFavoriteClicked(track)
-        }
-    }
-
-    private fun updateFavoriteButtonState(isFavorite: Boolean) {
-        val drawableRes = if (isFavorite) {
-            R.drawable.ic_heart_filled
-        } else {
-            R.drawable.ic_button_like
-        }
-        favoriteButton.setImageResource(drawableRes)
     }
 
     private fun togglePlayback() {

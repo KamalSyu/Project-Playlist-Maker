@@ -6,9 +6,11 @@ import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.google.android.material.button.MaterialButton
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContract
 import com.practicum.playlistmaker.core.models.Track
@@ -34,17 +36,20 @@ class AlbumViewHolder(
     private val countryTextView: TextView = itemView.findViewById(R.id.country)
     private val playButton: ImageButton = itemView.findViewById(R.id.ic_play_button)
     private val plusButton: Button = itemView.findViewById(R.id.ic_button_plus)
-    private val likeButton: Button = itemView.findViewById(R.id.ic_button_like)
+    private val likeButton: MaterialButton = itemView.findViewById(R.id.ic_button_like)
 
     private val dateFormatter = DateFormatter()
 
     private var currentTrack: Track? = null
 
+    private var isFavorite: Boolean = false
+
     fun bind(
         track: Track,
         isPlaying: Boolean,
         currentTimeMillis: Long = 0,
-        formattedTime: String = "00:00"
+        formattedTime: String = "00:00",
+        isFavorite: Boolean = false
     ) {
         currentTrack = track
 
@@ -74,6 +79,7 @@ class AlbumViewHolder(
 
         updatePlayButtonState(isPlaying)
         setupClickListeners(track)
+        updateFavoriteState(isFavorite)
     }
 
     private fun setupClickListeners(track: Track) {
@@ -94,5 +100,17 @@ class AlbumViewHolder(
     fun updateCurrentTime(formattedTime: String) {
         timeTextView.text = formattedTime
     }
+    fun updateFavoriteState(isFavorite: Boolean) {
+        this.isFavorite = isFavorite
+        updateFavoriteButtonImage()
+    }
 
+    private fun updateFavoriteButtonImage() {
+        val drawableRes = if (isFavorite) {
+            R.drawable.ic_heart_filled
+        } else {
+            R.drawable.ic_button_like
+        }
+        likeButton.icon = ContextCompat.getDrawable(itemView.context, drawableRes)
+    }
 }
