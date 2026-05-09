@@ -15,6 +15,7 @@ class FavoriteTracksViewModel(
     sealed class State {
         object Empty : State()
         data class WithTracks(val tracks: List<Track>) : State()
+        data class Error(val message: String) : State()
     }
 
     private val _state = MutableLiveData<State>(State.Empty)
@@ -25,12 +26,17 @@ class FavoriteTracksViewModel(
     }
 
     private fun loadFavoriteTracks() = viewModelScope.launch {
-        getFavoriteTracksUseCase().collect { tracks ->
-            _state.postValue(
-                if (tracks.isEmpty()) State.Empty
-                else State.WithTracks(tracks.sortedByDescending { it.trackId })
-            )
+        try {
+            getFavoriteTracksUseCase().collect { tracks ->
+                _state.postValue(
+                    if (tracks.isEmpty()) State.Empty
+                    else State.WithTracks(tracks.sortedByDescending { it.addedDate })
+                )
+            }
+        } catch (e: Exception) {
+            _state.postValue(State.Error("Не удалось загрузить избранные треки"))
         }
     }
+
 }
 

@@ -1,3 +1,4 @@
+
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/nav_graph"
@@ -30,9 +31,10 @@
         android:id="@+id/audioPlayerFragment"
         android:name="com.practicum.playlistmaker.player.ui.AudioPlayerFragment"
         android:label="@string/audio_player">
+        <!-- Добавляем параметр для передачи трека -->
         <argument
             android:name="trackParcelable"
-            app:argType="com.practicum.playlistmaker.core.models.TrackExtensios" />
+            app:argType="com.practicum.playlistmaker.search.ui.parcel.ParcelableTrack" />
     </fragment>
 
     <fragment
@@ -43,6 +45,6 @@
             android:id="@+id/action_fragmentFavorites_to_audioPlayerFragment"
             app:destination="@id/audioPlayerFragment" />
     </fragment>
-
-
 </navigation>
+
+

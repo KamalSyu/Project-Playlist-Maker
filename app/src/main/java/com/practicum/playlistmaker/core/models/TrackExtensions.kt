@@ -14,6 +14,7 @@ fun Track.toParcelable(): ParcelableTrack {
         collectionName = collectionName,
         primaryGenreName = primaryGenreName,
         country = country,
-        previewUrl = previewUrl
+        previewUrl = previewUrl,
+        addedDate = addedDate
     )
 }

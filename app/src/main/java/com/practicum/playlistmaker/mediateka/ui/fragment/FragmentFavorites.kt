@@ -1,9 +1,11 @@
 package com.practicum.playlistmaker.mediateka.ui.fragment
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -14,7 +16,9 @@ import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.core.models.toParcelable
 import com.practicum.playlistmaker.mediateka.ui.view.FavoriteTracksViewModel
 import com.practicum.playlistmaker.player.ui.adapter.PlayerTrackAdapter
+import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
+
 
 class FragmentFavorites : Fragment() {
 
@@ -24,7 +28,7 @@ class FragmentFavorites : Fragment() {
     private lateinit var adapter: PlayerTrackAdapter
 
     // Внедряем UseCase для форматирования длительности трека через Koin
-    private lateinit var formatDurationUseCase: FormatTrackDurationUseCaseContract
+    private val formatDurationUseCase: FormatTrackDurationUseCaseContract by inject()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -50,22 +54,26 @@ class FragmentFavorites : Fragment() {
             onClickPlayButton = { track ->
                 navigateToAudioPlayer(track)
             },
-            onAddToPlaylist = {  },
-            onFavorite = { track ->},
+            onAddToPlaylist = { track ->
+                // логика добавления в плейлист
+            },
+            onFavorite = { track ->
+                // логика добавления в избранное
+            },
             formatDurationUseCase = formatDurationUseCase
         )
 
-        favoritesRecyclerView.apply {
-            layoutManager = LinearLayoutManager(requireContext())
-            adapter = this@adapter
-        }
+        favoritesRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+        favoritesRecyclerView.adapter = adapter
     }
+
 
     private fun observeViewModel() {
         viewModel.state.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is FavoriteTracksViewModel.State.Empty -> showEmptyState()
                 is FavoriteTracksViewModel.State.WithTracks -> showFavoritesList(state.tracks)
+                is FavoriteTracksViewModel.State.Error -> showErrorState(state.message)
             }
         }
     }
@@ -82,11 +90,29 @@ class FragmentFavorites : Fragment() {
     }
 
     private fun navigateToAudioPlayer(track: Track) {
-        // Используем навигацию через Directions
-        val action = MediatekaFragmentDirections.actionMediatekaToAudioPlayer(
-            trackParcelable = track.toParcelable()
-        )
-        findNavController().navigate(action)
+        val parcelableTrack = track.toParcelable()
+        if (parcelableTrack == null) {
+            throw IllegalArgumentException("Cannot convert Track to ParcelableTrack")
+        }
+
+        val bundle = Bundle().apply {
+            putParcelable("track", parcelableTrack)
+        }
+
+        try {
+            findNavController().navigate(R.id.audioPlayerFragment, bundle)
+        } catch (e: Exception) {
+            Log.e("Navigation", "Failed to navigate to audio player", e)
+            // Обработка ошибки: показать сообщение пользователю
+        }
+    }
+
+
+
+
+    private fun showErrorState(errorMessage: String) {
+        favoritesRecyclerView.visibility = View.GONE
+        emptyStateLayout.visibility = View.VISIBLE
     }
     companion object {
         fun newInstance(): Fragment {

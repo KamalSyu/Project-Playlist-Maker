@@ -12,8 +12,10 @@ class TrackFactory {
         collectionName: String? = null,
         primaryGenreName: String? = null,
         country: String? = null,
-        previewUrl: String? = null
+        previewUrl: String? = null,
+        addedDate: Long? = null
     ): Track {
+        val finalAddedDate = addedDate ?: System.currentTimeMillis()
         val trackId = generateTrackId(trackName, artistName, collectionName)
         return Track(
             trackId = trackId,
@@ -25,7 +27,8 @@ class TrackFactory {
             collectionName = collectionName,
             primaryGenreName = primaryGenreName,
             country = country,
-            previewUrl = previewUrl
+            previewUrl = previewUrl,
+            addedDate = finalAddedDate
         )
     }
 

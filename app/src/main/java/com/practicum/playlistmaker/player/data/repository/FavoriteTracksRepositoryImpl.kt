@@ -24,17 +24,28 @@ class FavoriteTracksRepositoryImpl(
             primaryGenreName = track.primaryGenreName,
             country = track.country,
             trackTimeMillis = track.trackTimeMillis,
-            previewUrl = track.previewUrl
+            previewUrl = track.previewUrl,
+            addedDate = track.addedDate
         )
         dao.addToFavorites(entity)
     }
 
     override suspend fun removeTrackFromFavorites(trackId: String) {
-        dao.removeFromFavorites(FavoriteTrackEntity(trackId = trackId,
-            trackName = "", artistName = "", artworkUrl100 = null,
-            releaseDate = null, collectionName = null, primaryGenreName = null,
-            country = null, trackTimeMillis = null, previewUrl = null))
+        dao.removeFromFavorites(FavoriteTrackEntity(
+            trackId = trackId,
+            trackName = "",
+            artistName = "",
+            artworkUrl100 = null,
+            releaseDate = null,
+            collectionName = null,
+            primaryGenreName = null,
+            country = null,
+            trackTimeMillis = null,
+            previewUrl = null,
+            addedDate = System.currentTimeMillis() // Добавляем обязательное поле
+        ))
     }
+
 
     override fun getFavoriteTracks(): Flow<List<Track>> {
         return dao.getAllFavoriteTracks().map { entities ->
@@ -48,7 +59,8 @@ class FavoriteTracksRepositoryImpl(
                     collectionName = entity.collectionName,
                     primaryGenreName = entity.primaryGenreName,
                     country = entity.country,
-                    previewUrl = entity.previewUrl
+                    previewUrl = entity.previewUrl,
+                    addedDate = entity.addedDate
                 )
             }
         }

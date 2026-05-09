@@ -10,7 +10,8 @@ data class Track(
     val collectionName: String?,
     val primaryGenreName: String?,
     val country: String?,
-    val previewUrl: String?
+    val previewUrl: String?,
+    val addedDate: Long
 )  {
 
     fun getHighQualityArtworkUrl(): String? {

@@ -20,6 +20,7 @@ import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.core.constants.Constants
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.main.ui.MainActivity
+import com.practicum.playlistmaker.player.data.mapper.TrackParcelableMapper
 import com.practicum.playlistmaker.player.domain.model.PlaybackState
 import com.practicum.playlistmaker.player.ui.adapter.PlayerTrackAdapter
 import com.practicum.playlistmaker.player.ui.view.AudioPlayerViewModel
@@ -43,6 +44,7 @@ class AudioPlayerFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+
         return inflater.inflate(R.layout.fragment_audio_player, container, false)
     }
 
@@ -98,8 +100,11 @@ class AudioPlayerFragment : Fragment() {
     private fun getTrackFromIntent(): Track {
         val parcelableTrack: ParcelableTrack = arguments?.getParcelable("track")
             ?: throw IllegalArgumentException("Track is required but not provided in arguments.")
-        return viewModel.processTrack(parcelableTrack)
+
+        val mapper = TrackParcelableMapper()
+        return mapper.toDomain(parcelableTrack)
     }
+
 
     private fun setupRecyclerView(track: Track) {
         recyclerViewAudioPlayer = requireView().findViewById(R.id.recyclerViewAudioPlayer)
