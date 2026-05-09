@@ -1,7 +1,7 @@
 package com.practicum.playlistmaker.player.data.mapper
 
 import com.practicum.playlistmaker.core.models.Track
-import com.practicum.playlistmaker.core.models.parcel.ParcelableTrack
+import com.practicum.playlistmaker.search.ui.parcel.ParcelableTrack
 
 class TrackParcelableMapper {
     fun toDomain(parcelable: ParcelableTrack): Track {

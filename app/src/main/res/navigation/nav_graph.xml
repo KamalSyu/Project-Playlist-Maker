@@ -30,10 +30,9 @@
         android:id="@+id/audioPlayerFragment"
         android:name="com.practicum.playlistmaker.player.ui.AudioPlayerFragment"
         android:label="@string/audio_player">
-        <!-- Добавляем параметр для передачи трека -->
         <argument
             android:name="trackParcelable"
-            app:argType="com.practicum.playlistmaker.core.models.parcel.ParcelableTrack" />
+            app:argType="com.practicum.playlistmaker.core.models.TrackExtensios" />
     </fragment>
 
     <fragment

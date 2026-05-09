@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
 import com.practicum.playlistmaker.core.contract.GetThemeStateUseCaseContract
 import com.practicum.playlistmaker.di.appModule
+import com.practicum.playlistmaker.di.dataModule
 import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
@@ -29,7 +30,8 @@ class App : Application() {
             androidLogger(org.koin.core.logger.Level.DEBUG)
             androidContext(this@App)
             modules(
-                appModule
+                appModule,
+                dataModule
             )
         }
     }

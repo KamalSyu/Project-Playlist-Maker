@@ -2,18 +2,17 @@ package com.practicum.playlistmaker.player.domain.usecase
 
 import com.practicum.playlistmaker.core.contract.GetFavoriteTracksUseCaseContract
 import com.practicum.playlistmaker.core.models.Track
-import com.practicum.playlistmaker.player.data.repository.FavoriteRepository
+import com.practicum.playlistmaker.player.domain.repository.FavoriteTracksRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.flowOn
 
 class GetFavoriteTracksUseCase(
-    private val repository: FavoriteRepository
+    private val favoriteTracksRepository: FavoriteTracksRepository
 ) : GetFavoriteTracksUseCaseContract {
 
-    override fun execute(): Flow<List<Track>> {
-        return repository.getFavoriteTracks().map { tracks ->
-            tracks.sortedByDescending { it.addedAt }
-        }
+    override fun invoke(): Flow<List<Track>> {
+        return favoriteTracksRepository.getFavoriteTracks()
+            .flowOn(Dispatchers.IO)
     }
 }
-

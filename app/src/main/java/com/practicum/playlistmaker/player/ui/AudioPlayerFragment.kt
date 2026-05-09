@@ -19,11 +19,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.core.constants.Constants
 import com.practicum.playlistmaker.core.models.Track
-import com.practicum.playlistmaker.core.models.parcel.ParcelableTrack
 import com.practicum.playlistmaker.main.ui.MainActivity
 import com.practicum.playlistmaker.player.domain.model.PlaybackState
 import com.practicum.playlistmaker.player.ui.adapter.PlayerTrackAdapter
 import com.practicum.playlistmaker.player.ui.view.AudioPlayerViewModel
+import com.practicum.playlistmaker.search.ui.parcel.ParcelableTrack
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -33,7 +33,6 @@ class AudioPlayerFragment : Fragment() {
     private val viewModel: AudioPlayerViewModel by viewModel()
     private lateinit var recyclerViewAudioPlayer: RecyclerView
     private lateinit var adapter: PlayerTrackAdapter
-    private lateinit var playButton: ImageButton
     private var lastKnownIsPlaying: Boolean = false
     private lateinit var track: Track
     private lateinit var favoriteButton: ImageButton
@@ -49,27 +48,10 @@ class AudioPlayerFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        favoriteButton = view.findViewById(R.id.ic_button_like)
-
-        // Обработчик клика кнопки «Нравится»
-        favoriteButton.setOnClickListener {
-            val currentTrack = viewModel.currentTrack.value
-            currentTrack?.let { track ->
-                viewModel.onFavoriteClicked(track)
-            }
-        }
-
-        // Наблюдаем за изменениями состояния UI
-        viewModel.uiState.observe(viewLifecycleOwner) { state ->
-            updateUI(state)
-        }
-
         val backButton: TextView = requireView().findViewById(R.id.back)
         backButton.setOnClickListener {
             handleBackPress()
         }
-
         val callback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 handleBackPress()
@@ -86,7 +68,10 @@ class AudioPlayerFragment : Fragment() {
 
         track = getTrackFromIntent()
         viewModel.setCurrentTrack(track)
+
         setupRecyclerView(track)
+        setupFavoriteButtonClickListener()
+
         viewModel.uiState.observe(viewLifecycleOwner) { state ->
             updateUI(state)
             if (state.shouldPoll && state.playbackState.isPlaying) {
@@ -94,6 +79,10 @@ class AudioPlayerFragment : Fragment() {
             } else {
                 viewModel.stopProgressUpdates()
             }
+        }
+
+        viewModel.isFavorite.observe(viewLifecycleOwner) { isFavorite ->
+            updateFavoriteButtonState(isFavorite)
         }
 
         viewModel.setupPlaybackCompletionListener()
@@ -122,7 +111,6 @@ class AudioPlayerFragment : Fragment() {
                 Log.d("AudioPlayer", "Add to playlist: ${track.trackName}")
             },
             onFavorite = { track ->
-                viewModel.toggleFavorite(track)
                 Log.d("AudioPlayer", "Favorite: ${track.trackName}")
             },
             formatDurationUseCase = viewModel.formatTrackDurationUseCase
@@ -150,6 +138,22 @@ class AudioPlayerFragment : Fragment() {
         })
     }
 
+    private fun setupFavoriteButtonClickListener() {
+        favoriteButton = requireView().findViewById(R.id.ic_button_like)
+        favoriteButton.setOnClickListener {
+            viewModel.onFavoriteClicked(track)
+        }
+    }
+
+    private fun updateFavoriteButtonState(isFavorite: Boolean) {
+        val drawableRes = if (isFavorite) {
+            R.drawable.ic_heart_filled
+        } else {
+            R.drawable.ic_button_like
+        }
+        favoriteButton.setImageResource(drawableRes)
+    }
+
     private fun togglePlayback() {
         val currentState = viewModel.uiState.value?.playbackState ?: PlaybackState(false, 0L)
         val resumePosition = if (!currentState.isPlaying && currentState.position > 0L) currentState.position else null
@@ -164,16 +168,12 @@ class AudioPlayerFragment : Fragment() {
         }
         adapter.updateCurrentTime(state.formattedTime)
         val isPlaying = state.playbackState.isPlaying
-
-        favoriteButton.isSelected = state.isFavorite
-
         if (lastKnownIsPlaying != isPlaying) {
             adapter.notifyDataSetChangedWithState(
                 isPlaying = isPlaying,
                 currentTimeMillis = state.playbackState.position,
                 position = 0,
-                formattedTime = state.formattedTime,
-                isFavorite = state.isFavorite
+                formattedTime = state.formattedTime
             )
         }
         lastKnownIsPlaying = isPlaying

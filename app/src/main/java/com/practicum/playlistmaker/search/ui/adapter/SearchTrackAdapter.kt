@@ -8,7 +8,6 @@ import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContract
 import com.practicum.playlistmaker.search.ui.view.TrackViewHolder
 
-
 class SearchTrackAdapter(
     private var tracks: List<Track> = emptyList(),
     private var onTrackClick: (Track) -> Unit = {},

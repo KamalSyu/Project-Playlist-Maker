@@ -79,20 +79,18 @@ interface ResetPlaybackUseCaseContract {
     suspend operator fun invoke()
 }
 
-interface ToggleFavoriteUseCaseContract {
-    suspend operator fun invoke(track: Track): Result<Boolean>
-    suspend fun isFavorite(trackId: String): Boolean
-    suspend fun removeFromFavorites(trackId: String): Result<Unit>
+interface AddToFavoritesUseCaseContract {
+    suspend operator fun invoke(track: Track): Result<Unit>
+}
 
+interface RemoveFromFavoritesUseCaseContract {
+    suspend operator fun invoke(trackId: String): Result<Unit>
 }
 
 interface GetFavoriteTracksUseCaseContract {
-    fun execute(): Flow<List<Track>>
+    operator fun invoke(): kotlinx.coroutines.flow.Flow<List<Track>>
 }
 
-
-
-
-
-
-
+interface IsTrackFavoriteUseCaseContract {
+    suspend operator fun invoke(trackId: String): Boolean
+}

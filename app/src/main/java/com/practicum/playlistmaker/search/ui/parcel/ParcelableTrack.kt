@@ -1,4 +1,4 @@
-package com.practicum.playlistmaker.core.models.parcel
+package com.practicum.playlistmaker.search.ui.parcel
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
@@ -17,22 +17,6 @@ data class ParcelableTrack(
     val country: String?,
     val previewUrl: String?
 ) : Parcelable {
-    companion object {
-        fun toDomain(parcelableTrack: ParcelableTrack): Track {
-            return Track(
-                trackId = parcelableTrack.trackId,
-                trackName = parcelableTrack.trackName,
-                artistName = parcelableTrack.artistName,
-                trackTimeMillis = parcelableTrack.trackTimeMillis,
-                artworkUrl100 = parcelableTrack.artworkUrl100,
-                releaseDate = parcelableTrack.releaseDate,
-                collectionName = parcelableTrack.collectionName,
-                primaryGenreName = parcelableTrack.primaryGenreName,
-                country = parcelableTrack.country,
-                previewUrl = parcelableTrack.previewUrl
-            )
-        }
-    }
 }
 
 fun Track.toParcelable() = ParcelableTrack(

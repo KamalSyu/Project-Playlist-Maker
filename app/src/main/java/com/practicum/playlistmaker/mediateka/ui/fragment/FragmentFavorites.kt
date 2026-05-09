@@ -11,38 +11,63 @@ import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContract
 import com.practicum.playlistmaker.core.models.Track
-import com.practicum.playlistmaker.core.models.parcel.toParcelable
-import com.practicum.playlistmaker.mediateka.ui.adapter.FavoriteTrackAdapter
-import com.practicum.playlistmaker.mediateka.ui.view.FavoritesState
-import com.practicum.playlistmaker.mediateka.ui.view.FragmentFavoritesViewModel
-import org.koin.android.ext.android.get
+import com.practicum.playlistmaker.core.models.toParcelable
+import com.practicum.playlistmaker.mediateka.ui.view.FavoriteTracksViewModel
+import com.practicum.playlistmaker.player.ui.adapter.PlayerTrackAdapter
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class FragmentFavorites : Fragment() {
 
-    private val viewModel: FragmentFavoritesViewModel by viewModel()
+    private val viewModel: FavoriteTracksViewModel by viewModel()
     private lateinit var emptyStateLayout: View
     private lateinit var favoritesRecyclerView: RecyclerView
-    private lateinit var adapter: FavoriteTrackAdapter
+    private lateinit var adapter: PlayerTrackAdapter
+
+    // Внедряем UseCase для форматирования длительности трека через Koin
+    private lateinit var formatDurationUseCase: FormatTrackDurationUseCaseContract
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_favorites, container, false)
 
+        val view = inflater.inflate(R.layout.fragment_favorites, container, false)
+        setupViews(view)
+        setupRecyclerView()
+        observeViewModel()
+        return view
+    }
+
+    private fun setupViews(view: View) {
         emptyStateLayout = view.findViewById(R.id.emptyStateLayout)
         favoritesRecyclerView = view.findViewById(R.id.favoritesRecyclerView)
-        favoritesRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+    }
 
+    private fun setupRecyclerView() {
+        adapter = PlayerTrackAdapter(
+            tracks = emptyList(),
+            onClickPlayButton = { track ->
+                navigateToAudioPlayer(track)
+            },
+            onAddToPlaylist = {  },
+            onFavorite = { track ->},
+            formatDurationUseCase = formatDurationUseCase
+        )
+
+        favoritesRecyclerView.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = this@adapter
+        }
+    }
+
+    private fun observeViewModel() {
         viewModel.state.observe(viewLifecycleOwner) { state ->
             when (state) {
-                is FavoritesState.Empty -> showEmptyState()
-                is FavoritesState.Loaded -> showFavoritesList(state.tracks)
+                is FavoriteTracksViewModel.State.Empty -> showEmptyState()
+                is FavoriteTracksViewModel.State.WithTracks -> showFavoritesList(state.tracks)
             }
         }
-        return view
     }
 
     private fun showEmptyState() {
@@ -53,31 +78,16 @@ class FragmentFavorites : Fragment() {
     private fun showFavoritesList(tracks: List<Track>) {
         emptyStateLayout.visibility = View.GONE
         favoritesRecyclerView.visibility = View.VISIBLE
-
-        val formatDurationUseCase: FormatTrackDurationUseCaseContract = get()
-
-        adapter = FavoriteTrackAdapter(
-            tracks = tracks,
-            formatDurationUseCase = formatDurationUseCase,
-            onItemClick = { selectedTrack ->
-                // Преобразуем Track в ParcelableTrack
-                val parcelableTrack = selectedTrack.toParcelable()
-
-                // Создаём Bundle для передачи аргумента
-                val bundle = Bundle().apply {
-                    putParcelable("trackParcelable", parcelableTrack)
-                }
-
-                // Выполняем навигацию с передачей Bundle
-                findNavController().navigate(
-                    R.id.action_fragmentFavorites_to_audioPlayerFragment,
-                    bundle
-                )
-            }
-        )
-        favoritesRecyclerView.adapter = adapter
+        adapter.updateList(tracks)
     }
 
+    private fun navigateToAudioPlayer(track: Track) {
+        // Используем навигацию через Directions
+        val action = MediatekaFragmentDirections.actionMediatekaToAudioPlayer(
+            trackParcelable = track.toParcelable()
+        )
+        findNavController().navigate(action)
+    }
     companion object {
         fun newInstance(): Fragment {
             return FragmentFavorites()

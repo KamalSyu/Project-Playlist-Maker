@@ -3,8 +3,10 @@ package com.practicum.playlistmaker.di
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.room.Room
 import com.google.gson.Gson
 import com.practicum.playlistmaker.core.constants.Constants
+import com.practicum.playlistmaker.core.contract.AddToFavoritesUseCaseContract
 import com.practicum.playlistmaker.core.contract.AddTrackToHistoryUseCaseContract
 import com.practicum.playlistmaker.core.contract.ClearSearchHistoryUseCaseContract
 import com.practicum.playlistmaker.core.contract.DelayProvider
@@ -15,7 +17,9 @@ import com.practicum.playlistmaker.core.contract.GetCurrentPositionUseCaseContra
 import com.practicum.playlistmaker.core.contract.GetFavoriteTracksUseCaseContract
 import com.practicum.playlistmaker.core.contract.GetSearchHistoryUseCaseContract
 import com.practicum.playlistmaker.core.contract.GetThemeStateUseCaseContract
+import com.practicum.playlistmaker.core.contract.IsTrackFavoriteUseCaseContract
 import com.practicum.playlistmaker.core.contract.PreparePlaybackUseCaseContract
+import com.practicum.playlistmaker.core.contract.RemoveFromFavoritesUseCaseContract
 import com.practicum.playlistmaker.core.contract.ResetPlaybackUseCaseContract
 import com.practicum.playlistmaker.core.contract.SearchTracksUseCaseContract
 import com.practicum.playlistmaker.core.contract.SendSupportEmailUseCaseContract
@@ -23,17 +27,15 @@ import com.practicum.playlistmaker.core.contract.SetPlaybackCompletionListenerUs
 import com.practicum.playlistmaker.core.contract.ShareAppUseCaseContract
 import com.practicum.playlistmaker.core.contract.StopPlaybackUseCaseContract
 import com.practicum.playlistmaker.core.contract.SwitchThemeUseCaseContract
-import com.practicum.playlistmaker.core.contract.ToggleFavoriteUseCaseContract
 import com.practicum.playlistmaker.core.contract.TogglePlaybackUseCaseContract
 import com.practicum.playlistmaker.core.utils.CoroutineDelayProvider
 import com.practicum.playlistmaker.core.utils.DateFormatter
 import com.practicum.playlistmaker.core.utils.FormatTrackDurationUseCase
 import com.practicum.playlistmaker.creator.domain.TrackFactory
+import com.practicum.playlistmaker.mediateka.ui.view.FavoriteTracksViewModel
 import com.practicum.playlistmaker.mediateka.ui.view.FragmentFavoritesViewModel
 import com.practicum.playlistmaker.mediateka.ui.view.FragmentPlaylistsViewModel
 import com.practicum.playlistmaker.player.data.db.AppDatabase
-import com.practicum.playlistmaker.player.data.db.FavoriteTrackDao
-import com.practicum.playlistmaker.player.data.mapper.TrackDbMapper
 import com.practicum.playlistmaker.player.ui.view.AudioPlayerViewModel
 import com.practicum.playlistmaker.search.data.network.ItunesApi
 import com.practicum.playlistmaker.search.data.repository.HistoryRepositoryImpl
@@ -44,17 +46,19 @@ import com.practicum.playlistmaker.settings.data.repository.SettingsRepositoryIm
 import com.practicum.playlistmaker.sharing.data.provider.SupportEmailDataProviderImpl
 import com.practicum.playlistmaker.sharing.data.provider.ShareTextProviderImpl
 import com.practicum.playlistmaker.player.data.mapper.TrackParcelableMapper
-import com.practicum.playlistmaker.player.data.repository.FavoriteRepository
-import com.practicum.playlistmaker.player.data.repository.FavoriteRepositoryImpl
+import com.practicum.playlistmaker.player.data.repository.FavoriteTracksRepositoryImpl
+import com.practicum.playlistmaker.player.domain.repository.FavoriteTracksRepository
 import com.practicum.playlistmaker.player.domain.repository.PlayerRepository
+import com.practicum.playlistmaker.player.domain.usecase.AddToFavoritesUseCase
 import com.practicum.playlistmaker.player.domain.usecase.DelayedTrackActionUseCase
 import com.practicum.playlistmaker.player.domain.usecase.GetCurrentPositionUseCase
 import com.practicum.playlistmaker.player.domain.usecase.GetFavoriteTracksUseCase
+import com.practicum.playlistmaker.player.domain.usecase.IsTrackFavoriteUseCase
 import com.practicum.playlistmaker.player.domain.usecase.PreparePlaybackUseCase
+import com.practicum.playlistmaker.player.domain.usecase.RemoveFromFavoritesUseCase
 import com.practicum.playlistmaker.player.domain.usecase.ResetPlaybackUseCase
 import com.practicum.playlistmaker.player.domain.usecase.SetPlaybackCompletionListenerUseCase
 import com.practicum.playlistmaker.player.domain.usecase.StopPlaybackUseCase
-import com.practicum.playlistmaker.player.domain.usecase.ToggleFavoriteUseCase
 import com.practicum.playlistmaker.player.domain.usecase.TogglePlaybackUseCase
 import com.practicum.playlistmaker.search.data.mapper.SearchHistoryMapper
 import com.practicum.playlistmaker.search.data.mapper.SearchResponseMapper
@@ -75,6 +79,7 @@ import com.practicum.playlistmaker.sharing.domain.provider.ShareTextProvider
 import com.practicum.playlistmaker.sharing.domain.provider.SupportEmailDataProvider
 import com.practicum.playlistmaker.sharing.domain.usecase.SendSupportEmailUseCase
 import com.practicum.playlistmaker.sharing.domain.usecase.ShareAppUseCase
+import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -101,18 +106,6 @@ val appModule = module {
     }
 
     single<ItunesApi> { get<Retrofit>().create(ItunesApi::class.java) }
-
-    single<AppDatabase> {
-        AppDatabase.getInstance(get<Context>())
-    }
-
-    single<FavoriteTrackDao> {
-        get<AppDatabase>().favoriteTrackDao()
-    }
-
-    single<TrackDbMapper> {
-        TrackDbMapper()
-    }
 
     // 2. Утилиты (без внешних зависимостей)
     single<DelayProvider> { CoroutineDelayProvider() }
@@ -150,20 +143,19 @@ val appModule = module {
     single<ItunesRepository> {
         ItunesRepositoryImpl(
             api = get(),
-            searchResponseMapper = get(),
-            favoriteTrackDao = get()
-        )
-    }
-
-    single<FavoriteRepository> {
-        FavoriteRepositoryImpl(
-            dao = get(),
-            mapper = get()
+            searchResponseMapper = get()
         )
     }
 
     single<SupportEmailDataProvider> { SupportEmailDataProviderImpl(get()) }
     single<ShareTextProvider> { ShareTextProviderImpl(get()) }
+
+    single<FavoriteTracksRepository> {
+        FavoriteTracksRepositoryImpl(
+            dao = get(),
+            trackFactory = get()
+        )
+    }
 
     // 6. UseCases (регистрируются после репозиториев и мапперов)
     // UseCases поиска
@@ -181,8 +173,6 @@ val appModule = module {
     factory<SetPlaybackCompletionListenerUseCaseContract> { SetPlaybackCompletionListenerUseCase(get()) }
     factory<DelayedTrackActionUseCaseContract> { DelayedTrackActionUseCase(get()) }
     factory<ResetPlaybackUseCaseContract> { ResetPlaybackUseCase(get()) }
-    factory<ToggleFavoriteUseCaseContract> { ToggleFavoriteUseCase(get()) }
-    factory<GetFavoriteTracksUseCaseContract> { GetFavoriteTracksUseCase(get()) }
 
     // UseCases настроек
     factory<GetThemeStateUseCaseContract> { GetThemeStateUseCase(get()) }
@@ -191,6 +181,12 @@ val appModule = module {
     // UseCases шаринга
     factory<ShareAppUseCaseContract> { ShareAppUseCase(get()) }
     factory<SendSupportEmailUseCaseContract> { SendSupportEmailUseCase(get()) }
+
+    // UseCases избранного
+    factory<AddToFavoritesUseCaseContract> { AddToFavoritesUseCase(get()) }
+    factory<RemoveFromFavoritesUseCaseContract> { RemoveFromFavoritesUseCase(get()) }
+    factory<GetFavoriteTracksUseCaseContract> { GetFavoriteTracksUseCase(get()) }
+    factory<IsTrackFavoriteUseCaseContract> { IsTrackFavoriteUseCase(get()) }
 
     // 7. ViewModel (регистрируются последними, после всех UseCases)
     viewModel { SearchViewModel(
@@ -212,8 +208,9 @@ val appModule = module {
         resetPlaybackUseCase = get(),
         formatTrackDurationUseCase = get(),
         trackParcelableMapper = get(),
-        toggleFavoriteUseCase = get()
-
+        addToFavoritesUseCase = get(),
+        removeFromFavoritesUseCase = get(),
+        isTrackFavoriteUseCase= get()
     ) }
 
     viewModel { SettingsViewModel(
@@ -225,5 +222,21 @@ val appModule = module {
 
     // Добавляем ViewModel для фрагментов медиатеки
     viewModel { FragmentPlaylistsViewModel() }
-    viewModel { FragmentFavoritesViewModel(getFavoriteTracksUseCase = get()) }
+
+    viewModel { FavoriteTracksViewModel(
+        getFavoriteTracksUseCase = get()
+    ) }
 }
+
+val dataModule = module {
+    single {
+        Room.databaseBuilder(
+            androidContext(),
+            AppDatabase::class.java,
+            "app_database.db"
+        ).build()
+    }
+
+    single { get<AppDatabase>().favoriteTracksDao() }
+}
+

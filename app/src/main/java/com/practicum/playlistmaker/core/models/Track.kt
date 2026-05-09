@@ -10,9 +10,7 @@ data class Track(
     val collectionName: String?,
     val primaryGenreName: String?,
     val country: String?,
-    val previewUrl: String?,
-    var isFavorite: Boolean = false,
-    val addedAt: Long = System.currentTimeMillis()
+    val previewUrl: String?
 )  {
 
     fun getHighQualityArtworkUrl(): String? {

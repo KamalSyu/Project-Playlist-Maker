@@ -70,8 +70,7 @@ class PlayerTrackAdapter(
         isPlaying: Boolean,
         currentTimeMillis: Long,
         position: Int,
-        formattedTime: String,
-        isFavorite: Boolean
+        formattedTime: String
     ) {
         this.isPlaying = isPlaying
         this.currentTimeMillis = currentTimeMillis
@@ -102,6 +101,8 @@ class PlayerTrackAdapter(
     fun updateCurrentTime(formattedTime: String) {
         currentPlayerViewHolder?.updateCurrentTime(formattedTime)
     }
+
+
 
     override fun onViewAttachedToWindow(holder: PlayerViewHolder) {
         super.onViewAttachedToWindow(holder)
