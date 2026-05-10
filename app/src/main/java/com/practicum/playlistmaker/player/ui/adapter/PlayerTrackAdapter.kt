@@ -9,7 +9,7 @@ import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContr
 import com.practicum.playlistmaker.player.ui.view.AlbumViewHolder
 
 class PlayerTrackAdapter(
-    private var tracks: List<Track> = emptyList(),
+    private var tracks: MutableList<Track>,
     private var onClickPlayButton: (Track) -> Unit = {},
     private var onAddToPlaylist: (Track) -> Unit = {},
     private var onFavorite: (Track) -> Unit = {},
@@ -28,11 +28,11 @@ class PlayerTrackAdapter(
             .inflate(R.layout.item_audioplayer, parent, false)
         return PlayerViewHolder(AlbumViewHolder(
             view,
-            { },
-            onClickPlayButton,
-            onAddToPlaylist,
-            onFavorite,
-            formatDurationUseCase
+            onClickListener = onClickPlayButton,  // (Track) -> Unit
+            onPlayButtonClick = onClickPlayButton,  // (Track) -> Unit
+            onAddToPlaylistClick = onAddToPlaylist,  // (Track) -> Unit
+            onFavoriteClick = onFavorite,  // (Track) -> Unit
+            formatDurationUseCase = formatDurationUseCase  // FormatTrackDurationUseCaseContract
         ))
     }
 
@@ -63,7 +63,8 @@ class PlayerTrackAdapter(
     override fun getItemCount(): Int = tracks.size
 
     fun updateList(newTracks: List<Track>) {
-        tracks = newTracks
+        tracks.clear()
+        tracks.addAll(newTracks)
         notifyDataSetChanged()
     }
 
@@ -94,11 +95,11 @@ class PlayerTrackAdapter(
                 track = track,
                 isPlaying = isPlaying,
                 currentTimeMillis = currentTimeMillis,
-                formattedTime = formattedTime
+                formattedTime = formattedTime,
+                isFavorite = track.isFavorite
             )
         }
     }
-
     fun updateCurrentTime(formattedTime: String) {
         currentPlayerViewHolder?.updateCurrentTime(formattedTime)
     }
@@ -115,10 +116,10 @@ class PlayerTrackAdapter(
         }
     }
     fun updateFavoriteStateForTrack(trackId: String, isFavorite: Boolean) {
-        val position = tracks.indexOfFirst { it.trackId == trackId }
-        if (position != -1) {
-            notifyItemChanged(position, isFavorite)
+        val index = tracks.indexOfFirst { it.trackId == trackId }
+        if (index != -1) {
+            tracks[index].isFavorite = isFavorite
+            notifyItemChanged(index)
         }
     }
-
 }

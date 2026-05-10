@@ -5,7 +5,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -14,6 +13,7 @@ import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContract
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.core.models.toParcelable
+import com.practicum.playlistmaker.mediateka.ui.adapter.FavoriteTrackAdapter
 import com.practicum.playlistmaker.mediateka.ui.view.FavoriteTracksViewModel
 import com.practicum.playlistmaker.player.ui.adapter.PlayerTrackAdapter
 import org.koin.android.ext.android.inject
@@ -25,7 +25,7 @@ class FragmentFavorites : Fragment() {
     private val viewModel: FavoriteTracksViewModel by viewModel()
     private lateinit var emptyStateLayout: View
     private lateinit var favoritesRecyclerView: RecyclerView
-    private lateinit var adapter: PlayerTrackAdapter
+    private lateinit var adapter: FavoriteTrackAdapter
 
     // Внедряем UseCase для форматирования длительности трека через Koin
     private val formatDurationUseCase: FormatTrackDurationUseCaseContract by inject()
@@ -49,20 +49,11 @@ class FragmentFavorites : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        adapter = PlayerTrackAdapter(
-            tracks = emptyList(),
-            onClickPlayButton = { track ->
-                navigateToAudioPlayer(track)
-            },
-            onAddToPlaylist = { track ->
-                // логика добавления в плейлист
-            },
-            onFavorite = { track ->
-                // логика добавления в избранное
-            },
+        adapter = FavoriteTrackAdapter(
+            tracks = mutableListOf(),
+            onTrackClick = { track -> navigateToAudioPlayer(track) },
             formatDurationUseCase = formatDurationUseCase
         )
-
         favoritesRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         favoritesRecyclerView.adapter = adapter
     }
@@ -106,9 +97,6 @@ class FragmentFavorites : Fragment() {
             // Обработка ошибки: показать сообщение пользователю
         }
     }
-
-
-
 
     private fun showErrorState(errorMessage: String) {
         favoritesRecyclerView.visibility = View.GONE

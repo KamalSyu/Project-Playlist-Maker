@@ -108,13 +108,13 @@ class AudioPlayerFragment : Fragment() {
         recyclerViewAudioPlayer = requireView().findViewById(R.id.recyclerViewAudioPlayer)
         recyclerViewAudioPlayer.layoutManager = LinearLayoutManager(requireContext())
         adapter = PlayerTrackAdapter(
-            tracks = listOf(track),
+            tracks = mutableListOf(track),
             onClickPlayButton = { _ -> togglePlayback() },
             onAddToPlaylist = { track ->
                 Log.d("AudioPlayer", "Add to playlist: ${track.trackName}")
             },
             onFavorite = { track ->
-                Log.d("AudioPlayer", "Favorite: ${track.trackName}")
+                viewModel.onFavoriteClicked(track)
             },
             formatDurationUseCase = viewModel.formatTrackDurationUseCase
         )

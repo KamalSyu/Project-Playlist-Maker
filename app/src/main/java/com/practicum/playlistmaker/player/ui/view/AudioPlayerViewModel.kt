@@ -63,15 +63,19 @@ class AudioPlayerViewModel(
             val isFavoriteNow = isTrackFavoriteUseCase(currentTrack.trackId)
             if (isFavoriteNow) {
                 removeFromFavoritesUseCase(currentTrack.trackId)
+                currentTrack.isFavorite = false
             } else {
                 addToFavoritesUseCase(currentTrack)
+                currentTrack.isFavorite = true
             }
             _isFavorite.postValue(!isFavoriteNow)
             currentTrackId = currentTrack.trackId
+            _currentTrack.value = currentTrack // Обновляем текущий трек с новым статусом
         } catch (e: Exception) {
             Log.e("AudioPlayerViewModel", "Ошибка работы с избранным", e)
         }
     }
+
 
     fun restorePlaybackState(isPlaying: Boolean, savedPosition: Long) {
         _uiState.value = PlayerUiState(
