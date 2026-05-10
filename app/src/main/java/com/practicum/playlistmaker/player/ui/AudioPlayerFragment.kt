@@ -80,6 +80,10 @@ class AudioPlayerFragment : Fragment() {
             }
         }
 
+        track.trackId?.let { trackId ->
+            viewModel.checkTrackFavoriteStatus(trackId)
+        }
+
         viewModel.isFavorite.observe(viewLifecycleOwner) { isFavorite ->
             adapter.updateFavoriteStateForTrack(track.trackId, isFavorite)
         }

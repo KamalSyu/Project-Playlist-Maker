@@ -34,7 +34,7 @@ class AlbumViewHolder(
     private val countryTextView: TextView = itemView.findViewById(R.id.country)
     private val playButton: ImageButton = itemView.findViewById(R.id.ic_play_button)
     private val plusButton: Button = itemView.findViewById(R.id.ic_button_plus)
-    private val likeButton: Button = itemView.findViewById(R.id.ic_button_like)
+    private val likeButton: ImageButton = itemView.findViewById(R.id.ic_button_like) // Исправлено: Button → ImageButton
 
     private val dateFormatter = DateFormatter()
 
@@ -98,18 +98,13 @@ class AlbumViewHolder(
     fun updateCurrentTime(formattedTime: String) {
         timeTextView.text = formattedTime
     }
+
     fun updateFavoriteState(isFavorite: Boolean) {
         this.isFavorite = isFavorite
         updateFavoriteButtonImage()
     }
 
     private fun updateFavoriteButtonImage() {
-        val drawableRes = if (isFavorite) {
-            R.drawable.ic_heart_filled
-        } else {
-            R.drawable.ic_heart_outline
-        }
-        likeButton.setBackgroundResource(drawableRes)
+        likeButton.isSelected = isFavorite
     }
-
 }

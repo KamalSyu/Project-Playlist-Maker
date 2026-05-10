@@ -60,22 +60,40 @@ class AudioPlayerViewModel(
 
     fun onFavoriteClicked(currentTrack: Track) = viewModelScope.launch {
         try {
+            // Сохраняем текущий статус до изменений
             val isFavoriteNow = isTrackFavoriteUseCase(currentTrack.trackId)
+
+            // Выполняем операцию (добавление/удаление)
             if (isFavoriteNow) {
                 removeFromFavoritesUseCase(currentTrack.trackId)
-                currentTrack.isFavorite = false
             } else {
                 addToFavoritesUseCase(currentTrack)
-                currentTrack.isFavorite = true
             }
+
+            // Обновляем статус избранного в ViewModel
             _isFavorite.postValue(!isFavoriteNow)
-            currentTrackId = currentTrack.trackId
-            _currentTrack.value = currentTrack // Обновляем текущий трек с новым статусом
+
+            // Создаём обновлённую версию трека с актуальным статусом
+            val updatedTrack = currentTrack.copy(isFavorite = !isFavoriteNow)
+            _currentTrack.value = updatedTrack
+
+            Log.d("AudioPlayerViewModel", "Статус избранного обновлён для трека: ${currentTrack.trackName}")
         } catch (e: Exception) {
             Log.e("AudioPlayerViewModel", "Ошибка работы с избранным", e)
+            // Дополнительно можно оповестить UI об ошибке через LiveData
+            _uiState.postValue(_uiState.value?.copy(error = e))
         }
     }
 
+
+    fun checkTrackFavoriteStatus(trackId: String) = viewModelScope.launch {
+        try {
+            val isFavorite = isTrackFavoriteUseCase(trackId)
+            _isFavorite.postValue(isFavorite)
+        } catch (e: Exception) {
+            Log.e("AudioPlayerViewModel", "Ошибка проверки статуса избранного", e)
+        }
+    }
 
     fun restorePlaybackState(isPlaying: Boolean, savedPosition: Long) {
         _uiState.value = PlayerUiState(
