@@ -42,10 +42,9 @@ class FavoriteTracksRepositoryImpl(
             country = null,
             trackTimeMillis = null,
             previewUrl = null,
-            addedDate = System.currentTimeMillis() // Добавляем обязательное поле
+            addedDate = System.currentTimeMillis()
         ))
     }
-
 
     override fun getFavoriteTracks(): Flow<List<Track>> {
         return dao.getAllFavoriteTracks().map { entities ->

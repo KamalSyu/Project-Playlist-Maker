@@ -2,7 +2,6 @@ package com.practicum.playlistmaker.core.models
 
 import com.practicum.playlistmaker.search.ui.parcel.ParcelableTrack
 
-
 fun Track.toParcelable(): ParcelableTrack {
     return ParcelableTrack(
         trackId = trackId,

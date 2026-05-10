@@ -69,7 +69,7 @@ class SearchViewModel(
                 }
                 .collect { result ->
                     _screenState.value = result.fold(
-                        onSuccess = { tracks: List<Track> -> // ← Получаем List<Track>, а не SearchResponse
+                        onSuccess = { tracks: List<Track> ->
                             filteredTracks = tracks
                             ScreenState.Results(
                                 SearchState.Results(tracks),
@@ -186,7 +186,6 @@ class SearchViewModel(
     }
 }
 
-// === Состояния экрана ===
 sealed class ScreenState {
     object Initial : ScreenState()
     object Loading : ScreenState()

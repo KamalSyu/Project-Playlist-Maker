@@ -159,7 +159,6 @@ class SearchFragment : Fragment() {
         if (savedInstanceState != null) {
             searchQuery = savedInstanceState.getString(SEARCH_QUERY_KEY, "")
             searchEditText.setText(searchQuery)
-            // Восстанавливаем видимость ProgressBar
             if (savedInstanceState.getBoolean("isLoading", false)) {
                 showLoading()
             }

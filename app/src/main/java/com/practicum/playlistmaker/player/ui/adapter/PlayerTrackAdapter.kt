@@ -62,12 +62,6 @@ class PlayerTrackAdapter(
 
     override fun getItemCount(): Int = tracks.size
 
-    fun updateList(newTracks: List<Track>) {
-        tracks.clear()
-        tracks.addAll(newTracks)
-        notifyDataSetChanged()
-    }
-
     fun notifyDataSetChangedWithState(
         isPlaying: Boolean,
         currentTimeMillis: Long,

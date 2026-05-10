@@ -88,7 +88,6 @@ class AudioPlayerFragment : Fragment() {
             adapter.updateFavoriteStateForTrack(track.trackId, isFavorite)
         }
 
-
         viewModel.setupPlaybackCompletionListener()
         if (savedInstanceState == null) {
             viewModel.initPlayback(track.previewUrl)

@@ -37,6 +37,5 @@ class FavoriteTracksViewModel(
             _state.postValue(State.Error("Не удалось загрузить избранные треки"))
         }
     }
-
 }
 

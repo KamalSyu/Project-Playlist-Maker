@@ -33,7 +33,6 @@ import com.practicum.playlistmaker.core.utils.DateFormatter
 import com.practicum.playlistmaker.core.utils.FormatTrackDurationUseCase
 import com.practicum.playlistmaker.creator.domain.TrackFactory
 import com.practicum.playlistmaker.mediateka.ui.view.FavoriteTracksViewModel
-import com.practicum.playlistmaker.mediateka.ui.view.FragmentFavoritesViewModel
 import com.practicum.playlistmaker.mediateka.ui.view.FragmentPlaylistsViewModel
 import com.practicum.playlistmaker.player.data.db.AppDatabase
 import com.practicum.playlistmaker.player.ui.view.AudioPlayerViewModel
@@ -86,7 +85,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import org.koin.dsl.module
 
 val appModule = module {
-    // 1. Базовые компоненты (без зависимостей)
+    // 1. Базовые компоненты
     single<Context> { get<Application>().applicationContext }
 
     single<SharedPreferences> {
@@ -107,22 +106,22 @@ val appModule = module {
 
     single<ItunesApi> { get<Retrofit>().create(ItunesApi::class.java) }
 
-    // 2. Утилиты (без внешних зависимостей)
+    // 2. Утилиты
     single<DelayProvider> { CoroutineDelayProvider() }
     single { DateFormatter() }
     single<FormatTrackDurationUseCaseContract> { FormatTrackDurationUseCase() }
 
-    // 3. Фабрики и базовые мапперы (без зависимостей)
+    // 3. Фабрики и базовые мапперы
     single { TrackFactory() }
     single { ThemeSettingsMapper() }
     single { TrackParcelableMapper() }
 
-    // 4. Мапперы с зависимостями (регистрируются после базовых компонентов)
+    // 4. Мапперы с зависимостями
     single { TrackMapper(get()) }
     single { SearchResponseMapper(get()) }
     single { SearchHistoryMapper(get()) }
 
-    // 5. Репозитории (регистрируются после всех своих зависимостей)
+    // 5. Репозитории
     single<PlayerRepository> { PlayerRepositoryImpl() }
 
     single<SettingsRepository> {
@@ -157,7 +156,7 @@ val appModule = module {
         )
     }
 
-    // 6. UseCases (регистрируются после репозиториев и мапперов)
+    // 6. UseCases
     // UseCases поиска
     factory<SearchTracksUseCaseContract> { SearchTracksUseCase(get()) }
     factory<AddTrackToHistoryUseCaseContract> { AddTrackToHistoryUseCase(get()) }
@@ -188,7 +187,7 @@ val appModule = module {
     factory<GetFavoriteTracksUseCaseContract> { GetFavoriteTracksUseCase(get()) }
     factory<IsTrackFavoriteUseCaseContract> { IsTrackFavoriteUseCase(get()) }
 
-    // 7. ViewModel (регистрируются последними, после всех UseCases)
+    // 7. ViewModel
     viewModel { SearchViewModel(
         searchTracksUseCase = get(),
         addTrackToHistoryUseCase = get(),
@@ -220,7 +219,6 @@ val appModule = module {
         sendSupportEmailUseCase = get()
     ) }
 
-    // Добавляем ViewModel для фрагментов медиатеки
     viewModel { FragmentPlaylistsViewModel() }
 
     viewModel { FavoriteTracksViewModel(

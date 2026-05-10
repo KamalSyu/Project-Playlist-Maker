@@ -15,7 +15,6 @@ import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.core.models.toParcelable
 import com.practicum.playlistmaker.mediateka.ui.adapter.FavoriteTrackAdapter
 import com.practicum.playlistmaker.mediateka.ui.view.FavoriteTracksViewModel
-import com.practicum.playlistmaker.player.ui.adapter.PlayerTrackAdapter
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -27,7 +26,6 @@ class FragmentFavorites : Fragment() {
     private lateinit var favoritesRecyclerView: RecyclerView
     private lateinit var adapter: FavoriteTrackAdapter
 
-    // Внедряем UseCase для форматирования длительности трека через Koin
     private val formatDurationUseCase: FormatTrackDurationUseCaseContract by inject()
 
     override fun onCreateView(
@@ -50,13 +48,15 @@ class FragmentFavorites : Fragment() {
 
     private fun setupRecyclerView() {
         adapter = FavoriteTrackAdapter(
-            tracks = mutableListOf(),
             onTrackClick = { track -> navigateToAudioPlayer(track) },
             formatDurationUseCase = formatDurationUseCase
         )
         favoritesRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         favoritesRecyclerView.adapter = adapter
+        // Сразу можно передать пустой список, если нужно
+        adapter.submitList(emptyList())
     }
+
 
 
     private fun observeViewModel() {
@@ -77,7 +77,7 @@ class FragmentFavorites : Fragment() {
     private fun showFavoritesList(tracks: List<Track>) {
         emptyStateLayout.visibility = View.GONE
         favoritesRecyclerView.visibility = View.VISIBLE
-        adapter.updateList(tracks)
+        adapter.submitList(tracks)
     }
 
     private fun navigateToAudioPlayer(track: Track) {
@@ -94,7 +94,6 @@ class FragmentFavorites : Fragment() {
             findNavController().navigate(R.id.audioPlayerFragment, bundle)
         } catch (e: Exception) {
             Log.e("Navigation", "Failed to navigate to audio player", e)
-            // Обработка ошибки: показать сообщение пользователю
         }
     }
 

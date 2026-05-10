@@ -7,7 +7,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 
-
 class GetSearchHistoryUseCase(
     private val historyRepository: HistoryRepository
 ) : GetSearchHistoryUseCaseContract {
