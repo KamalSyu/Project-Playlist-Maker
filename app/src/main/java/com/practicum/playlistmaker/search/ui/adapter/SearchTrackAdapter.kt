@@ -5,13 +5,13 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.core.models.Track
-import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContract
+import com.practicum.playlistmaker.core.utils.FormatTrackDurationUseCase
 import com.practicum.playlistmaker.search.ui.view.TrackViewHolder
 
 class SearchTrackAdapter(
     private var tracks: List<Track> = emptyList(),
     private var onTrackClick: (Track) -> Unit = {},
-    private val formatDurationUseCase: FormatTrackDurationUseCaseContract
+    private val formatDurationUseCase: FormatTrackDurationUseCase
 ) : RecyclerView.Adapter<SearchTrackAdapter.SearchViewHolder>() {
 
     var isPlaying: Boolean = false

@@ -1,11 +1,11 @@
-package com.practicum.playlistmaker.player.domain.usecase
+package com.practicum.playlistmaker.player.domain.usecase.playback
 
 import com.practicum.playlistmaker.core.contract.GetCurrentPositionUseCaseContract
 import com.practicum.playlistmaker.player.domain.repository.PlayerRepository
 
-class GetCurrentPositionUseCase  (
+class GetCurrentPositionUseCaseImpl  (
     private val playerRepository: PlayerRepository
-) : GetCurrentPositionUseCaseContract {
+) : GetCurrentPositionUseCase {
 
     override operator fun invoke(): Long {
         return playerRepository.getCurrentPosition()

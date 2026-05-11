@@ -6,19 +6,19 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.practicum.playlistmaker.core.constants.Constants
-import com.practicum.playlistmaker.core.contract.AddToFavoritesUseCaseContract
-import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContract
-import com.practicum.playlistmaker.core.contract.GetCurrentPositionUseCaseContract
-import com.practicum.playlistmaker.core.contract.IsTrackFavoriteUseCaseContract
-import com.practicum.playlistmaker.core.contract.PreparePlaybackUseCaseContract
-import com.practicum.playlistmaker.core.contract.RemoveFromFavoritesUseCaseContract
-import com.practicum.playlistmaker.core.contract.ResetPlaybackUseCaseContract
-import com.practicum.playlistmaker.core.contract.SetPlaybackCompletionListenerUseCaseContract
-import com.practicum.playlistmaker.core.contract.StopPlaybackUseCaseContract
-import com.practicum.playlistmaker.core.contract.TogglePlaybackUseCaseContract
 import com.practicum.playlistmaker.core.models.Track
+import com.practicum.playlistmaker.core.utils.FormatTrackDurationUseCase
 import com.practicum.playlistmaker.player.data.mapper.TrackParcelableMapper
 import com.practicum.playlistmaker.player.domain.model.PlaybackState
+import com.practicum.playlistmaker.player.domain.usecase.favorite.AddToFavoritesUseCase
+import com.practicum.playlistmaker.player.domain.usecase.favorite.IsTrackFavoriteUseCase
+import com.practicum.playlistmaker.player.domain.usecase.favorite.RemoveFromFavoritesUseCase
+import com.practicum.playlistmaker.player.domain.usecase.playback.GetCurrentPositionUseCase
+import com.practicum.playlistmaker.player.domain.usecase.playback.PreparePlaybackUseCase
+import com.practicum.playlistmaker.player.domain.usecase.playback.ResetPlaybackUseCase
+import com.practicum.playlistmaker.player.domain.usecase.playback.SetPlaybackCompletionListenerUseCase
+import com.practicum.playlistmaker.player.domain.usecase.playback.StopPlaybackUseCase
+import com.practicum.playlistmaker.player.domain.usecase.playback.TogglePlaybackUseCase
 import com.practicum.playlistmaker.player.ui.PlayerUiState
 import com.practicum.playlistmaker.search.ui.parcel.ParcelableTrack
 import kotlinx.coroutines.Job
@@ -27,17 +27,17 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 class AudioPlayerViewModel(
-    private val preparePlaybackUseCase: PreparePlaybackUseCaseContract,
-    private val togglePlaybackUseCase: TogglePlaybackUseCaseContract,
-    private val stopPlaybackUseCase: StopPlaybackUseCaseContract,
-    private val getCurrentPositionUseCase: GetCurrentPositionUseCaseContract,
-    private val setCompletionListenerUseCase: SetPlaybackCompletionListenerUseCaseContract,
-    private val resetPlaybackUseCase: ResetPlaybackUseCaseContract,
-    val formatTrackDurationUseCase: FormatTrackDurationUseCaseContract,
+    private val preparePlaybackUseCase: PreparePlaybackUseCase,
+    private val togglePlaybackUseCase: TogglePlaybackUseCase,
+    private val stopPlaybackUseCase: StopPlaybackUseCase,
+    private val getCurrentPositionUseCase: GetCurrentPositionUseCase,
+    private val setCompletionListenerUseCase: SetPlaybackCompletionListenerUseCase,
+    private val resetPlaybackUseCase: ResetPlaybackUseCase,
+    val formatTrackDurationUseCase: FormatTrackDurationUseCase,
     private val trackParcelableMapper: TrackParcelableMapper,
-    private val addToFavoritesUseCase: AddToFavoritesUseCaseContract,
-    private val removeFromFavoritesUseCase: RemoveFromFavoritesUseCaseContract,
-    private val isTrackFavoriteUseCase: IsTrackFavoriteUseCaseContract
+    private val addToFavoritesUseCase: AddToFavoritesUseCase,
+    private val removeFromFavoritesUseCase: RemoveFromFavoritesUseCase,
+    private val isTrackFavoriteUseCase: IsTrackFavoriteUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableLiveData<PlayerUiState>(

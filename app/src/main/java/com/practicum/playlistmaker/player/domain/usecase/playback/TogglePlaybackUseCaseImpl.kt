@@ -1,11 +1,11 @@
-package com.practicum.playlistmaker.player.domain.usecase
+package com.practicum.playlistmaker.player.domain.usecase.playback
 
 import com.practicum.playlistmaker.core.contract.TogglePlaybackUseCaseContract
 import com.practicum.playlistmaker.player.domain.repository.PlayerRepository
 
-class TogglePlaybackUseCase (
+class TogglePlaybackUseCaseImpl (
     private val playerRepository: PlayerRepository
-) : TogglePlaybackUseCaseContract {
+) : TogglePlaybackUseCase {
 
     override suspend operator fun invoke(seekPosition: Long?): Result<Boolean> {
         return try {

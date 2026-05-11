@@ -6,31 +6,11 @@ import android.content.SharedPreferences
 import androidx.room.Room
 import com.google.gson.Gson
 import com.practicum.playlistmaker.core.constants.Constants
-import com.practicum.playlistmaker.core.contract.AddToFavoritesUseCaseContract
-import com.practicum.playlistmaker.core.contract.AddTrackToHistoryUseCaseContract
-import com.practicum.playlistmaker.core.contract.ClearSearchHistoryUseCaseContract
-import com.practicum.playlistmaker.core.contract.DelayProvider
-import com.practicum.playlistmaker.core.contract.DelayedTrackActionUseCaseContract
-import com.practicum.playlistmaker.core.contract.FilterTracksUseCaseContract
-import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContract
-import com.practicum.playlistmaker.core.contract.GetCurrentPositionUseCaseContract
-import com.practicum.playlistmaker.core.contract.GetFavoriteTracksUseCaseContract
-import com.practicum.playlistmaker.core.contract.GetSearchHistoryUseCaseContract
-import com.practicum.playlistmaker.core.contract.GetThemeStateUseCaseContract
-import com.practicum.playlistmaker.core.contract.IsTrackFavoriteUseCaseContract
-import com.practicum.playlistmaker.core.contract.PreparePlaybackUseCaseContract
-import com.practicum.playlistmaker.core.contract.RemoveFromFavoritesUseCaseContract
-import com.practicum.playlistmaker.core.contract.ResetPlaybackUseCaseContract
-import com.practicum.playlistmaker.core.contract.SearchTracksUseCaseContract
-import com.practicum.playlistmaker.core.contract.SendSupportEmailUseCaseContract
-import com.practicum.playlistmaker.core.contract.SetPlaybackCompletionListenerUseCaseContract
-import com.practicum.playlistmaker.core.contract.ShareAppUseCaseContract
-import com.practicum.playlistmaker.core.contract.StopPlaybackUseCaseContract
-import com.practicum.playlistmaker.core.contract.SwitchThemeUseCaseContract
-import com.practicum.playlistmaker.core.contract.TogglePlaybackUseCaseContract
 import com.practicum.playlistmaker.core.utils.CoroutineDelayProvider
 import com.practicum.playlistmaker.core.utils.DateFormatter
+import com.practicum.playlistmaker.core.utils.DelayProvider
 import com.practicum.playlistmaker.core.utils.FormatTrackDurationUseCase
+import com.practicum.playlistmaker.core.utils.FormatTrackDurationUseCaseImpl
 import com.practicum.playlistmaker.creator.domain.TrackFactory
 import com.practicum.playlistmaker.mediateka.ui.view.FavoriteTracksViewModel
 import com.practicum.playlistmaker.mediateka.ui.view.FragmentPlaylistsViewModel
@@ -48,36 +28,56 @@ import com.practicum.playlistmaker.player.data.mapper.TrackParcelableMapper
 import com.practicum.playlistmaker.player.data.repository.FavoriteTracksRepositoryImpl
 import com.practicum.playlistmaker.player.domain.repository.FavoriteTracksRepository
 import com.practicum.playlistmaker.player.domain.repository.PlayerRepository
-import com.practicum.playlistmaker.player.domain.usecase.AddToFavoritesUseCase
-import com.practicum.playlistmaker.player.domain.usecase.DelayedTrackActionUseCase
-import com.practicum.playlistmaker.player.domain.usecase.GetCurrentPositionUseCase
-import com.practicum.playlistmaker.player.domain.usecase.GetFavoriteTracksUseCase
-import com.practicum.playlistmaker.player.domain.usecase.IsTrackFavoriteUseCase
-import com.practicum.playlistmaker.player.domain.usecase.PreparePlaybackUseCase
-import com.practicum.playlistmaker.player.domain.usecase.RemoveFromFavoritesUseCase
-import com.practicum.playlistmaker.player.domain.usecase.ResetPlaybackUseCase
-import com.practicum.playlistmaker.player.domain.usecase.SetPlaybackCompletionListenerUseCase
-import com.practicum.playlistmaker.player.domain.usecase.StopPlaybackUseCase
-import com.practicum.playlistmaker.player.domain.usecase.TogglePlaybackUseCase
+import com.practicum.playlistmaker.player.domain.usecase.favorite.AddToFavoritesUseCase
+import com.practicum.playlistmaker.player.domain.usecase.favorite.AddToFavoritesUseCaseImpl
+import com.practicum.playlistmaker.player.domain.usecase.favorite.GetFavoriteTracksUseCase
+import com.practicum.playlistmaker.player.domain.usecase.utils.DelayedTrackActionUseCaseImpl
+import com.practicum.playlistmaker.player.domain.usecase.playback.GetCurrentPositionUseCaseImpl
+import com.practicum.playlistmaker.player.domain.usecase.favorite.GetFavoriteTracksUseCaseImpl
+import com.practicum.playlistmaker.player.domain.usecase.favorite.IsTrackFavoriteUseCase
+import com.practicum.playlistmaker.player.domain.usecase.favorite.IsTrackFavoriteUseCaseImpl
+import com.practicum.playlistmaker.player.domain.usecase.favorite.RemoveFromFavoritesUseCase
+import com.practicum.playlistmaker.player.domain.usecase.playback.PreparePlaybackUseCaseImpl
+import com.practicum.playlistmaker.player.domain.usecase.favorite.RemoveFromFavoritesUseCaseImpl
+import com.practicum.playlistmaker.player.domain.usecase.playback.GetCurrentPositionUseCase
+import com.practicum.playlistmaker.player.domain.usecase.playback.PreparePlaybackUseCase
+import com.practicum.playlistmaker.player.domain.usecase.playback.ResetPlaybackUseCase
+import com.practicum.playlistmaker.player.domain.usecase.playback.ResetPlaybackUseCaseImpl
+import com.practicum.playlistmaker.player.domain.usecase.playback.SetPlaybackCompletionListenerUseCase
+import com.practicum.playlistmaker.player.domain.usecase.playback.SetPlaybackCompletionListenerUseCaseImpl
+import com.practicum.playlistmaker.player.domain.usecase.playback.StopPlaybackUseCase
+import com.practicum.playlistmaker.player.domain.usecase.playback.StopPlaybackUseCaseImpl
+import com.practicum.playlistmaker.player.domain.usecase.playback.TogglePlaybackUseCase
+import com.practicum.playlistmaker.player.domain.usecase.playback.TogglePlaybackUseCaseImpl
+import com.practicum.playlistmaker.player.domain.usecase.utils.DelayedTrackActionUseCase
 import com.practicum.playlistmaker.search.data.mapper.SearchHistoryMapper
 import com.practicum.playlistmaker.search.data.mapper.SearchResponseMapper
 import com.practicum.playlistmaker.search.data.mapper.TrackMapper
 import com.practicum.playlistmaker.search.domain.repository.HistoryRepository
 import com.practicum.playlistmaker.search.domain.repository.ItunesRepository
-import com.practicum.playlistmaker.search.domain.usecase.AddTrackToHistoryUseCase
-import com.practicum.playlistmaker.search.domain.usecase.ClearSearchHistoryUseCase
-import com.practicum.playlistmaker.search.domain.usecase.FilterTracksUseCase
-import com.practicum.playlistmaker.search.domain.usecase.GetSearchHistoryUseCase
-import com.practicum.playlistmaker.search.domain.usecase.SearchTracksUseCase
+import com.practicum.playlistmaker.search.domain.usecase.history.AddTrackToHistoryUseCase
+import com.practicum.playlistmaker.search.domain.usecase.history.AddTrackToHistoryUseCaseImpl
+import com.practicum.playlistmaker.search.domain.usecase.history.ClearSearchHistoryUseCase
+import com.practicum.playlistmaker.search.domain.usecase.history.ClearSearchHistoryUseCaseImpl
+import com.practicum.playlistmaker.search.domain.usecase.history.GetSearchHistoryUseCase
+import com.practicum.playlistmaker.search.domain.usecase.search.FilterTracksUseCaseImpl
+import com.practicum.playlistmaker.search.domain.usecase.history.GetSearchHistoryUseCaseImpl
+import com.practicum.playlistmaker.search.domain.usecase.search.FilterTracksUseCase
+import com.practicum.playlistmaker.search.domain.usecase.search.SearchTracksUseCase
+import com.practicum.playlistmaker.search.domain.usecase.search.SearchTracksUseCaseImpl
 import com.practicum.playlistmaker.search.ui.view.SearchViewModel
 import com.practicum.playlistmaker.settings.domain.repository.SettingsRepository
 import com.practicum.playlistmaker.settings.domain.usecase.GetThemeStateUseCase
+import com.practicum.playlistmaker.settings.domain.usecase.GetThemeStateUseCaseImpl
 import com.practicum.playlistmaker.settings.domain.usecase.SwitchThemeUseCase
+import com.practicum.playlistmaker.settings.domain.usecase.SwitchThemeUseCaseImpl
 import com.practicum.playlistmaker.settings.ui.view.SettingsViewModel
 import com.practicum.playlistmaker.sharing.domain.provider.ShareTextProvider
 import com.practicum.playlistmaker.sharing.domain.provider.SupportEmailDataProvider
 import com.practicum.playlistmaker.sharing.domain.usecase.SendSupportEmailUseCase
+import com.practicum.playlistmaker.sharing.domain.usecase.SendSupportEmailUseCaseImpl
 import com.practicum.playlistmaker.sharing.domain.usecase.ShareAppUseCase
+import com.practicum.playlistmaker.sharing.domain.usecase.ShareAppUseCaseImpl
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import retrofit2.Retrofit
@@ -109,7 +109,7 @@ val appModule = module {
     // 2. Утилиты
     single<DelayProvider> { CoroutineDelayProvider() }
     single { DateFormatter() }
-    single<FormatTrackDurationUseCaseContract> { FormatTrackDurationUseCase() }
+    single<FormatTrackDurationUseCase> { FormatTrackDurationUseCaseImpl() }
 
     // 3. Фабрики и базовые мапперы
     single { TrackFactory() }
@@ -158,34 +158,34 @@ val appModule = module {
 
     // 6. UseCases
     // UseCases поиска
-    factory<SearchTracksUseCaseContract> { SearchTracksUseCase(get()) }
-    factory<AddTrackToHistoryUseCaseContract> { AddTrackToHistoryUseCase(get()) }
-    factory<ClearSearchHistoryUseCaseContract> { ClearSearchHistoryUseCase(get()) }
-    factory<GetSearchHistoryUseCaseContract> { GetSearchHistoryUseCase(get()) }
-    factory<FilterTracksUseCaseContract> { FilterTracksUseCase() }
+    factory<SearchTracksUseCase> { SearchTracksUseCaseImpl(get()) }
+    factory<AddTrackToHistoryUseCase> { AddTrackToHistoryUseCaseImpl(get()) }
+    factory<ClearSearchHistoryUseCase> { ClearSearchHistoryUseCaseImpl(get()) }
+    factory<GetSearchHistoryUseCase> { GetSearchHistoryUseCaseImpl(get()) }
+    factory<FilterTracksUseCase> { FilterTracksUseCaseImpl() }
 
     // UseCases плеера
-    factory<PreparePlaybackUseCaseContract> { PreparePlaybackUseCase(get()) }
-    factory<TogglePlaybackUseCaseContract> { TogglePlaybackUseCase(get()) }
-    factory<StopPlaybackUseCaseContract> { StopPlaybackUseCase(get()) }
-    factory<GetCurrentPositionUseCaseContract> { GetCurrentPositionUseCase(get()) }
-    factory<SetPlaybackCompletionListenerUseCaseContract> { SetPlaybackCompletionListenerUseCase(get()) }
-    factory<DelayedTrackActionUseCaseContract> { DelayedTrackActionUseCase(get()) }
-    factory<ResetPlaybackUseCaseContract> { ResetPlaybackUseCase(get()) }
+    factory<PreparePlaybackUseCase> { PreparePlaybackUseCaseImpl(get()) }
+    factory<TogglePlaybackUseCase> { TogglePlaybackUseCaseImpl(get()) }
+    factory<StopPlaybackUseCase> { StopPlaybackUseCaseImpl(get()) }
+    factory<GetCurrentPositionUseCase> { GetCurrentPositionUseCaseImpl(get()) }
+    factory<SetPlaybackCompletionListenerUseCase> { SetPlaybackCompletionListenerUseCaseImpl(get()) }
+    factory<DelayedTrackActionUseCase> { DelayedTrackActionUseCaseImpl(get()) }
+    factory<ResetPlaybackUseCase> { ResetPlaybackUseCaseImpl(get()) }
 
     // UseCases настроек
-    factory<GetThemeStateUseCaseContract> { GetThemeStateUseCase(get()) }
-    factory<SwitchThemeUseCaseContract> { SwitchThemeUseCase(get()) }
+    factory<GetThemeStateUseCase> { GetThemeStateUseCaseImpl(get()) }
+    factory<SwitchThemeUseCase> { SwitchThemeUseCaseImpl(get()) }
 
     // UseCases шаринга
-    factory<ShareAppUseCaseContract> { ShareAppUseCase(get()) }
-    factory<SendSupportEmailUseCaseContract> { SendSupportEmailUseCase(get()) }
+    factory<ShareAppUseCase> { ShareAppUseCaseImpl(get()) }
+    factory<SendSupportEmailUseCase> { SendSupportEmailUseCaseImpl(get()) }
 
     // UseCases избранного
-    factory<AddToFavoritesUseCaseContract> { AddToFavoritesUseCase(get()) }
-    factory<RemoveFromFavoritesUseCaseContract> { RemoveFromFavoritesUseCase(get()) }
-    factory<GetFavoriteTracksUseCaseContract> { GetFavoriteTracksUseCase(get()) }
-    factory<IsTrackFavoriteUseCaseContract> { IsTrackFavoriteUseCase(get()) }
+    factory<AddToFavoritesUseCase> { AddToFavoritesUseCaseImpl(get()) }
+    factory<RemoveFromFavoritesUseCase> { RemoveFromFavoritesUseCaseImpl(get()) }
+    factory<GetFavoriteTracksUseCase> { GetFavoriteTracksUseCaseImpl(get()) }
+    factory<IsTrackFavoriteUseCase> { IsTrackFavoriteUseCaseImpl(get()) }
 
     // 7. ViewModel
     viewModel { SearchViewModel(

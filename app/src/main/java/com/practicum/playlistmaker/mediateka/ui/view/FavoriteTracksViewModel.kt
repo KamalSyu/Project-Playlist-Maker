@@ -4,12 +4,12 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.practicum.playlistmaker.core.contract.GetFavoriteTracksUseCaseContract
 import com.practicum.playlistmaker.core.models.Track
+import com.practicum.playlistmaker.player.domain.usecase.favorite.GetFavoriteTracksUseCase
 import kotlinx.coroutines.launch
 
 class FavoriteTracksViewModel(
-    private val getFavoriteTracksUseCase: GetFavoriteTracksUseCaseContract
+    private val getFavoriteTracksUseCase: GetFavoriteTracksUseCase
 ) : ViewModel() {
 
     sealed class State {

@@ -1,11 +1,11 @@
-package com.practicum.playlistmaker.player.domain.usecase
+package com.practicum.playlistmaker.player.domain.usecase.playback
 
 import com.practicum.playlistmaker.core.contract.ResetPlaybackUseCaseContract
 import com.practicum.playlistmaker.player.domain.repository.PlayerRepository
 
-class ResetPlaybackUseCase (
+class ResetPlaybackUseCaseImpl (
     private val playerRepository: PlayerRepository
-) : ResetPlaybackUseCaseContract {
+) : ResetPlaybackUseCase {
 
     override suspend operator fun invoke() {
         playerRepository.reset()

@@ -1,11 +1,11 @@
-package com.practicum.playlistmaker.player.domain.usecase
+package com.practicum.playlistmaker.player.domain.usecase.playback
 
 import com.practicum.playlistmaker.core.contract.PreparePlaybackUseCaseContract
 import com.practicum.playlistmaker.player.domain.repository.PlayerRepository
 
-class PreparePlaybackUseCase (
+class PreparePlaybackUseCaseImpl (
     private val playerRepository: PlayerRepository
-) : PreparePlaybackUseCaseContract {
+) : PreparePlaybackUseCase {
 
     override suspend operator fun invoke(previewUrl: String?): Result<Unit> {
         return try {

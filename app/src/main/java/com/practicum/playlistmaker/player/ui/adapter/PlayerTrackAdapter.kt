@@ -5,7 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.core.models.Track
-import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContract
+import com.practicum.playlistmaker.core.utils.FormatTrackDurationUseCase
 import com.practicum.playlistmaker.player.ui.view.AlbumViewHolder
 
 class PlayerTrackAdapter(
@@ -13,7 +13,7 @@ class PlayerTrackAdapter(
     private var onClickPlayButton: (Track) -> Unit = {},
     private var onAddToPlaylist: (Track) -> Unit = {},
     private var onFavorite: (Track) -> Unit = {},
-    private val formatDurationUseCase: FormatTrackDurationUseCaseContract
+    private val formatDurationUseCase: FormatTrackDurationUseCase
 ) : RecyclerView.Adapter<PlayerTrackAdapter.PlayerViewHolder>() {
 
     var isPlaying: Boolean = false

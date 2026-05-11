@@ -1,11 +1,11 @@
-package com.practicum.playlistmaker.player.domain.usecase
+package com.practicum.playlistmaker.player.domain.usecase.playback
 
 import com.practicum.playlistmaker.core.contract.SetPlaybackCompletionListenerUseCaseContract
 import com.practicum.playlistmaker.player.domain.repository.PlayerRepository
 
-class SetPlaybackCompletionListenerUseCase (
+class SetPlaybackCompletionListenerUseCaseImpl (
     private val playerRepository: PlayerRepository
-) : SetPlaybackCompletionListenerUseCaseContract {
+) : SetPlaybackCompletionListenerUseCase {
 
     override suspend fun invoke(onCompletion: () -> Unit) {
         playerRepository.setOnCompletionListener(onCompletion)

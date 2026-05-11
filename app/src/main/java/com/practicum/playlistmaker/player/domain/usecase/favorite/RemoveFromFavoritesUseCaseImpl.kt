@@ -1,11 +1,10 @@
-package com.practicum.playlistmaker.player.domain.usecase
+package com.practicum.playlistmaker.player.domain.usecase.favorite
 
-import com.practicum.playlistmaker.core.contract.RemoveFromFavoritesUseCaseContract
 import com.practicum.playlistmaker.player.domain.repository.FavoriteTracksRepository
 
-class RemoveFromFavoritesUseCase(
+class RemoveFromFavoritesUseCaseImpl(
     private val favoriteTracksRepository: FavoriteTracksRepository
-) : RemoveFromFavoritesUseCaseContract {
+) : RemoveFromFavoritesUseCase {
 
     override suspend operator fun invoke(trackId: String): Result<Unit> {
         return try {

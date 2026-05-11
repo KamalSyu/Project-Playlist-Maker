@@ -1,4 +1,4 @@
-package com.practicum.playlistmaker.search.domain.usecase
+package com.practicum.playlistmaker.search.domain.usecase.search
 
 import com.practicum.playlistmaker.core.contract.SearchTracksUseCaseContract
 import com.practicum.playlistmaker.core.models.Track
@@ -8,9 +8,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 
-class SearchTracksUseCase(
+class SearchTracksUseCaseImpl(
     private val itunesRepository: ItunesRepository
-) : SearchTracksUseCaseContract {
+) : SearchTracksUseCase {
 
     override fun invoke(query: String): Flow<Result<List<Track>>> =
         itunesRepository.search(query)
@@ -21,4 +21,3 @@ class SearchTracksUseCase(
             }
             .flowOn(Dispatchers.IO)
 }
-

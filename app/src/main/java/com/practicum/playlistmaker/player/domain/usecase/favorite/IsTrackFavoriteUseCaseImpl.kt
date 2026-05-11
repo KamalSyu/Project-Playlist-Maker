@@ -1,11 +1,10 @@
-package com.practicum.playlistmaker.player.domain.usecase
+package com.practicum.playlistmaker.player.domain.usecase.favorite
 
-import com.practicum.playlistmaker.core.contract.IsTrackFavoriteUseCaseContract
 import com.practicum.playlistmaker.player.domain.repository.FavoriteTracksRepository
 
-class IsTrackFavoriteUseCase(
+class IsTrackFavoriteUseCaseImpl(
     private val favoriteTracksRepository: FavoriteTracksRepository
-) : IsTrackFavoriteUseCaseContract {
+) : IsTrackFavoriteUseCase {
 
     override suspend operator fun invoke(trackId: String): Boolean {
         return favoriteTracksRepository.isTrackFavorite(trackId)

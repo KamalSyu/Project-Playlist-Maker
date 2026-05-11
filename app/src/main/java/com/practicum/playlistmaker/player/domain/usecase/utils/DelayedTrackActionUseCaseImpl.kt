@@ -1,13 +1,11 @@
-package com.practicum.playlistmaker.player.domain.usecase
+package com.practicum.playlistmaker.player.domain.usecase.utils
 
-import com.practicum.playlistmaker.core.contract.DelayProvider
-import com.practicum.playlistmaker.core.contract.DelayedTrackActionUseCaseContract
 import com.practicum.playlistmaker.core.models.Track
+import com.practicum.playlistmaker.core.utils.DelayProvider
 
-
-class DelayedTrackActionUseCase (
+class DelayedTrackActionUseCaseImpl (
     private val delayProvider: DelayProvider
-) : DelayedTrackActionUseCaseContract {
+) : DelayedTrackActionUseCase {
 
     override suspend operator fun invoke(
         track: Track,

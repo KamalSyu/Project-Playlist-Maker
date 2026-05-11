@@ -10,9 +10,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.practicum.playlistmaker.R
-import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContract
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.core.utils.DateFormatter
+import com.practicum.playlistmaker.core.utils.FormatTrackDurationUseCase
 
 class AlbumViewHolder(
     itemView: View,
@@ -20,7 +20,7 @@ class AlbumViewHolder(
     private val onPlayButtonClick: (Track) -> Unit,
     private val onAddToPlaylistClick: (Track) -> Unit,
     private val onFavoriteClick: (Track) -> Unit,
-    private val formatDurationUseCase: FormatTrackDurationUseCaseContract
+    private val formatDurationUseCase: FormatTrackDurationUseCase
 ) : RecyclerView.ViewHolder(itemView) {
 
     private val albumImageView: ImageView = itemView.findViewById(R.id.album)
