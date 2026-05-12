@@ -9,10 +9,13 @@ import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import com.practicum.playlistmaker.R
-import com.practicum.playlistmaker.core.constants.Constants
 import com.practicum.playlistmaker.mediateka.ui.adapter.MediatekaViewPagerAdapter
 
 class MediatekaFragment : Fragment() {
+
+    companion object {
+        private const val SAVED_VIEWPAGER_POSITION = "saved_viewpager_position"
+    }
 
     private lateinit var viewPager: ViewPager2
     private var currentPosition: Int = 0
@@ -28,7 +31,7 @@ class MediatekaFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         if (savedInstanceState != null) {
-            currentPosition = savedInstanceState.getInt(Constants.SAVED_VIEWPAGER_POSITION, 0)
+            currentPosition = savedInstanceState.getInt(SAVED_VIEWPAGER_POSITION, 0)
         }
         setupViewPager(view)
         viewPager.setCurrentItem(currentPosition, false)
@@ -36,7 +39,7 @@ class MediatekaFragment : Fragment() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putInt(Constants.SAVED_VIEWPAGER_POSITION, currentPosition)
+        outState.putInt(SAVED_VIEWPAGER_POSITION, currentPosition)
     }
 
     private fun setupViewPager(view: View) {

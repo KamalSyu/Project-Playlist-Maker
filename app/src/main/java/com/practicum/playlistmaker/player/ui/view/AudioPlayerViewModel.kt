@@ -5,7 +5,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.practicum.playlistmaker.core.constants.Constants
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.core.utils.FormatTrackDurationUseCase
 import com.practicum.playlistmaker.player.data.mapper.TrackParcelableMapper
@@ -40,16 +39,18 @@ class AudioPlayerViewModel(
     private val isTrackFavoriteUseCase: IsTrackFavoriteUseCase
 ) : ViewModel() {
 
+    companion object {
+        private const val PROGRESS_UPDATE_INTERVAL_MS = 300L
+    }
+
     private val _uiState = MutableLiveData<PlayerUiState>(
         PlayerUiState(
             playbackState = PlaybackState(isPlaying = false, position = 0L),
             formattedTime = formatTrackDurationUseCase(0L),
-            playbackCompleted = false
+            playbackCompleted = false,
+            isFavorite = false
         )
     )
-
-    private val _isFavorite = MutableLiveData<Boolean>(false)
-    val isFavorite: LiveData<Boolean> = _isFavorite
 
     private var currentTrackId: String? = null
 
@@ -66,7 +67,7 @@ class AudioPlayerViewModel(
             } else {
                 addToFavoritesUseCase(currentTrack)
             }
-            _isFavorite.postValue(!isFavoriteNow)
+            _uiState.value = _uiState.value?.copy(isFavorite = !isFavoriteNow)
 
             val updatedTrack = currentTrack.copy(isFavorite = !isFavoriteNow)
             _currentTrack.value = updatedTrack
@@ -80,11 +81,12 @@ class AudioPlayerViewModel(
     fun checkTrackFavoriteStatus(trackId: String) = viewModelScope.launch {
         try {
             val isFavorite = isTrackFavoriteUseCase(trackId)
-            _isFavorite.postValue(isFavorite)
+            _uiState.value = _uiState.value?.copy(isFavorite = isFavorite)
         } catch (e: Exception) {
             Log.e("AudioPlayerViewModel", "Ошибка проверки статуса избранного", e)
         }
     }
+
 
     fun restorePlaybackState(isPlaying: Boolean, savedPosition: Long) {
         _uiState.value = PlayerUiState(
@@ -239,7 +241,7 @@ class AudioPlayerViewModel(
         stopPolling()
         pollingJob = viewModelScope.launch {
             while (isActive) {
-                delay(Constants.PROGRESS_UPDATE_INTERVAL_MS)
+                delay(PROGRESS_UPDATE_INTERVAL_MS)
                 try {
                     val currentPosition = getCurrentPositionUseCase()
                     val currentState = _uiState.value ?: return@launch

@@ -1,6 +1,5 @@
 package com.practicum.playlistmaker.search.domain.usecase.search
 
-import com.practicum.playlistmaker.core.contract.SearchTracksUseCaseContract
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.search.domain.repository.ItunesRepository
 import kotlinx.coroutines.Dispatchers

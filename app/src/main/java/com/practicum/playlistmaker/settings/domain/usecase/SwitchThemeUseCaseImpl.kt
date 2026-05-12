@@ -1,6 +1,5 @@
 package com.practicum.playlistmaker.settings.domain.usecase
 
-import com.practicum.playlistmaker.core.contract.SwitchThemeUseCaseContract
 import com.practicum.playlistmaker.settings.domain.model.ThemeSettings
 import com.practicum.playlistmaker.settings.domain.repository.SettingsRepository
 

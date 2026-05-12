@@ -16,7 +16,6 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.R
-import com.practicum.playlistmaker.core.constants.Constants
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.main.ui.MainActivity
 import com.practicum.playlistmaker.player.data.mapper.TrackParcelableMapper
@@ -29,6 +28,12 @@ import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class AudioPlayerFragment : Fragment() {
+
+    companion object {
+        private const val KEY_IS_PLAYING = "isPlaying"
+        private const val KEY_SAVED_POSITION = "savedPosition"
+        private const val TOOLBAR_AUTO_HIDE_DELAY_MS = 2000L
+    }
 
     private val viewModel: AudioPlayerViewModel by viewModel()
     private lateinit var recyclerViewAudioPlayer: RecyclerView
@@ -83,16 +88,12 @@ class AudioPlayerFragment : Fragment() {
             viewModel.checkTrackFavoriteStatus(trackId)
         }
 
-        viewModel.isFavorite.observe(viewLifecycleOwner) { isFavorite ->
-            adapter.updateFavoriteStateForTrack(track.trackId, isFavorite)
-        }
-
         viewModel.setupPlaybackCompletionListener()
         if (savedInstanceState == null) {
             viewModel.initPlayback(track.previewUrl)
         } else {
-            val isPlaying = savedInstanceState.getBoolean(Constants.KEY_IS_PLAYING)
-            val savedPosition = savedInstanceState.getLong(Constants.KEY_SAVED_POSITION)
+            val isPlaying = savedInstanceState.getBoolean(KEY_IS_PLAYING)
+            val savedPosition = savedInstanceState.getLong(KEY_SAVED_POSITION)
             viewModel.restorePlaybackState(isPlaying, savedPosition)
         }
     }
@@ -155,7 +156,16 @@ class AudioPlayerFragment : Fragment() {
             viewModel.clearError()
             return
         }
+
+        // Обновляем время воспроизведения
         adapter.updateCurrentTime(state.formattedTime)
+
+        // Передаём isFavorite из состояния в адаптер
+        track.trackId?.let { trackId ->
+            adapter.updateFavoriteStateForTrack(trackId, state.isFavorite)
+        }
+
+        // Обновляем состояние воспроизведения
         val isPlaying = state.playbackState.isPlaying
         if (lastKnownIsPlaying != isPlaying) {
             adapter.notifyDataSetChangedWithState(
@@ -168,11 +178,12 @@ class AudioPlayerFragment : Fragment() {
         lastKnownIsPlaying = isPlaying
     }
 
+
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         val currentState = viewModel.uiState.value?.playbackState ?: PlaybackState(false, 0L)
-        outState.putBoolean(Constants.KEY_IS_PLAYING, currentState.isPlaying)
-        outState.putLong(Constants.KEY_SAVED_POSITION, currentState.position)
+        outState.putBoolean(KEY_IS_PLAYING, currentState.isPlaying)
+        outState.putLong(KEY_SAVED_POSITION, currentState.position)
     }
 
     override fun onPause() {
@@ -221,7 +232,7 @@ class AudioPlayerFragment : Fragment() {
         activity.supportActionBar?.show()
 
         viewLifecycleOwner.lifecycleScope.launch {
-            delay(Constants.TOOLBAR_AUTO_HIDE_DELAY_MS)
+            delay(TOOLBAR_AUTO_HIDE_DELAY_MS)
             if (isResumed) {
                 toolbar.visibility = View.GONE
                 activity.supportActionBar?.hide()

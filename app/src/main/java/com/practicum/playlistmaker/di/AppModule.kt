@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.room.Room
 import com.google.gson.Gson
-import com.practicum.playlistmaker.core.constants.Constants
 import com.practicum.playlistmaker.core.utils.CoroutineDelayProvider
 import com.practicum.playlistmaker.core.utils.DateFormatter
 import com.practicum.playlistmaker.core.utils.DelayProvider
@@ -84,13 +83,15 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import org.koin.dsl.module
 
+private const val PREFERENCES = "play_maker_preferences"
+
 val appModule = module {
     // 1. Базовые компоненты
     single<Context> { get<Application>().applicationContext }
 
     single<SharedPreferences> {
         get<Context>().getSharedPreferences(
-            Constants.PREFERENCES,
+            PREFERENCES,
             Context.MODE_PRIVATE
         )
     }

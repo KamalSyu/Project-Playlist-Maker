@@ -1,6 +1,5 @@
 package com.practicum.playlistmaker.search.domain.usecase.history
 
-import com.practicum.playlistmaker.core.contract.GetSearchHistoryUseCaseContract
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.search.domain.repository.HistoryRepository
 import kotlinx.coroutines.Dispatchers

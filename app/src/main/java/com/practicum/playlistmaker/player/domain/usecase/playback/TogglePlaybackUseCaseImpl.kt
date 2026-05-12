@@ -1,6 +1,5 @@
 package com.practicum.playlistmaker.player.domain.usecase.playback
 
-import com.practicum.playlistmaker.core.contract.TogglePlaybackUseCaseContract
 import com.practicum.playlistmaker.player.domain.repository.PlayerRepository
 
 class TogglePlaybackUseCaseImpl (

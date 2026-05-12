@@ -1,6 +1,5 @@
 package com.practicum.playlistmaker.search.domain.usecase.search
 
-import com.practicum.playlistmaker.core.contract.FilterTracksUseCaseContract
 import com.practicum.playlistmaker.core.models.Track
 
 class FilterTracksUseCaseImpl () : FilterTracksUseCase {

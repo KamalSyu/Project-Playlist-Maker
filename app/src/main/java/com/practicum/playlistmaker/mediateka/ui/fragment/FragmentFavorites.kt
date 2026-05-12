@@ -10,9 +10,9 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.R
-import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContract
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.core.models.toParcelable
+import com.practicum.playlistmaker.core.utils.FormatTrackDurationUseCase
 import com.practicum.playlistmaker.mediateka.ui.adapter.FavoriteTrackAdapter
 import com.practicum.playlistmaker.mediateka.ui.view.FavoriteTracksViewModel
 import org.koin.android.ext.android.inject
@@ -26,7 +26,7 @@ class FragmentFavorites : Fragment() {
     private lateinit var favoritesRecyclerView: RecyclerView
     private lateinit var adapter: FavoriteTrackAdapter
 
-    private val formatDurationUseCase: FormatTrackDurationUseCaseContract by inject()
+    private val formatDurationUseCase: FormatTrackDurationUseCase by inject()
 
     override fun onCreateView(
         inflater: LayoutInflater,
