@@ -53,7 +53,7 @@ class AudioPlayerViewModel(
     )
 
     private var currentTrackId: String? = null
-
+    private var favoriteStatusJob: Job? = null
     private var pollingJob: Job? = null
     private val _currentTrack = MutableLiveData<Track>()
     val currentTrack: LiveData<Track> = _currentTrack
@@ -82,6 +82,7 @@ class AudioPlayerViewModel(
         try {
             val isFavorite = isTrackFavoriteUseCase(trackId)
             _uiState.value = _uiState.value?.copy(isFavorite = isFavorite)
+
         } catch (e: Exception) {
             Log.e("AudioPlayerViewModel", "Ошибка проверки статуса избранного", e)
         }
@@ -226,8 +227,11 @@ class AudioPlayerViewModel(
     }
 
     fun setCurrentTrack(track: Track) {
+        favoriteStatusJob?.cancel()
         _currentTrack.value = track
+        currentTrackId = track.trackId
     }
+
 
     fun startProgressUpdates() {
         startPolling()
@@ -262,4 +266,18 @@ class AudioPlayerViewModel(
         pollingJob?.cancel()
         pollingJob = null
     }
+
+    fun updateFavoriteStatusAfterTrackSet() {
+        favoriteStatusJob = viewModelScope.launch {
+            currentTrackId?.let { trackId ->
+                try {
+                    val isFavorite = isTrackFavoriteUseCase(trackId)
+                    _uiState.value = _uiState.value?.copy(isFavorite = isFavorite)
+                } catch (e: Exception) {
+                    Log.e("AudioPlayerViewModel", "Ошибка проверки статуса избранного", e)
+                }
+            }
+        }
+    }
+
 }

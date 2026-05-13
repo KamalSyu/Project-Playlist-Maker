@@ -72,6 +72,7 @@ class AudioPlayerFragment : Fragment() {
 
         track = getTrackFromIntent()
         viewModel.setCurrentTrack(track)
+        viewModel.updateFavoriteStatusAfterTrackSet()
 
         setupRecyclerView(track)
 
