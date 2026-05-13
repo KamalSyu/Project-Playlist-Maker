@@ -185,10 +185,15 @@ class SearchFragment : Fragment() {
                     updateHistoryVisibility()
                 }
                 ScreenState.Loading -> {
-                    showLoading()
-                    hideError()
-                    showNoResults(false)
+                    if (searchQuery.isNotEmpty() && searchEditText.hasFocus()) {
+                        showLoading()
+                        hideError()
+                        showNoResults(false)
+                    } else {
+                        hideLoading()
+                    }
                 }
+
                 is ScreenState.Idle -> {
                     hideLoading()
                     updateTracksList(emptyList())
@@ -278,14 +283,15 @@ class SearchFragment : Fragment() {
         val isEmptyQuery = searchEditText.text.isEmpty()
         val hasFocus = searchEditText.hasFocus()
         val hasHistory = historyAdapter.itemCount > 0
+        val shouldShowHistory = isEmptyQuery && hasFocus && hasHistory
 
-        historyRecyclerViewKit.visibility = if (isEmptyQuery && hasFocus && hasHistory) {
+        historyRecyclerViewKit.visibility = if (shouldShowHistory) {
             View.VISIBLE
         } else {
             View.GONE
         }
 
-        historyTitle.visibility = if (historyRecyclerViewKit.visibility == View.VISIBLE) {
+        historyTitle.visibility = if (shouldShowHistory) {
             View.VISIBLE
         } else {
             View.GONE
@@ -318,7 +324,7 @@ class SearchFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        updateUIWithCurrentState()
+//        updateUIWithCurrentState()
         updateHistoryVisibility()
     }
 
@@ -333,10 +339,15 @@ class SearchFragment : Fragment() {
                 updateHistoryVisibility()
             }
             ScreenState.Loading -> {
-                showLoading()
-                hideError()
-                showNoResults(false)
+                if (searchQuery.isNotEmpty() && searchEditText.hasFocus()) {
+                    showLoading()
+                    hideError()
+                    showNoResults(false)
+                } else {
+                    hideLoading()
+                }
             }
+
             is ScreenState.Idle -> {
                 hideLoading()
                 updateTracksList(emptyList())
