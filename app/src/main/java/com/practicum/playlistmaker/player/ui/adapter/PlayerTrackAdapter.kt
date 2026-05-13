@@ -22,17 +22,22 @@ class PlayerTrackAdapter(
     private var formattedTime: String = "00:00"
     private var currentPlayerViewHolder: AlbumViewHolder? = null
 
+    data class UpdatePlaybackStatePayload(
+        val isPlaying: Boolean,
+        val formattedTime: String,
+        val isFavorite: Boolean
+    )
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PlayerViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_audioplayer, parent, false)
         return PlayerViewHolder(AlbumViewHolder(
             view,
-            onClickListener = onClickPlayButton,  // (Track) -> Unit
-            onPlayButtonClick = onClickPlayButton,  // (Track) -> Unit
-            onAddToPlaylistClick = onAddToPlaylist,  // (Track) -> Unit
-            onFavoriteClick = onFavorite,  // (Track) -> Unit
-            formatDurationUseCase = formatDurationUseCase  // FormatTrackDurationUseCaseContract
+            onClickListener = onClickPlayButton,
+            onPlayButtonClick = onClickPlayButton,
+            onAddToPlaylistClick = onAddToPlaylist,
+            onFavoriteClick = onFavorite,
+            formatDurationUseCase = formatDurationUseCase
         ))
     }
 
@@ -41,22 +46,24 @@ class PlayerTrackAdapter(
     }
 
     override fun onBindViewHolder(holder: PlayerViewHolder, position: Int, payloads: MutableList<Any>) {
-        if (payloads.isNotEmpty()) {
-            val payload = payloads[0]
-            when (payload) {
-                is Boolean -> {
-                    holder.viewHolder.updateFavoriteState(payload)
-                }
-                is UpdatePlaybackStatePayload -> {
-                    holder.viewHolder.updatePlayButtonState(isPlaying)
-                    holder.viewHolder.updateCurrentTime(formattedTime)
-                }
-                else -> {
-                    super.onBindViewHolder(holder, position, payloads)
-                }
-            }
-        } else {
+        if (payloads.isEmpty()) {
             super.onBindViewHolder(holder, position, payloads)
+            return
+        }
+
+        for (payload in payloads) {
+            when (payload) {
+                is UpdatePlaybackStatePayload -> {
+                    holder.viewHolder.bind(
+                        track = tracks[position],
+                        isPlaying = payload.isPlaying,
+                        currentTimeMillis = 0L,
+                        formattedTime = payload.formattedTime,
+                        isFavorite = payload.isFavorite
+                    )
+                }
+                else -> super.onBindViewHolder(holder, position, payloads)
+            }
         }
     }
 
@@ -74,7 +81,10 @@ class PlayerTrackAdapter(
         this.formattedTime = formattedTime
 
         if (position != -1 && position < itemCount) {
-            notifyItemChanged(position, UpdatePlaybackStatePayload)
+            notifyItemChanged(
+                position,
+                UpdatePlaybackStatePayload(isPlaying, formattedTime, tracks[position].isFavorite)
+            )
         } else {
             notifyDataSetChanged()
         }
@@ -94,9 +104,6 @@ class PlayerTrackAdapter(
             )
         }
     }
-    fun updateCurrentTime(formattedTime: String) {
-        currentPlayerViewHolder?.updateCurrentTime(formattedTime)
-    }
 
     override fun onViewAttachedToWindow(holder: PlayerViewHolder) {
         super.onViewAttachedToWindow(holder)
@@ -109,11 +116,12 @@ class PlayerTrackAdapter(
             currentPlayerViewHolder = null
         }
     }
+
     fun updateFavoriteStateForTrack(trackId: String, isFavorite: Boolean) {
         val index = tracks.indexOfFirst { it.trackId == trackId }
         if (index != -1) {
             tracks[index].isFavorite = isFavorite
-            notifyItemChanged(index)
+            // notifyItemChanged убран — обновление идёт через общий payload
         }
     }
 }

@@ -157,27 +157,22 @@ class AudioPlayerFragment : Fragment() {
             return
         }
 
-        // Обновляем время воспроизведения
-        adapter.updateCurrentTime(state.formattedTime)
+        val currentPosition = 0
 
-        // Передаём isFavorite из состояния в адаптер
-        track.trackId?.let { trackId ->
-            adapter.updateFavoriteStateForTrack(trackId, state.isFavorite)
-        }
-
-        // Обновляем состояние воспроизведения
         val isPlaying = state.playbackState.isPlaying
         if (lastKnownIsPlaying != isPlaying) {
-            adapter.notifyDataSetChangedWithState(
-                isPlaying = isPlaying,
-                currentTimeMillis = state.playbackState.position,
-                position = 0,
-                formattedTime = state.formattedTime
-            )
+            lastKnownIsPlaying = isPlaying
         }
-        lastKnownIsPlaying = isPlaying
-    }
 
+        adapter.notifyItemChanged(
+            currentPosition,
+            PlayerTrackAdapter.UpdatePlaybackStatePayload(
+                isPlaying = isPlaying,
+                formattedTime = state.formattedTime,
+                isFavorite = state.isFavorite
+            )
+        )
+    }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)

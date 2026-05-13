@@ -21,6 +21,10 @@ class HistoryRepositoryImpl(
     private val historyKey = HISTORY_KEY
     private val _history = MutableStateFlow<List<Track>>(emptyList())
 
+    init {
+        loadHistory()
+    }
+
     override fun getHistory(): Flow<List<Track>> = _history.asStateFlow()
 
     override suspend fun addTrack(track: Track) {
