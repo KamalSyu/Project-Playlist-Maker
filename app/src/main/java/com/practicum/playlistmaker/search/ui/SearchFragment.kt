@@ -135,7 +135,6 @@ class SearchFragment : Fragment() {
         clearHistoryButton.setOnClickListener {
             viewModel.clearHistory()
             updateHistoryVisibility()
-//            historyRecyclerViewKit.visibility = View.GONE
         }
     }
 
@@ -324,7 +323,6 @@ class SearchFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-//        updateUIWithCurrentState()
         updateHistoryVisibility()
     }
 

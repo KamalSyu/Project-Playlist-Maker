@@ -34,7 +34,7 @@ class AlbumViewHolder(
     private val countryTextView: TextView = itemView.findViewById(R.id.country)
     private val playButton: ImageButton = itemView.findViewById(R.id.ic_play_button)
     private val plusButton: Button = itemView.findViewById(R.id.ic_button_plus)
-    private val likeButton: ImageButton = itemView.findViewById(R.id.ic_button_like) // Исправлено: Button → ImageButton
+    private val likeButton: ImageButton = itemView.findViewById(R.id.ic_button_like)
 
     private val dateFormatter = DateFormatter()
 
@@ -50,34 +50,30 @@ class AlbumViewHolder(
         formattedTime: String = "00:00",
         isFavorite: Boolean = false
     ) {
-        // Обновляем статические данные только при смене трека
-        if (currentTrack?.trackId != track.trackId) {
-            currentTrack = track
+        currentTrack = track
 
-            textTrackName.text = track.trackName
-            textArtistName.text = track.artistName
-            releaseDateTextView.text = dateFormatter.formatReleaseDate(track.releaseDate)
-            collectionNameTextView.text = track.collectionName
-            primaryGenreNameTextView.text = track.primaryGenreName
-            countryTextView.text = track.country
-            trackTimeMillisTextView.text = track.trackTimeMillis?.let {
-                formatDurationUseCase.invoke(it)
-            } ?: ""
+        textTrackName.text = track.trackName
+        textArtistName.text = track.artistName
+        releaseDateTextView.text = dateFormatter.formatReleaseDate(track.releaseDate)
+        collectionNameTextView.text = track.collectionName
+        primaryGenreNameTextView.text = track.primaryGenreName
+        countryTextView.text = track.country
 
-            // Загружаем обложку только при смене трека
-            val cornerRadiusPx = (8 * itemView.resources.displayMetrics.density).toInt()
-            if (track.artworkUrl100 != null) {
-                Glide.with(itemView.context)
-                    .load(track.getHighQualityArtworkUrl())
-                    .placeholder(R.drawable.ic_placeholder_312)
-                    .error(R.drawable.ic_placeholder_312)
-                    .centerCrop()
-                    .transform(RoundedCorners(cornerRadiusPx))
-                    .into(albumImageView)
-            } else {
-                albumImageView.setImageResource(R.drawable.ic_placeholder_312)
-            }
-            setupClickListeners(track)
+        trackTimeMillisTextView.text = track.trackTimeMillis?.let {
+            formatDurationUseCase.invoke(it)
+        } ?: ""
+
+        val cornerRadiusPx = (8 * itemView.resources.displayMetrics.density).toInt()
+        if (track.artworkUrl100 != null) {
+            Glide.with(itemView.context)
+                .load(track.getHighQualityArtworkUrl())
+                .placeholder(R.drawable.ic_placeholder_312)
+                .error(R.drawable.ic_placeholder_312)
+                .centerCrop()
+                .transform(RoundedCorners(cornerRadiusPx))
+                .into(albumImageView)
+        } else {
+            albumImageView.setImageResource(R.drawable.ic_placeholder_312)
         }
 
         updatePlayButtonState(isPlaying)
@@ -88,7 +84,10 @@ class AlbumViewHolder(
 
         updateFavoriteState(isFavorite)
         this.isFavorite = isFavorite
+
+        setupClickListeners(track)
     }
+
 
     private fun setupClickListeners(track: Track) {
         itemView.setOnClickListener { onClickListener(track) }
@@ -110,8 +109,10 @@ class AlbumViewHolder(
     }
 
     fun updateFavoriteState(isFavorite: Boolean) {
-        this.isFavorite = isFavorite
-        updateFavoriteButtonImage()
+        if (this.isFavorite != isFavorite) {
+            this.isFavorite = isFavorite
+            updateFavoriteButtonImage()
+        }
     }
 
     private fun updateFavoriteButtonImage() {

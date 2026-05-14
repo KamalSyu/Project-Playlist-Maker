@@ -1,5 +1,6 @@
 package com.practicum.playlistmaker.player.ui
 
+import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.player.domain.model.PlaybackState
 
 data class PlayerUiState(
@@ -9,5 +10,6 @@ data class PlayerUiState(
     val shouldPoll: Boolean = false,
     val error: Throwable? = null,
     val isInitialized: Boolean = false,
-    val isFavorite: Boolean = false
+    val isFavorite: Boolean = false,
+    val currentTrack: Track? = null
 )

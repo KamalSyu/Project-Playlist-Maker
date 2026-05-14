@@ -33,7 +33,6 @@ class FragmentFavorites : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
         val view = inflater.inflate(R.layout.fragment_favorites, container, false)
         setupViews(view)
         setupRecyclerView()
@@ -53,11 +52,8 @@ class FragmentFavorites : Fragment() {
         )
         favoritesRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         favoritesRecyclerView.adapter = adapter
-        // Сразу можно передать пустой список, если нужно
         adapter.submitList(emptyList())
     }
-
-
 
     private fun observeViewModel() {
         viewModel.state.observe(viewLifecycleOwner) { state ->

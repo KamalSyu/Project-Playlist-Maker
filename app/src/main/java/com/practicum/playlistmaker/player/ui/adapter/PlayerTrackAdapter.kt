@@ -42,8 +42,11 @@ class PlayerTrackAdapter(
     }
 
     override fun onBindViewHolder(holder: PlayerViewHolder, position: Int) {
-        holder.bind(tracks[position], position)
+        val track = tracks[position]
+        val isFavorite = track.isFavorite
+        holder.bind(track, position, isFavorite)
     }
+
 
     override fun onBindViewHolder(holder: PlayerViewHolder, position: Int, payloads: MutableList<Any>) {
         if (payloads.isEmpty()) {
@@ -73,7 +76,8 @@ class PlayerTrackAdapter(
         isPlaying: Boolean,
         currentTimeMillis: Long,
         position: Int,
-        formattedTime: String
+        formattedTime: String,
+        isFavorite: Boolean
     ) {
         this.isPlaying = isPlaying
         this.currentTimeMillis = currentTimeMillis
@@ -83,7 +87,7 @@ class PlayerTrackAdapter(
         if (position != -1 && position < itemCount) {
             notifyItemChanged(
                 position,
-                UpdatePlaybackStatePayload(isPlaying, formattedTime, tracks[position].isFavorite)
+                UpdatePlaybackStatePayload(isPlaying, formattedTime, isFavorite)
             )
         } else {
             notifyDataSetChanged()
@@ -94,13 +98,13 @@ class PlayerTrackAdapter(
         val viewHolder: AlbumViewHolder
     ) : RecyclerView.ViewHolder(viewHolder.itemView) {
 
-        fun bind(track: Track, position: Int) {
+        fun bind(track: Track, position: Int, isFavorite: Boolean) {
             viewHolder.bind(
                 track = track,
                 isPlaying = isPlaying,
                 currentTimeMillis = currentTimeMillis,
                 formattedTime = formattedTime,
-                isFavorite = track.isFavorite
+                isFavorite = isFavorite
             )
         }
     }
@@ -121,7 +125,6 @@ class PlayerTrackAdapter(
         val index = tracks.indexOfFirst { it.trackId == trackId }
         if (index != -1) {
             tracks[index].isFavorite = isFavorite
-            // notifyItemChanged убран — обновление идёт через общий payload
         }
     }
 }

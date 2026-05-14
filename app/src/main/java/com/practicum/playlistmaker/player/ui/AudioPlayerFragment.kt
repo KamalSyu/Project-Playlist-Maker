@@ -38,30 +38,28 @@ class AudioPlayerFragment : Fragment() {
     private val viewModel: AudioPlayerViewModel by viewModel()
     private lateinit var recyclerViewAudioPlayer: RecyclerView
     private lateinit var adapter: PlayerTrackAdapter
-    private var lastKnownIsPlaying: Boolean = false
-    private lateinit var track: Track
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
         return inflater.inflate(R.layout.fragment_audio_player, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         val backButton: TextView = requireView().findViewById(R.id.back)
         backButton.setOnClickListener {
             handleBackPress()
         }
+
         val callback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 handleBackPress()
             }
         }
-
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
 
         ViewCompat.setOnApplyWindowInsetsListener(view) { view, insets ->
@@ -70,11 +68,8 @@ class AudioPlayerFragment : Fragment() {
             insets
         }
 
-        track = getTrackFromIntent()
+        val track = getTrackFromIntent()
         viewModel.setCurrentTrack(track)
-        viewModel.updateFavoriteStatusAfterTrackSet()
-
-        setupRecyclerView(track)
 
         viewModel.uiState.observe(viewLifecycleOwner) { state ->
             updateUI(state)
@@ -85,9 +80,9 @@ class AudioPlayerFragment : Fragment() {
             }
         }
 
-        track.trackId?.let { trackId ->
-            viewModel.checkTrackFavoriteStatus(trackId)
-        }
+        setupRecyclerView(track)
+
+        viewModel.updateFavoriteStatusAfterTrackSet()
 
         viewModel.setupPlaybackCompletionListener()
         if (savedInstanceState == null) {
@@ -99,6 +94,8 @@ class AudioPlayerFragment : Fragment() {
         }
     }
 
+
+
     private fun getTrackFromIntent(): Track {
         val parcelableTrack: ParcelableTrack = arguments?.getParcelable("track")
             ?: throw IllegalArgumentException("Track is required but not provided in arguments.")
@@ -106,7 +103,6 @@ class AudioPlayerFragment : Fragment() {
         val mapper = TrackParcelableMapper()
         return mapper.toDomain(parcelableTrack)
     }
-
 
     private fun setupRecyclerView(track: Track) {
         recyclerViewAudioPlayer = requireView().findViewById(R.id.recyclerViewAudioPlayer)
@@ -117,8 +113,8 @@ class AudioPlayerFragment : Fragment() {
             onAddToPlaylist = { track ->
                 Log.d("AudioPlayer", "Add to playlist: ${track.trackName}")
             },
-            onFavorite = { track ->
-                viewModel.onFavoriteClicked(track)
+            onFavorite = {
+                viewModel.onFavoriteClicked()
             },
             formatDurationUseCase = viewModel.formatTrackDurationUseCase
         )
@@ -160,19 +156,18 @@ class AudioPlayerFragment : Fragment() {
 
         val currentPosition = 0
 
-        val isPlaying = state.playbackState.isPlaying
-        if (lastKnownIsPlaying != isPlaying) {
-            lastKnownIsPlaying = isPlaying
-        }
-
-        adapter.notifyItemChanged(
-            currentPosition,
-            PlayerTrackAdapter.UpdatePlaybackStatePayload(
-                isPlaying = isPlaying,
-                formattedTime = state.formattedTime,
-                isFavorite = state.isFavorite
+        state.currentTrack?.let { currentTrack ->
+            adapter.notifyItemChanged(
+                currentPosition,
+                PlayerTrackAdapter.UpdatePlaybackStatePayload(
+                    isPlaying = state.playbackState.isPlaying,
+                    formattedTime = state.formattedTime,
+                    isFavorite = state.isFavorite
+                )
             )
-        )
+        } ?: run {
+            Log.w("AudioPlayerFragment", "Попытка обновления UI, но текущий трек не установлен")
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

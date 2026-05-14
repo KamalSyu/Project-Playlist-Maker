@@ -48,19 +48,19 @@ class AudioPlayerViewModel(
             playbackState = PlaybackState(isPlaying = false, position = 0L),
             formattedTime = formatTrackDurationUseCase(0L),
             playbackCompleted = false,
-            isFavorite = false
+            isFavorite = false,
+            currentTrack = null
         )
     )
 
     private var currentTrackId: String? = null
     private var favoriteStatusJob: Job? = null
     private var pollingJob: Job? = null
-    private val _currentTrack = MutableLiveData<Track>()
-    val currentTrack: LiveData<Track> = _currentTrack
     val uiState: LiveData<PlayerUiState> = _uiState
 
-    fun onFavoriteClicked(currentTrack: Track) = viewModelScope.launch {
+    fun onFavoriteClicked() = viewModelScope.launch {
         try {
+            val currentTrack = _uiState.value?.currentTrack ?: return@launch
             val isFavoriteNow = isTrackFavoriteUseCase(currentTrack.trackId)
             if (isFavoriteNow) {
                 removeFromFavoritesUseCase(currentTrack.trackId)
@@ -68,9 +68,6 @@ class AudioPlayerViewModel(
                 addToFavoritesUseCase(currentTrack)
             }
             _uiState.value = _uiState.value?.copy(isFavorite = !isFavoriteNow)
-
-            val updatedTrack = currentTrack.copy(isFavorite = !isFavoriteNow)
-            _currentTrack.value = updatedTrack
             Log.d("AudioPlayerViewModel", "Статус избранного обновлён для трека: ${currentTrack.trackName}")
         } catch (e: Exception) {
             Log.e("AudioPlayerViewModel", "Ошибка работы с избранным", e)
@@ -85,17 +82,21 @@ class AudioPlayerViewModel(
 
         } catch (e: Exception) {
             Log.e("AudioPlayerViewModel", "Ошибка проверки статуса избранного", e)
+            _uiState.value = _uiState.value?.copy(isFavorite = false)
         }
     }
 
-
     fun restorePlaybackState(isPlaying: Boolean, savedPosition: Long) {
-        _uiState.value = PlayerUiState(
+        _uiState.value = _uiState.value?.copy(
             playbackState = PlaybackState(isPlaying, savedPosition),
             formattedTime = formatTrackDurationUseCase(savedPosition),
-            playbackCompleted = false
+            playbackCompleted = false,
+            shouldPoll = false,
+            error = null,
+            isInitialized = true
         )
     }
+
 
     fun clearError() {
         _uiState.value = _uiState.value?.copy(error = null)
@@ -105,10 +106,8 @@ class AudioPlayerViewModel(
         try {
             val currentPosition = getCurrentPositionUseCase()
             _uiState.value = _uiState.value?.copy(
-                playbackState = _uiState.value?.playbackState?.copy(position = currentPosition) ?: PlaybackState(
-                    false,
-                    currentPosition
-                )
+                playbackState = _uiState.value?.playbackState?.copy(position = currentPosition) ?: PlaybackState(false, currentPosition),
+                formattedTime = formatTrackDurationUseCase(currentPosition)
             )
         } catch (e: Exception) {
             Log.e("AudioPlayerViewModel", "Ошибка сохранения позиции", e)
@@ -119,19 +118,18 @@ class AudioPlayerViewModel(
         try {
             val result = preparePlaybackUseCase(previewUrl)
             if (result.isSuccess) {
-                _uiState.value = PlayerUiState(
+                _uiState.value = _uiState.value?.copy(
                     playbackState = PlaybackState(isPlaying = false, position = 0L),
                     formattedTime = formatTrackDurationUseCase(0L),
                     playbackCompleted = false,
                     shouldPoll = false,
                     error = null,
                     isInitialized = true
+                    // currentTrack не сбрасываем — он уже установлен через setCurrentTrack()
                 )
             } else {
                 Log.e("AudioPlayerViewModel", "Не удалось подготовить воспроизведение")
-                _uiState.value = _uiState.value?.copy(
-                    error = result.exceptionOrNull()
-                )
+                _uiState.value = _uiState.value?.copy(error = result.exceptionOrNull())
             }
         } catch (e: Exception) {
             Log.e("AudioPlayerViewModel", "Ошибка инициализации воспроизведения", e)
@@ -178,10 +176,7 @@ class AudioPlayerViewModel(
             val result = stopPlaybackUseCase()
             if (result.isSuccess) {
                 _uiState.value = _uiState.value?.copy(
-                    playbackState = _uiState.value?.playbackState?.copy(isPlaying = false) ?: PlaybackState(
-                        false,
-                        0L
-                    ),
+                    playbackState = _uiState.value?.playbackState?.copy(isPlaying = false) ?: PlaybackState(false, 0L),
                     shouldPoll = false
                 )
             }
@@ -228,10 +223,9 @@ class AudioPlayerViewModel(
 
     fun setCurrentTrack(track: Track) {
         favoriteStatusJob?.cancel()
-        _currentTrack.value = track
         currentTrackId = track.trackId
+        _uiState.value = _uiState.value?.copy(currentTrack = track)
     }
-
 
     fun startProgressUpdates() {
         startPolling()
@@ -267,15 +261,15 @@ class AudioPlayerViewModel(
         pollingJob = null
     }
 
-    fun updateFavoriteStatusAfterTrackSet() {
-        favoriteStatusJob = viewModelScope.launch {
-            currentTrackId?.let { trackId ->
-                try {
-                    val isFavorite = isTrackFavoriteUseCase(trackId)
-                    _uiState.value = _uiState.value?.copy(isFavorite = isFavorite)
-                } catch (e: Exception) {
-                    Log.e("AudioPlayerViewModel", "Ошибка проверки статуса избранного", e)
-                }
+    fun updateFavoriteStatusAfterTrackSet() = viewModelScope.launch {
+        favoriteStatusJob?.cancel() // Отмена предыдущей задачи
+        currentTrackId?.let { trackId ->
+            try {
+                val isFavorite = isTrackFavoriteUseCase(trackId)
+                _uiState.value = _uiState.value?.copy(isFavorite = isFavorite)
+            } catch (e: Exception) {
+                Log.e("AudioPlayerViewModel", "Ошибка проверки статуса избранного", e)
+                _uiState.value = _uiState.value?.copy(isFavorite = false)
             }
         }
     }
