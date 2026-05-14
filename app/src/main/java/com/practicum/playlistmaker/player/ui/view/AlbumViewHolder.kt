@@ -88,7 +88,6 @@ class AlbumViewHolder(
         setupClickListeners(track)
     }
 
-
     private fun setupClickListeners(track: Track) {
         itemView.setOnClickListener { onClickListener(track) }
         playButton.setOnClickListener { onPlayButtonClick(track) }
@@ -109,13 +108,12 @@ class AlbumViewHolder(
     }
 
     fun updateFavoriteState(isFavorite: Boolean) {
-        if (this.isFavorite != isFavorite) {
-            this.isFavorite = isFavorite
-            updateFavoriteButtonImage()
-        }
+        this.isFavorite = isFavorite
+        updateFavoriteButtonImage()
     }
 
     private fun updateFavoriteButtonImage() {
         likeButton.isSelected = isFavorite
+        Log.d("AlbumViewHolder", "Кнопка избранного обновлена, isSelected=$isFavorite")
     }
 }

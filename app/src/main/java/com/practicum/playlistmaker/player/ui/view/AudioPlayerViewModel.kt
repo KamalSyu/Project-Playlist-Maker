@@ -125,7 +125,6 @@ class AudioPlayerViewModel(
                     shouldPoll = false,
                     error = null,
                     isInitialized = true
-                    // currentTrack не сбрасываем — он уже установлен через setCurrentTrack()
                 )
             } else {
                 Log.e("AudioPlayerViewModel", "Не удалось подготовить воспроизведение")
@@ -262,16 +261,21 @@ class AudioPlayerViewModel(
     }
 
     fun updateFavoriteStatusAfterTrackSet() = viewModelScope.launch {
-        favoriteStatusJob?.cancel() // Отмена предыдущей задачи
+        favoriteStatusJob?.cancel()
         currentTrackId?.let { trackId ->
             try {
                 val isFavorite = isTrackFavoriteUseCase(trackId)
-                _uiState.value = _uiState.value?.copy(isFavorite = isFavorite)
+                _uiState.value = _uiState.value?.copy(
+                    isFavorite = isFavorite,
+                    currentTrack = _uiState.value?.currentTrack?.copy(isFavorite = isFavorite)
+                )
+                Log.d("AudioPlayerViewModel", "Статус избранного обновлён: трек $trackId, isFavorite=$isFavorite")
             } catch (e: Exception) {
-                Log.e("AudioPlayerViewModel", "Ошибка проверки статуса избранного", e)
+                Log.e("AudioPlayerViewModel", "Ошибка проверки статуса избранного для трека $trackId", e)
                 _uiState.value = _uiState.value?.copy(isFavorite = false)
             }
+        } ?: run {
+            Log.w("AudioPlayerViewModel", "currentTrackId is null, cannot check favorite status")
         }
     }
-
 }

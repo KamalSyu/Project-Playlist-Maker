@@ -70,6 +70,7 @@ class AudioPlayerFragment : Fragment() {
 
         val track = getTrackFromIntent()
         viewModel.setCurrentTrack(track)
+        viewModel.updateFavoriteStatusAfterTrackSet()
 
         viewModel.uiState.observe(viewLifecycleOwner) { state ->
             updateUI(state)
@@ -82,8 +83,6 @@ class AudioPlayerFragment : Fragment() {
 
         setupRecyclerView(track)
 
-        viewModel.updateFavoriteStatusAfterTrackSet()
-
         viewModel.setupPlaybackCompletionListener()
         if (savedInstanceState == null) {
             viewModel.initPlayback(track.previewUrl)
@@ -94,15 +93,18 @@ class AudioPlayerFragment : Fragment() {
         }
     }
 
-
-
     private fun getTrackFromIntent(): Track {
         val parcelableTrack: ParcelableTrack = arguments?.getParcelable("track")
             ?: throw IllegalArgumentException("Track is required but not provided in arguments.")
 
+
         val mapper = TrackParcelableMapper()
-        return mapper.toDomain(parcelableTrack)
+        val track = mapper.toDomain(parcelableTrack)
+
+        Log.d("AudioPlayerFragment", "Трек получен: ${track.trackName}, isFavorite=${track.isFavorite}")
+        return track
     }
+
 
     private fun setupRecyclerView(track: Track) {
         recyclerViewAudioPlayer = requireView().findViewById(R.id.recyclerViewAudioPlayer)
@@ -230,4 +232,5 @@ class AudioPlayerFragment : Fragment() {
             }
         }
     }
+
 }
