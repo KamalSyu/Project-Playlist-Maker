@@ -6,8 +6,9 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
-import com.practicum.playlistmaker.core.contract.GetThemeStateUseCaseContract
 import com.practicum.playlistmaker.di.appModule
+import com.practicum.playlistmaker.di.dataModule
+import com.practicum.playlistmaker.settings.domain.usecase.GetThemeStateUseCase
 import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
@@ -16,7 +17,7 @@ import org.koin.core.context.startKoin
 
 class App : Application() {
 
-    private val getThemeStateUseCase: GetThemeStateUseCaseContract by inject()
+    private val getThemeStateUseCase: GetThemeStateUseCase by inject()
 
     override fun onCreate() {
         super.onCreate()
@@ -29,7 +30,8 @@ class App : Application() {
             androidLogger(org.koin.core.logger.Level.DEBUG)
             androidContext(this@App)
             modules(
-                appModule
+                appModule,
+                dataModule
             )
         }
     }

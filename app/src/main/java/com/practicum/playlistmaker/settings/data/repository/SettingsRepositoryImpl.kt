@@ -6,7 +6,6 @@ import com.google.gson.Gson
 import com.practicum.playlistmaker.settings.domain.model.ThemeSettings
 import com.practicum.playlistmaker.settings.domain.repository.SettingsRepository
 import com.practicum.playlistmaker.settings.data.dto.ThemeSettingsDTO
-import com.practicum.playlistmaker.core.constants.Constants
 import com.practicum.playlistmaker.settings.data.mapper.ThemeSettingsMapper
 
 class SettingsRepositoryImpl (
@@ -15,18 +14,22 @@ class SettingsRepositoryImpl (
     private val dtoMapper: ThemeSettingsMapper
 ) : SettingsRepository {
 
+    companion object {
+        private const val DARK_THEME_KEY = "dark_theme"
+    }
+
     override fun saveTheme(settings: ThemeSettings) {
         val dto = dtoMapper.toDto(settings)
         val json = gson.toJson(dto)
-        sharedPreferences.edit().putString(Constants.Companion.DARK_THEME_KEY, json).apply()
+        sharedPreferences.edit().putString(DARK_THEME_KEY, json).apply()
     }
 
     override fun getThemeSettings(): ThemeSettings {
-        if (!sharedPreferences.contains(Constants.Companion.DARK_THEME_KEY)) {
+        if (!sharedPreferences.contains(DARK_THEME_KEY)) {
             return ThemeSettings(isDarkTheme = false)
         }
         try {
-            val json = sharedPreferences.getString(Constants.Companion.DARK_THEME_KEY, null)
+            val json = sharedPreferences.getString(DARK_THEME_KEY, null)
             if (json == null) {
                 return ThemeSettings(isDarkTheme = false)
             }
@@ -44,12 +47,12 @@ class SettingsRepositoryImpl (
 
     private fun migrateOldThemeSetting() {
         try {
-            val oldValue = sharedPreferences.getBoolean(Constants.Companion.DARK_THEME_KEY, false)
-            sharedPreferences.edit().remove(Constants.Companion.DARK_THEME_KEY).apply()
+            val oldValue = sharedPreferences.getBoolean(DARK_THEME_KEY, false)
+            sharedPreferences.edit().remove(DARK_THEME_KEY).apply()
             saveTheme(ThemeSettings(isDarkTheme = oldValue))
         } catch (e: Exception) {
             Log.e("SettingsRepository", "Migration failed", e)
-            sharedPreferences.edit().remove(Constants.Companion.DARK_THEME_KEY).apply()
+            sharedPreferences.edit().remove(DARK_THEME_KEY).apply()
         }
     }
 }

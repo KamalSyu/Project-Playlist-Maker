@@ -37,5 +37,3 @@
         app:drawableEndCompat="@drawable/ic_light_mode_24" />
 
 </LinearLayout>
-
-

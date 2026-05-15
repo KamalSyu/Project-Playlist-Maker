@@ -25,7 +25,6 @@ import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.search.ui.adapter.SearchTrackAdapter
 import com.practicum.playlistmaker.search.ui.parcel.toParcelable
-import com.practicum.playlistmaker.core.constants.Constants.Companion.SEARCH_QUERY_KEY
 import com.practicum.playlistmaker.search.ui.view.HistoryState
 import com.practicum.playlistmaker.search.ui.view.ScreenState
 import com.practicum.playlistmaker.search.ui.view.SearchState
@@ -36,6 +35,10 @@ import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class SearchFragment : Fragment() {
+
+    companion object {
+        private const val SEARCH_QUERY_KEY = "search_query"
+    }
 
     private val viewModel: SearchViewModel by viewModel()
 
@@ -50,6 +53,8 @@ class SearchFragment : Fragment() {
     private lateinit var clearHistoryButton: Button
     private lateinit var historyRecyclerViewKit: LinearLayout
     private lateinit var progressBar: ProgressBar
+    private lateinit var historyTitle: TextView
+
 
     private lateinit var tracksAdapter: SearchTrackAdapter
     private lateinit var historyAdapter: SearchTrackAdapter
@@ -95,6 +100,8 @@ class SearchFragment : Fragment() {
         clearHistoryButton = view.findViewById(R.id.clear_history_button)
         historyRecyclerViewKit = view.findViewById(R.id.search_history_layout)
         progressBar = view.findViewById(R.id.progressBar)
+        historyTitle = view.findViewById(R.id.history_title)
+
 
         tracksAdapter = SearchTrackAdapter(
             tracks = emptyList(),
@@ -127,7 +134,7 @@ class SearchFragment : Fragment() {
         }
         clearHistoryButton.setOnClickListener {
             viewModel.clearHistory()
-            historyRecyclerViewKit.visibility = View.GONE
+            updateHistoryVisibility()
         }
     }
 
@@ -159,7 +166,6 @@ class SearchFragment : Fragment() {
         if (savedInstanceState != null) {
             searchQuery = savedInstanceState.getString(SEARCH_QUERY_KEY, "")
             searchEditText.setText(searchQuery)
-            // Восстанавливаем видимость ProgressBar
             if (savedInstanceState.getBoolean("isLoading", false)) {
                 showLoading()
             }
@@ -178,10 +184,15 @@ class SearchFragment : Fragment() {
                     updateHistoryVisibility()
                 }
                 ScreenState.Loading -> {
-                    showLoading()
-                    hideError()
-                    showNoResults(false)
+                    if (searchQuery.isNotEmpty() && searchEditText.hasFocus()) {
+                        showLoading()
+                        hideError()
+                        showNoResults(false)
+                    } else {
+                        hideLoading()
+                    }
                 }
+
                 is ScreenState.Idle -> {
                     hideLoading()
                     updateTracksList(emptyList())
@@ -252,7 +263,6 @@ class SearchFragment : Fragment() {
         errorLayout.visibility = View.VISIBLE
         noResultsLayout.visibility = View.GONE
         recyclerView.visibility = View.GONE
-        historyRecyclerViewKit.visibility = View.GONE
     }
 
     private fun showNoResults(show: Boolean) {
@@ -272,8 +282,15 @@ class SearchFragment : Fragment() {
         val isEmptyQuery = searchEditText.text.isEmpty()
         val hasFocus = searchEditText.hasFocus()
         val hasHistory = historyAdapter.itemCount > 0
+        val shouldShowHistory = isEmptyQuery && hasFocus && hasHistory
 
-        historyRecyclerViewKit.visibility = if (isEmptyQuery && hasFocus && hasHistory) {
+        historyRecyclerViewKit.visibility = if (shouldShowHistory) {
+            View.VISIBLE
+        } else {
+            View.GONE
+        }
+
+        historyTitle.visibility = if (shouldShowHistory) {
             View.VISIBLE
         } else {
             View.GONE
@@ -306,7 +323,7 @@ class SearchFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        updateUIWithCurrentState()
+        updateHistoryVisibility()
     }
 
     private fun updateUIWithCurrentState() {
@@ -320,10 +337,15 @@ class SearchFragment : Fragment() {
                 updateHistoryVisibility()
             }
             ScreenState.Loading -> {
-                showLoading()
-                hideError()
-                showNoResults(false)
+                if (searchQuery.isNotEmpty() && searchEditText.hasFocus()) {
+                    showLoading()
+                    hideError()
+                    showNoResults(false)
+                } else {
+                    hideLoading()
+                }
             }
+
             is ScreenState.Idle -> {
                 hideLoading()
                 updateTracksList(emptyList())

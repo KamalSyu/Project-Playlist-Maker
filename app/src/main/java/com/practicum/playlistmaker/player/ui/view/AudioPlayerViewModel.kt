@@ -5,17 +5,19 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.practicum.playlistmaker.core.constants.Constants
-import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContract
-import com.practicum.playlistmaker.core.contract.GetCurrentPositionUseCaseContract
-import com.practicum.playlistmaker.core.contract.PreparePlaybackUseCaseContract
-import com.practicum.playlistmaker.core.contract.ResetPlaybackUseCaseContract
-import com.practicum.playlistmaker.core.contract.SetPlaybackCompletionListenerUseCaseContract
-import com.practicum.playlistmaker.core.contract.StopPlaybackUseCaseContract
-import com.practicum.playlistmaker.core.contract.TogglePlaybackUseCaseContract
 import com.practicum.playlistmaker.core.models.Track
+import com.practicum.playlistmaker.core.utils.FormatTrackDurationUseCase
 import com.practicum.playlistmaker.player.data.mapper.TrackParcelableMapper
 import com.practicum.playlistmaker.player.domain.model.PlaybackState
+import com.practicum.playlistmaker.player.domain.usecase.favorite.AddToFavoritesUseCase
+import com.practicum.playlistmaker.player.domain.usecase.favorite.IsTrackFavoriteUseCase
+import com.practicum.playlistmaker.player.domain.usecase.favorite.RemoveFromFavoritesUseCase
+import com.practicum.playlistmaker.player.domain.usecase.playback.GetCurrentPositionUseCase
+import com.practicum.playlistmaker.player.domain.usecase.playback.PreparePlaybackUseCase
+import com.practicum.playlistmaker.player.domain.usecase.playback.ResetPlaybackUseCase
+import com.practicum.playlistmaker.player.domain.usecase.playback.SetPlaybackCompletionListenerUseCase
+import com.practicum.playlistmaker.player.domain.usecase.playback.StopPlaybackUseCase
+import com.practicum.playlistmaker.player.domain.usecase.playback.TogglePlaybackUseCase
 import com.practicum.playlistmaker.player.ui.PlayerUiState
 import com.practicum.playlistmaker.search.ui.parcel.ParcelableTrack
 import kotlinx.coroutines.Job
@@ -24,36 +26,77 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 class AudioPlayerViewModel(
-    private val preparePlaybackUseCase: PreparePlaybackUseCaseContract,
-    private val togglePlaybackUseCase: TogglePlaybackUseCaseContract,
-    private val stopPlaybackUseCase: StopPlaybackUseCaseContract,
-    private val getCurrentPositionUseCase: GetCurrentPositionUseCaseContract,
-    private val setCompletionListenerUseCase: SetPlaybackCompletionListenerUseCaseContract,
-    private val resetPlaybackUseCase: ResetPlaybackUseCaseContract,
-    val formatTrackDurationUseCase: FormatTrackDurationUseCaseContract,
-    private val trackParcelableMapper: TrackParcelableMapper
+    private val preparePlaybackUseCase: PreparePlaybackUseCase,
+    private val togglePlaybackUseCase: TogglePlaybackUseCase,
+    private val stopPlaybackUseCase: StopPlaybackUseCase,
+    private val getCurrentPositionUseCase: GetCurrentPositionUseCase,
+    private val setCompletionListenerUseCase: SetPlaybackCompletionListenerUseCase,
+    private val resetPlaybackUseCase: ResetPlaybackUseCase,
+    val formatTrackDurationUseCase: FormatTrackDurationUseCase,
+    private val trackParcelableMapper: TrackParcelableMapper,
+    private val addToFavoritesUseCase: AddToFavoritesUseCase,
+    private val removeFromFavoritesUseCase: RemoveFromFavoritesUseCase,
+    private val isTrackFavoriteUseCase: IsTrackFavoriteUseCase
 ) : ViewModel() {
+
+    companion object {
+        private const val PROGRESS_UPDATE_INTERVAL_MS = 300L
+    }
 
     private val _uiState = MutableLiveData<PlayerUiState>(
         PlayerUiState(
             playbackState = PlaybackState(isPlaying = false, position = 0L),
             formattedTime = formatTrackDurationUseCase(0L),
-            playbackCompleted = false
+            playbackCompleted = false,
+            isFavorite = false,
+            currentTrack = null
         )
     )
 
+    private var currentTrackId: String? = null
+    private var favoriteStatusJob: Job? = null
     private var pollingJob: Job? = null
-    private val _currentTrack = MutableLiveData<Track>()
-    val currentTrack: LiveData<Track> = _currentTrack
     val uiState: LiveData<PlayerUiState> = _uiState
 
+    fun onFavoriteClicked() = viewModelScope.launch {
+        try {
+            val currentTrack = _uiState.value?.currentTrack ?: return@launch
+            val isFavoriteNow = isTrackFavoriteUseCase(currentTrack.trackId)
+            if (isFavoriteNow) {
+                removeFromFavoritesUseCase(currentTrack.trackId)
+            } else {
+                addToFavoritesUseCase(currentTrack)
+            }
+            _uiState.value = _uiState.value?.copy(isFavorite = !isFavoriteNow)
+            Log.d("AudioPlayerViewModel", "Статус избранного обновлён для трека: ${currentTrack.trackName}")
+        } catch (e: Exception) {
+            Log.e("AudioPlayerViewModel", "Ошибка работы с избранным", e)
+            _uiState.postValue(_uiState.value?.copy(error = e))
+        }
+    }
+
+    fun checkTrackFavoriteStatus(trackId: String) = viewModelScope.launch {
+        try {
+            val isFavorite = isTrackFavoriteUseCase(trackId)
+            _uiState.value = _uiState.value?.copy(isFavorite = isFavorite)
+
+        } catch (e: Exception) {
+            Log.e("AudioPlayerViewModel", "Ошибка проверки статуса избранного", e)
+            _uiState.value = _uiState.value?.copy(isFavorite = false)
+        }
+    }
+
     fun restorePlaybackState(isPlaying: Boolean, savedPosition: Long) {
-        _uiState.value = PlayerUiState(
+        _uiState.value = _uiState.value?.copy(
             playbackState = PlaybackState(isPlaying, savedPosition),
             formattedTime = formatTrackDurationUseCase(savedPosition),
-            playbackCompleted = false
+            playbackCompleted = false,
+            shouldPoll = false,
+            error = null,
+            isInitialized = true
         )
     }
+
 
     fun clearError() {
         _uiState.value = _uiState.value?.copy(error = null)
@@ -63,10 +106,8 @@ class AudioPlayerViewModel(
         try {
             val currentPosition = getCurrentPositionUseCase()
             _uiState.value = _uiState.value?.copy(
-                playbackState = _uiState.value?.playbackState?.copy(position = currentPosition) ?: PlaybackState(
-                    false,
-                    currentPosition
-                )
+                playbackState = _uiState.value?.playbackState?.copy(position = currentPosition) ?: PlaybackState(false, currentPosition),
+                formattedTime = formatTrackDurationUseCase(currentPosition)
             )
         } catch (e: Exception) {
             Log.e("AudioPlayerViewModel", "Ошибка сохранения позиции", e)
@@ -77,7 +118,7 @@ class AudioPlayerViewModel(
         try {
             val result = preparePlaybackUseCase(previewUrl)
             if (result.isSuccess) {
-                _uiState.value = PlayerUiState(
+                _uiState.value = _uiState.value?.copy(
                     playbackState = PlaybackState(isPlaying = false, position = 0L),
                     formattedTime = formatTrackDurationUseCase(0L),
                     playbackCompleted = false,
@@ -87,9 +128,7 @@ class AudioPlayerViewModel(
                 )
             } else {
                 Log.e("AudioPlayerViewModel", "Не удалось подготовить воспроизведение")
-                _uiState.value = _uiState.value?.copy(
-                    error = result.exceptionOrNull()
-                )
+                _uiState.value = _uiState.value?.copy(error = result.exceptionOrNull())
             }
         } catch (e: Exception) {
             Log.e("AudioPlayerViewModel", "Ошибка инициализации воспроизведения", e)
@@ -136,10 +175,7 @@ class AudioPlayerViewModel(
             val result = stopPlaybackUseCase()
             if (result.isSuccess) {
                 _uiState.value = _uiState.value?.copy(
-                    playbackState = _uiState.value?.playbackState?.copy(isPlaying = false) ?: PlaybackState(
-                        false,
-                        0L
-                    ),
+                    playbackState = _uiState.value?.playbackState?.copy(isPlaying = false) ?: PlaybackState(false, 0L),
                     shouldPoll = false
                 )
             }
@@ -185,7 +221,9 @@ class AudioPlayerViewModel(
     }
 
     fun setCurrentTrack(track: Track) {
-        _currentTrack.value = track
+        favoriteStatusJob?.cancel()
+        currentTrackId = track.trackId
+        _uiState.value = _uiState.value?.copy(currentTrack = track)
     }
 
     fun startProgressUpdates() {
@@ -200,7 +238,7 @@ class AudioPlayerViewModel(
         stopPolling()
         pollingJob = viewModelScope.launch {
             while (isActive) {
-                delay(Constants.PROGRESS_UPDATE_INTERVAL_MS)
+                delay(PROGRESS_UPDATE_INTERVAL_MS)
                 try {
                     val currentPosition = getCurrentPositionUseCase()
                     val currentState = _uiState.value ?: return@launch
@@ -220,5 +258,24 @@ class AudioPlayerViewModel(
     private fun stopPolling() {
         pollingJob?.cancel()
         pollingJob = null
+    }
+
+    fun updateFavoriteStatusAfterTrackSet() = viewModelScope.launch {
+        favoriteStatusJob?.cancel()
+        currentTrackId?.let { trackId ->
+            try {
+                val isFavorite = isTrackFavoriteUseCase(trackId)
+                _uiState.value = _uiState.value?.copy(
+                    isFavorite = isFavorite,
+                    currentTrack = _uiState.value?.currentTrack?.copy(isFavorite = isFavorite)
+                )
+                Log.d("AudioPlayerViewModel", "Статус избранного обновлён: трек $trackId, isFavorite=$isFavorite")
+            } catch (e: Exception) {
+                Log.e("AudioPlayerViewModel", "Ошибка проверки статуса избранного для трека $trackId", e)
+                _uiState.value = _uiState.value?.copy(isFavorite = false)
+            }
+        } ?: run {
+            Log.w("AudioPlayerViewModel", "currentTrackId is null, cannot check favorite status")
+        }
     }
 }

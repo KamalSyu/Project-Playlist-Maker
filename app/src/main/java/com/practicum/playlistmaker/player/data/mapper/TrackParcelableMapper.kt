@@ -15,7 +15,8 @@ class TrackParcelableMapper {
             releaseDate = parcelable.releaseDate,
             primaryGenreName = parcelable.primaryGenreName,
             country = parcelable.country,
-            trackTimeMillis = parcelable.trackTimeMillis
+            trackTimeMillis = parcelable.trackTimeMillis,
+            addedDate = parcelable.addedDate
         )
     }
 }

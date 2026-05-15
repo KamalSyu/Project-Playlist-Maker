@@ -4,26 +4,26 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.practicum.playlistmaker.core.contract.AddTrackToHistoryUseCaseContract
-import com.practicum.playlistmaker.core.contract.ClearSearchHistoryUseCaseContract
-import com.practicum.playlistmaker.core.contract.DelayedTrackActionUseCaseContract
-import com.practicum.playlistmaker.core.contract.FilterTracksUseCaseContract
-import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContract
-import com.practicum.playlistmaker.core.contract.GetSearchHistoryUseCaseContract
-import com.practicum.playlistmaker.core.contract.SearchTracksUseCaseContract
 import com.practicum.playlistmaker.core.models.Track
+import com.practicum.playlistmaker.core.utils.FormatTrackDurationUseCase
+import com.practicum.playlistmaker.player.domain.usecase.utils.DelayedTrackActionUseCase
+import com.practicum.playlistmaker.search.domain.usecase.history.AddTrackToHistoryUseCase
+import com.practicum.playlistmaker.search.domain.usecase.history.ClearSearchHistoryUseCase
+import com.practicum.playlistmaker.search.domain.usecase.history.GetSearchHistoryUseCase
+import com.practicum.playlistmaker.search.domain.usecase.search.FilterTracksUseCase
+import com.practicum.playlistmaker.search.domain.usecase.search.SearchTracksUseCase
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 
 class SearchViewModel(
-    private val searchTracksUseCase: SearchTracksUseCaseContract,
-    private val addTrackToHistoryUseCase: AddTrackToHistoryUseCaseContract,
-    private val getSearchHistoryUseCase: GetSearchHistoryUseCaseContract,
-    private val clearSearchHistoryUseCase: ClearSearchHistoryUseCaseContract,
-    private val filterTracksUseCase: FilterTracksUseCaseContract,
-    private val delayedTrackActionUseCase: DelayedTrackActionUseCaseContract,
-    val formatTrackDurationUseCase: FormatTrackDurationUseCaseContract
+    private val searchTracksUseCase: SearchTracksUseCase,
+    private val addTrackToHistoryUseCase: AddTrackToHistoryUseCase,
+    private val getSearchHistoryUseCase: GetSearchHistoryUseCase,
+    private val clearSearchHistoryUseCase: ClearSearchHistoryUseCase,
+    private val filterTracksUseCase: FilterTracksUseCase,
+    private val delayedTrackActionUseCase: DelayedTrackActionUseCase,
+    val formatTrackDurationUseCase: FormatTrackDurationUseCase
 ) : ViewModel() {
 
     private val _screenState = MutableLiveData<ScreenState>(ScreenState.Initial)
@@ -69,7 +69,7 @@ class SearchViewModel(
                 }
                 .collect { result ->
                     _screenState.value = result.fold(
-                        onSuccess = { tracks: List<Track> -> // ← Получаем List<Track>, а не SearchResponse
+                        onSuccess = { tracks: List<Track> ->
                             filteredTracks = tracks
                             ScreenState.Results(
                                 SearchState.Results(tracks),
@@ -186,7 +186,6 @@ class SearchViewModel(
     }
 }
 
-// === Состояния экрана ===
 sealed class ScreenState {
     object Initial : ScreenState()
     object Loading : ScreenState()

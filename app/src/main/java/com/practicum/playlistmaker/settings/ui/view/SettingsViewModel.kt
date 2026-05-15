@@ -6,18 +6,18 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.practicum.playlistmaker.core.contract.GetThemeStateUseCaseContract
-import com.practicum.playlistmaker.core.contract.SendSupportEmailUseCaseContract
-import com.practicum.playlistmaker.core.contract.ShareAppUseCaseContract
-import com.practicum.playlistmaker.core.contract.SwitchThemeUseCaseContract
+import com.practicum.playlistmaker.settings.domain.usecase.GetThemeStateUseCase
+import com.practicum.playlistmaker.settings.domain.usecase.SwitchThemeUseCase
 import com.practicum.playlistmaker.settings.ui.SettingsUiState
+import com.practicum.playlistmaker.sharing.domain.usecase.SendSupportEmailUseCase
+import com.practicum.playlistmaker.sharing.domain.usecase.ShareAppUseCase
 import kotlinx.coroutines.launch
 
 class SettingsViewModel (
-    private val getThemeStateUseCase: GetThemeStateUseCaseContract,
-    private val switchThemeUseCase: SwitchThemeUseCaseContract,
-    private val shareAppUseCase: ShareAppUseCaseContract,
-    private val sendSupportEmailUseCase: SendSupportEmailUseCaseContract
+    private val getThemeStateUseCase: GetThemeStateUseCase,
+    private val switchThemeUseCase: SwitchThemeUseCase,
+    private val shareAppUseCase: ShareAppUseCase,
+    private val sendSupportEmailUseCase: SendSupportEmailUseCase
     ) : ViewModel() {
 
     private val _uiState = MutableLiveData<SettingsUiState>()

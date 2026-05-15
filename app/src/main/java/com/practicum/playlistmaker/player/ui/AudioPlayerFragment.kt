@@ -16,9 +16,9 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.R
-import com.practicum.playlistmaker.core.constants.Constants
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.main.ui.MainActivity
+import com.practicum.playlistmaker.player.data.mapper.TrackParcelableMapper
 import com.practicum.playlistmaker.player.domain.model.PlaybackState
 import com.practicum.playlistmaker.player.ui.adapter.PlayerTrackAdapter
 import com.practicum.playlistmaker.player.ui.view.AudioPlayerViewModel
@@ -29,11 +29,15 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class AudioPlayerFragment : Fragment() {
 
+    companion object {
+        private const val KEY_IS_PLAYING = "isPlaying"
+        private const val KEY_SAVED_POSITION = "savedPosition"
+        private const val TOOLBAR_AUTO_HIDE_DELAY_MS = 2000L
+    }
+
     private val viewModel: AudioPlayerViewModel by viewModel()
     private lateinit var recyclerViewAudioPlayer: RecyclerView
     private lateinit var adapter: PlayerTrackAdapter
-    private var lastKnownIsPlaying: Boolean = false
-    private lateinit var track: Track
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -45,16 +49,17 @@ class AudioPlayerFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         val backButton: TextView = requireView().findViewById(R.id.back)
         backButton.setOnClickListener {
             handleBackPress()
         }
+
         val callback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 handleBackPress()
             }
         }
-
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
 
         ViewCompat.setOnApplyWindowInsetsListener(view) { view, insets ->
@@ -63,9 +68,10 @@ class AudioPlayerFragment : Fragment() {
             insets
         }
 
-        track = getTrackFromIntent()
+        val track = getTrackFromIntent()
         viewModel.setCurrentTrack(track)
-        setupRecyclerView(track)
+        viewModel.updateFavoriteStatusAfterTrackSet()
+
         viewModel.uiState.observe(viewLifecycleOwner) { state ->
             updateUI(state)
             if (state.shouldPoll && state.playbackState.isPlaying) {
@@ -75,12 +81,14 @@ class AudioPlayerFragment : Fragment() {
             }
         }
 
+        setupRecyclerView(track)
+
         viewModel.setupPlaybackCompletionListener()
         if (savedInstanceState == null) {
             viewModel.initPlayback(track.previewUrl)
         } else {
-            val isPlaying = savedInstanceState.getBoolean(Constants.KEY_IS_PLAYING)
-            val savedPosition = savedInstanceState.getLong(Constants.KEY_SAVED_POSITION)
+            val isPlaying = savedInstanceState.getBoolean(KEY_IS_PLAYING)
+            val savedPosition = savedInstanceState.getLong(KEY_SAVED_POSITION)
             viewModel.restorePlaybackState(isPlaying, savedPosition)
         }
     }
@@ -88,20 +96,27 @@ class AudioPlayerFragment : Fragment() {
     private fun getTrackFromIntent(): Track {
         val parcelableTrack: ParcelableTrack = arguments?.getParcelable("track")
             ?: throw IllegalArgumentException("Track is required but not provided in arguments.")
-        return viewModel.processTrack(parcelableTrack)
+
+
+        val mapper = TrackParcelableMapper()
+        val track = mapper.toDomain(parcelableTrack)
+
+        Log.d("AudioPlayerFragment", "Трек получен: ${track.trackName}, isFavorite=${track.isFavorite}")
+        return track
     }
+
 
     private fun setupRecyclerView(track: Track) {
         recyclerViewAudioPlayer = requireView().findViewById(R.id.recyclerViewAudioPlayer)
         recyclerViewAudioPlayer.layoutManager = LinearLayoutManager(requireContext())
         adapter = PlayerTrackAdapter(
-            tracks = listOf(track),
+            tracks = mutableListOf(track),
             onClickPlayButton = { _ -> togglePlayback() },
             onAddToPlaylist = { track ->
                 Log.d("AudioPlayer", "Add to playlist: ${track.trackName}")
             },
-            onFavorite = { track ->
-                Log.d("AudioPlayer", "Favorite: ${track.trackName}")
+            onFavorite = {
+                viewModel.onFavoriteClicked()
             },
             formatDurationUseCase = viewModel.formatTrackDurationUseCase
         )
@@ -140,24 +155,28 @@ class AudioPlayerFragment : Fragment() {
             viewModel.clearError()
             return
         }
-        adapter.updateCurrentTime(state.formattedTime)
-        val isPlaying = state.playbackState.isPlaying
-        if (lastKnownIsPlaying != isPlaying) {
-            adapter.notifyDataSetChangedWithState(
-                isPlaying = isPlaying,
-                currentTimeMillis = state.playbackState.position,
-                position = 0,
-                formattedTime = state.formattedTime
+
+        val currentPosition = 0
+
+        state.currentTrack?.let { currentTrack ->
+            adapter.notifyItemChanged(
+                currentPosition,
+                PlayerTrackAdapter.UpdatePlaybackStatePayload(
+                    isPlaying = state.playbackState.isPlaying,
+                    formattedTime = state.formattedTime,
+                    isFavorite = state.isFavorite
+                )
             )
+        } ?: run {
+            Log.w("AudioPlayerFragment", "Попытка обновления UI, но текущий трек не установлен")
         }
-        lastKnownIsPlaying = isPlaying
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         val currentState = viewModel.uiState.value?.playbackState ?: PlaybackState(false, 0L)
-        outState.putBoolean(Constants.KEY_IS_PLAYING, currentState.isPlaying)
-        outState.putLong(Constants.KEY_SAVED_POSITION, currentState.position)
+        outState.putBoolean(KEY_IS_PLAYING, currentState.isPlaying)
+        outState.putLong(KEY_SAVED_POSITION, currentState.position)
     }
 
     override fun onPause() {
@@ -206,11 +225,12 @@ class AudioPlayerFragment : Fragment() {
         activity.supportActionBar?.show()
 
         viewLifecycleOwner.lifecycleScope.launch {
-            delay(Constants.TOOLBAR_AUTO_HIDE_DELAY_MS)
+            delay(TOOLBAR_AUTO_HIDE_DELAY_MS)
             if (isResumed) {
                 toolbar.visibility = View.GONE
                 activity.supportActionBar?.hide()
             }
         }
     }
+
 }

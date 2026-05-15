@@ -2,7 +2,6 @@ package com.practicum.playlistmaker.search.data.repository
 
 import android.content.SharedPreferences
 import com.google.gson.Gson
-import com.practicum.playlistmaker.core.constants.Constants
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.search.domain.repository.HistoryRepository
 import kotlinx.coroutines.flow.Flow
@@ -14,7 +13,12 @@ class HistoryRepositoryImpl(
     private val gson: Gson
 ) : HistoryRepository {
 
-    private val historyKey = Constants.HISTORY_KEY
+    companion object {
+        private const val HISTORY_KEY = "search_history"
+        private const val MAX_HISTORY_SIZE = 10
+    }
+
+    private val historyKey = HISTORY_KEY
     private val _history = MutableStateFlow<List<Track>>(emptyList())
 
     init {
@@ -27,7 +31,7 @@ class HistoryRepositoryImpl(
         val current = _history.value.toMutableList()
         current.removeAll { it.trackId == track.trackId }
         current.add(0, track)
-        val limited = current.take(Constants.MAX_HISTORY_SIZE)
+        val limited = current.take(MAX_HISTORY_SIZE)
         _history.value = limited
 
         val json = gson.toJson(limited)

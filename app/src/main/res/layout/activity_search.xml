@@ -39,12 +39,12 @@
                     android:singleLine="true"
                     android:paddingEnd="40dp" />
 
-<!--                <TextView-->
-<!--                    android:id="@+id/searchHint"-->
-<!--                    android:padding="16dp"-->
-<!--                    style="@style/SearchHint"-->
-<!--                    android:text="@string/search_hint"-->
-<!--                    android:visibility="gone" />-->
+                <!--                <TextView-->
+                <!--                    android:id="@+id/searchHint"-->
+                <!--                    android:padding="16dp"-->
+                <!--                    style="@style/SearchHint"-->
+                <!--                    android:text="@string/search_hint"-->
+                <!--                    android:visibility="gone" />-->
             </LinearLayout>
 
             <ImageView

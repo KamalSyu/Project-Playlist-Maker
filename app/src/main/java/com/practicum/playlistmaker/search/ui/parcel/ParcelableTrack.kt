@@ -15,7 +15,8 @@ data class ParcelableTrack(
     val collectionName: String?,
     val primaryGenreName: String?,
     val country: String?,
-    val previewUrl: String?
+    val previewUrl: String?,
+    val addedDate: Long
 ) : Parcelable {
 }
 
@@ -29,8 +30,6 @@ fun Track.toParcelable() = ParcelableTrack(
     collectionName = this.collectionName,
     primaryGenreName = this.primaryGenreName,
     country = this.country,
-    previewUrl = this.previewUrl
+    previewUrl = this.previewUrl,
+    addedDate = this.addedDate
 )
-
-
-

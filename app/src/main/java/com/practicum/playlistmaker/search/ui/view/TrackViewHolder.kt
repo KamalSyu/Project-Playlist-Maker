@@ -7,12 +7,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.practicum.playlistmaker.R
-import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContract
 import com.practicum.playlistmaker.core.models.Track
+import com.practicum.playlistmaker.core.utils.FormatTrackDurationUseCase
 
 class TrackViewHolder(
     itemView: View,
-    private val formatDurationUseCase: FormatTrackDurationUseCaseContract
+    private val formatDurationUseCase: FormatTrackDurationUseCase
 ) : RecyclerView.ViewHolder(itemView) {
 
     private val artworkImageView: ImageView = itemView.findViewById(R.id.artwork_image)

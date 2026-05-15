@@ -10,9 +10,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.practicum.playlistmaker.R
-import com.practicum.playlistmaker.core.contract.FormatTrackDurationUseCaseContract
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.core.utils.DateFormatter
+import com.practicum.playlistmaker.core.utils.FormatTrackDurationUseCase
 
 class AlbumViewHolder(
     itemView: View,
@@ -20,7 +20,7 @@ class AlbumViewHolder(
     private val onPlayButtonClick: (Track) -> Unit,
     private val onAddToPlaylistClick: (Track) -> Unit,
     private val onFavoriteClick: (Track) -> Unit,
-    private val formatDurationUseCase: FormatTrackDurationUseCaseContract
+    private val formatDurationUseCase: FormatTrackDurationUseCase
 ) : RecyclerView.ViewHolder(itemView) {
 
     private val albumImageView: ImageView = itemView.findViewById(R.id.album)
@@ -34,17 +34,21 @@ class AlbumViewHolder(
     private val countryTextView: TextView = itemView.findViewById(R.id.country)
     private val playButton: ImageButton = itemView.findViewById(R.id.ic_play_button)
     private val plusButton: Button = itemView.findViewById(R.id.ic_button_plus)
-    private val likeButton: Button = itemView.findViewById(R.id.ic_button_like)
+    private val likeButton: ImageButton = itemView.findViewById(R.id.ic_button_like)
 
     private val dateFormatter = DateFormatter()
 
     private var currentTrack: Track? = null
+    private var isFavorite: Boolean = false
+    private var isPlaying: Boolean = false
+    private var formattedTime: String = "00:00"
 
     fun bind(
         track: Track,
         isPlaying: Boolean,
         currentTimeMillis: Long = 0,
-        formattedTime: String = "00:00"
+        formattedTime: String = "00:00",
+        isFavorite: Boolean = false
     ) {
         currentTrack = track
 
@@ -54,7 +58,7 @@ class AlbumViewHolder(
         collectionNameTextView.text = track.collectionName
         primaryGenreNameTextView.text = track.primaryGenreName
         countryTextView.text = track.country
-        timeTextView.text = formattedTime
+
         trackTimeMillisTextView.text = track.trackTimeMillis?.let {
             formatDurationUseCase.invoke(it)
         } ?: ""
@@ -73,6 +77,14 @@ class AlbumViewHolder(
         }
 
         updatePlayButtonState(isPlaying)
+        this.isPlaying = isPlaying
+
+        timeTextView.text = formattedTime
+        this.formattedTime = formattedTime
+
+        updateFavoriteState(isFavorite)
+        this.isFavorite = isFavorite
+
         setupClickListeners(track)
     }
 
@@ -95,4 +107,13 @@ class AlbumViewHolder(
         timeTextView.text = formattedTime
     }
 
+    fun updateFavoriteState(isFavorite: Boolean) {
+        this.isFavorite = isFavorite
+        updateFavoriteButtonImage()
+    }
+
+    private fun updateFavoriteButtonImage() {
+        likeButton.isSelected = isFavorite
+        Log.d("AlbumViewHolder", "Кнопка избранного обновлена, isSelected=$isFavorite")
+    }
 }
