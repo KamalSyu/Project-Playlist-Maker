@@ -96,6 +96,7 @@ class FragmentFavorites : Fragment() {
     private fun showErrorState(errorMessage: String) {
         favoritesRecyclerView.visibility = View.GONE
         emptyStateLayout.visibility = View.VISIBLE
+        Log.e("FragmentFavorites", "Error loading favorites: $errorMessage")
     }
     companion object {
         fun newInstance(): Fragment {
