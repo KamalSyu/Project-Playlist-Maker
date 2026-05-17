@@ -11,6 +11,8 @@ import com.practicum.playlistmaker.core.utils.DelayProvider
 import com.practicum.playlistmaker.core.utils.FormatTrackDurationUseCase
 import com.practicum.playlistmaker.core.utils.FormatTrackDurationUseCaseImpl
 import com.practicum.playlistmaker.creator.domain.TrackFactory
+import com.practicum.playlistmaker.mediateka.data.repository.PlaylistsRepositoryImpl
+import com.practicum.playlistmaker.mediateka.domain.repository.PlaylistsRepository
 import com.practicum.playlistmaker.mediateka.ui.view.FavoriteTracksViewModel
 import com.practicum.playlistmaker.mediateka.ui.view.FragmentPlaylistsViewModel
 import com.practicum.playlistmaker.player.data.db.AppDatabase
@@ -220,11 +222,18 @@ val appModule = module {
         sendSupportEmailUseCase = get()
     ) }
 
-    viewModel { FragmentPlaylistsViewModel() }
+    single<PlaylistsRepository> { PlaylistsRepositoryImpl(get()) }
+
+    viewModel { (context: Context) ->
+        FragmentPlaylistsViewModel(
+            playlistsRepository = get(),
+        )
+    }
 
     viewModel { FavoriteTracksViewModel(
         getFavoriteTracksUseCase = get()
     ) }
+
 }
 
 val dataModule = module {
@@ -238,4 +247,7 @@ val dataModule = module {
 
     single { get<AppDatabase>().favoriteTracksDao() }
 }
+
+
+
 

@@ -20,6 +20,10 @@
         <action
             android:id="@+id/action_mediatekaFragment_to_audioPlayerFragment"
             app:destination="@id/audioPlayerFragment" />
+
+        <action
+            android:id="@+id/action_mediatekaFragment_to_createPlaylistFragment"
+            app:destination="@id/createPlaylistFragment" />
     </fragment>
 
     <fragment
@@ -45,6 +49,14 @@
             android:id="@+id/action_fragmentFavorites_to_audioPlayerFragment"
             app:destination="@id/audioPlayerFragment" />
     </fragment>
+
+    <fragment
+        android:id="@+id/createPlaylistFragment"
+        android:name="com.practicum.playlistmaker.mediateka.ui.fragment.CreatePlaylistFragment"
+        android:label="@string/create_playlist">
+    </fragment>
+
+
 </navigation>
 
 

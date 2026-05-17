@@ -36,8 +36,16 @@
     <string name="audio_player">Аудиоплеер</string>
 
 
+    <string name="playlist_cover">Обложка плейлиста</string>
+    <string name="create_playlist">Создание плейлиста</string>
+    <string name="playlist_name_required">Введите название плейлиста</string>
+
+    <string name="playlist_created">Плейлист %s создан</string>
 
 
+    <string name="name_too_long">Название не должно превышать 100 символов</string>
+    <string name="description_too_long">Описание не должно превышать 500 символов</string>
 
+    <string name="no_playlists_created">У вас пока нет плейлистов</string>
 
 </resources>

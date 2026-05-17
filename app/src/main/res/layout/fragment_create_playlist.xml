@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:fitsSystemWindows="true">
+
+    <!-- Panel Header -->
+    <TextView
+        android:id="@+id/back"
+        style="@style/TextStyleTopScreen"
+        app:drawableStartCompat="@drawable/ic_back_arrow_48"
+        android:text="@string/mediateka"
+        android:layout_marginBottom="0dp" />
+
+    <!-- Group 180 -->
+    <ImageView
+        android:id="@+id/playlistCoverImage"
+        android:layout_width="match_parent"
+        android:layout_height="180dp"
+        android:background="#F0F0F0"
+        android:scaleType="centerCrop"
+        android:layout_marginTop="32dp"
+        android:contentDescription="@string/playlist_cover" />
+
+
+    <!-- Второй Text field -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/playlistDescriptionField"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        app:boxStrokeColor="#888"
+        app:boxBackgroundColor="#FFFFFF">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="----"
+            android:inputType="textMultiLine" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Первый Text field -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/playlistNameField"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="17dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        app:boxStrokeColor="#888"
+        app:boxBackgroundColor="#FFFFFF">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="---"
+            android:inputType="text" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Кнопка "Создать" -->
+    <Button
+        android:id="@+id/createPlaylistButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="170dp"
+        android:layout_marginStart="17dp"
+        android:layout_marginEnd="17dp"
+        android:layout_marginBottom="32dp"
+        android:backgroundTint="#888888"
+        android:text="Создать"
+        android:textColor="#FFFFFF"
+        android:gravity="center" />
+
+
+
+</LinearLayout>
