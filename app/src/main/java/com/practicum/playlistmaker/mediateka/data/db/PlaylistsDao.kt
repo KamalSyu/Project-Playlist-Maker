@@ -1,5 +1,6 @@
 package com.practicum.playlistmaker.mediateka.data.db
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
@@ -15,7 +16,7 @@ interface PlaylistsDao {
     suspend fun update(playlist: PlaylistEntity)
 
     @Query("SELECT * FROM playlists ORDER BY createdAt DESC")
-    fun getAllPlaylists(): Flow<List<PlaylistEntity>>
+    fun getAllPlaylists(): LiveData<List<PlaylistEntity>>
 
     @Query("DELETE FROM playlists WHERE id = :playlistId")
     suspend fun delete(playlistId: Long)

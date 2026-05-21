@@ -15,7 +15,7 @@
         android:text="@string/mediateka"
         android:layout_marginBottom="0dp" />
 
-    <!-- Group 180 -->
+    <!-- Область для обложки -->
     <ImageView
         android:id="@+id/playlistCoverImage"
         android:layout_width="match_parent"
@@ -23,10 +23,11 @@
         android:background="#F0F0F0"
         android:scaleType="centerCrop"
         android:layout_marginTop="32dp"
-        android:contentDescription="@string/playlist_cover" />
+        android:contentDescription="@string/playlist_cover"
+        android:clickable="true"
+        android:focusable="true" />
 
-
-    <!-- Второй Text field -->
+    <!-- Поле описания -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/playlistDescriptionField"
         android:layout_width="match_parent"
@@ -40,11 +41,11 @@
         <com.google.android.material.textfield.TextInputEditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="----"
+            android:hint="@string/playlist_description_hint"
             android:inputType="textMultiLine" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Первый Text field -->
+    <!-- Поле названия -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/playlistNameField"
         android:layout_width="match_parent"
@@ -53,12 +54,13 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         app:boxStrokeColor="#888"
-        app:boxBackgroundColor="#FFFFFF">
+        app:boxBackgroundColor="#FFFFFF"
+        app:errorEnabled="true">
 
         <com.google.android.material.textfield.TextInputEditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="---"
+            android:hint="@string/playlist_name_hint"
             android:inputType="text" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -71,11 +73,8 @@
         android:layout_marginStart="17dp"
         android:layout_marginEnd="17dp"
         android:layout_marginBottom="32dp"
-        android:backgroundTint="#888888"
-        android:text="Создать"
+        android:text="@string/create_playlist"
         android:textColor="#FFFFFF"
         android:gravity="center" />
-
-
 
 </LinearLayout>

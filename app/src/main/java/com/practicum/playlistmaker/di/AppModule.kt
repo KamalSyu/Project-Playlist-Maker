@@ -13,8 +13,11 @@ import com.practicum.playlistmaker.core.utils.FormatTrackDurationUseCaseImpl
 import com.practicum.playlistmaker.creator.domain.TrackFactory
 import com.practicum.playlistmaker.mediateka.data.repository.PlaylistsRepositoryImpl
 import com.practicum.playlistmaker.mediateka.domain.repository.PlaylistsRepository
+import com.practicum.playlistmaker.mediateka.domain.usecase.CreatePlaylistUseCase
+import com.practicum.playlistmaker.mediateka.domain.usecase.LoadPlaylistsUseCase
+import com.practicum.playlistmaker.mediateka.ui.view.CreatePlaylistViewModel
 import com.practicum.playlistmaker.mediateka.ui.view.FavoriteTracksViewModel
-import com.practicum.playlistmaker.mediateka.ui.view.FragmentPlaylistsViewModel
+import com.practicum.playlistmaker.mediateka.ui.view.PlaylistsViewModel
 import com.practicum.playlistmaker.player.data.db.AppDatabase
 import com.practicum.playlistmaker.player.ui.view.AudioPlayerViewModel
 import com.practicum.playlistmaker.search.data.network.ItunesApi
@@ -190,6 +193,10 @@ val appModule = module {
     factory<GetFavoriteTracksUseCase> { GetFavoriteTracksUseCaseImpl(get()) }
     factory<IsTrackFavoriteUseCase> { IsTrackFavoriteUseCaseImpl(get()) }
 
+    // UseCases медиатеки
+    factory<CreatePlaylistUseCase> { CreatePlaylistUseCase(get()) }
+    factory<LoadPlaylistsUseCase> { LoadPlaylistsUseCase(get()) }
+
     // 7. ViewModel
     viewModel { SearchViewModel(
         searchTracksUseCase = get(),
@@ -224,11 +231,9 @@ val appModule = module {
 
     single<PlaylistsRepository> { PlaylistsRepositoryImpl(get()) }
 
-    viewModel { (context: Context) ->
-        FragmentPlaylistsViewModel(
-            playlistsRepository = get(),
-        )
-    }
+    viewModel { CreatePlaylistViewModel(get()) }
+    viewModel { PlaylistsViewModel(get()) }
+
 
     viewModel { FavoriteTracksViewModel(
         getFavoriteTracksUseCase = get()
