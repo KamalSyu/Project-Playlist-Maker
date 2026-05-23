@@ -1,13 +1,13 @@
 package com.practicum.playlistmaker.mediateka.domain.usecase
 
 import androidx.lifecycle.LiveData
-import com.practicum.playlistmaker.mediateka.domain.model.PlaylistForMediateka
-import com.practicum.playlistmaker.mediateka.domain.repository.PlaylistsRepository
+import com.practicum.playlistmaker.core.models.domain.Playlist
+import com.practicum.playlistmaker.mediateka.domain.repository.PlaylistsRepositoryMedia
 
 class LoadPlaylistsUseCase(
-    private val playlistsRepository: PlaylistsRepository
+    private val playlistsRepositoryMedia: PlaylistsRepositoryMedia
 ) {
-    operator fun invoke(): LiveData<List<PlaylistForMediateka>> {
-        return playlistsRepository.getPlaylists()
+    operator fun invoke(): LiveData<List<Playlist>> {
+        return playlistsRepositoryMedia.getPlaylists()
     }
 }

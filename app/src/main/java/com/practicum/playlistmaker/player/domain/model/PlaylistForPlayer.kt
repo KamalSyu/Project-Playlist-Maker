@@ -1,6 +1,6 @@
 package com.practicum.playlistmaker.player.domain.model
 
-import com.practicum.playlistmaker.core.models.Playlist
+import com.practicum.playlistmaker.core.models.domain.Playlist
 
 data class PlaylistForPlayer(
     val playlistId: String,

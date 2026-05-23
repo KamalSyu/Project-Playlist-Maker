@@ -2,12 +2,12 @@ package com.practicum.playlistmaker.mediateka.domain.usecase
 
 import android.content.Context
 import android.net.Uri
-import com.practicum.playlistmaker.mediateka.domain.model.PlaylistForMediateka
-import com.practicum.playlistmaker.mediateka.domain.repository.PlaylistsRepository
+import com.practicum.playlistmaker.core.models.domain.Playlist
+import com.practicum.playlistmaker.mediateka.domain.repository.PlaylistsRepositoryMedia
 import java.io.File
 
 class CreatePlaylistUseCase(
-    private val playlistsRepository: PlaylistsRepository
+    private val playlistsRepositoryMedia: PlaylistsRepositoryMedia
 ) {
     suspend operator fun invoke(
         playlistName: String,
@@ -15,12 +15,10 @@ class CreatePlaylistUseCase(
         coverUri: Uri?,
         context: Context
     ): Long {
-        // Копируем изображение в приватное хранилище
         val coverPath = coverUri?.let { copyImageToAppStorage(it, context) }
 
-        // Формируем данные плейлиста с использованием PlaylistForMediateka
-        val newPlaylist = PlaylistForMediateka(
-            id = 0L,  // ID будет сгенерирован при сохранении
+        val newPlaylist = Playlist(
+            id = "0",
             name = playlistName,
             description = playlistDescription,
             coverPath = coverPath,
@@ -29,9 +27,9 @@ class CreatePlaylistUseCase(
             createdAt = System.currentTimeMillis()
         )
 
-        // Сохраняем в БД и возвращаем ID
-        return playlistsRepository.addPlaylist(newPlaylist)
+        return playlistsRepositoryMedia.addPlaylist(newPlaylist)
     }
+
 
     private fun copyImageToAppStorage(uri: Uri, context: Context): String? {
         return try {

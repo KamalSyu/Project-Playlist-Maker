@@ -23,6 +23,7 @@ import com.practicum.playlistmaker.player.domain.usecase.playback.SetPlaybackCom
 import com.practicum.playlistmaker.player.domain.usecase.playback.StopPlaybackUseCase
 import com.practicum.playlistmaker.player.domain.usecase.playback.TogglePlaybackUseCase
 import com.practicum.playlistmaker.player.domain.usecase.playlist.GetPlaylistsUseCase
+import com.practicum.playlistmaker.player.domain.usecase.playlist.PlaylistInteractor
 import com.practicum.playlistmaker.player.ui.PlayerUiState
 import com.practicum.playlistmaker.search.ui.parcel.ParcelableTrack
 import kotlinx.coroutines.Job
@@ -38,12 +39,11 @@ class AudioPlayerViewModel(
     private val setCompletionListenerUseCase: SetPlaybackCompletionListenerUseCase,
     private val resetPlaybackUseCase: ResetPlaybackUseCase,
     val formatTrackDurationUseCase: FormatTrackDurationUseCase,
-    private val trackParcelableMapper: TrackParcelableMapper,
     private val addToFavoritesUseCase: AddToFavoritesUseCase,
     private val removeFromFavoritesUseCase: RemoveFromFavoritesUseCase,
     private val isTrackFavoriteUseCase: IsTrackFavoriteUseCase,
     private val getPlaylistsUseCase: GetPlaylistsUseCase,
-    private val playlistRepository: PlaylistRepository
+    private val playlistInteractor: PlaylistInteractor
 ) : ViewModel() {
 
     companion object {
@@ -67,8 +67,6 @@ class AudioPlayerViewModel(
             isCreatingPlaylist = false
         )
     )
-
-
     private var currentTrackId: String? = null
     private var favoriteStatusJob: Job? = null
     private var pollingJob: Job? = null
@@ -262,10 +260,6 @@ class AudioPlayerViewModel(
         }
     }
 
-    fun processTrack(parcelableTrack: ParcelableTrack): Track {
-        return trackParcelableMapper.toDomain(parcelableTrack)
-    }
-
     fun setCurrentTrack(track: Track) {
         favoriteStatusJob?.cancel()
         currentTrackId = track.trackId
@@ -328,22 +322,14 @@ class AudioPlayerViewModel(
     fun addTrackToPlaylist(playlist: PlaylistForPlayer) = viewModelScope.launch {
         val currentTrack = _uiState.value?.currentTrack ?: return@launch
 
-        // Локальная проверка наличия трека в плейлисте (без обращения к репозиторию)
-        if (playlist.trackIds?.contains(currentTrack.trackId) == true) {
-            _uiState.value = _uiState.value?.copy(addTrackStatus = AddTrackStatus.ALREADY_EXISTS)
-            return@launch
-        }
-
         try {
-            // Если трека нет, передаём в репозиторий для сохранения
-            val status = playlistRepository.addTrackToPlaylist(playlist.playlistId, currentTrack)
+            val status = playlistInteractor.addTrackToPlaylist(playlist.playlistId, currentTrack)
             _uiState.value = _uiState.value?.copy(addTrackStatus = status)
         } catch (e: Exception) {
             Log.e("AudioPlayerViewModel", "Ошибка добавления трека в плейлист", e)
             _uiState.value = _uiState.value?.copy(addTrackStatus = AddTrackStatus.ERROR)
         }
     }
-
     // Метод для сброса статуса после отображения Toast
     fun clearAddTrackStatus() {
         _uiState.value = _uiState.value?.copy(addTrackStatus = null)

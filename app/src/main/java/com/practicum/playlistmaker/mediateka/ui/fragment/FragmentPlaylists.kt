@@ -11,7 +11,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.R
-import com.practicum.playlistmaker.mediateka.domain.model.PlaylistForMediateka
+import com.practicum.playlistmaker.core.models.domain.Playlist
 import com.practicum.playlistmaker.mediateka.ui.PlaylistsUiState
 import com.practicum.playlistmaker.mediateka.ui.adapter.PlaylistsAdapter
 import com.practicum.playlistmaker.mediateka.ui.view.PlaylistsViewModel
@@ -49,14 +49,17 @@ class FragmentPlaylists : Fragment() {
         viewModel.loadPlaylists()
         return view
     }
+
     private fun showEmptyState() {
         playlistsRecyclerView.visibility = View.GONE
         emptyPlaylistsLayout.visibility = View.VISIBLE
     }
+
     fun refreshPlaylists() {
         viewModel.loadPlaylists()
     }
-    private fun showPlaylistsList(playlists: List<PlaylistForMediateka>) {
+
+    private fun showPlaylistsList(playlists: List<Playlist>) {
         emptyPlaylistsLayout.visibility = View.GONE
         playlistsRecyclerView.visibility = View.VISIBLE
         playlistsRecyclerView.layoutManager = GridLayoutManager(requireContext(), 2)
@@ -64,20 +67,24 @@ class FragmentPlaylists : Fragment() {
         playlistsRecyclerView.adapter = adapter
         adapter.updatePlaylists(playlists)
     }
+
     private fun setupNewPlaylistButton(view: View) {
         val newPlaylistButton: Button = view.findViewById(R.id.newPlaylistButton)
         newPlaylistButton.setOnClickListener {
             findNavController().navigate(R.id.action_mediatekaFragment_to_createPlaylistFragment)
         }
     }
+
     private fun showLoading() {
         playlistsRecyclerView.visibility = View.GONE
         emptyPlaylistsLayout.visibility = View.VISIBLE
     }
+
     private fun showError(error: Throwable) {
         Toast.makeText(requireContext(), "Ошибка загрузки: ${error.message}", Toast.LENGTH_LONG).show()
         showEmptyState()
     }
+
     companion object {
         fun newInstance(): Fragment {
             return FragmentPlaylists()

@@ -11,8 +11,8 @@ import com.practicum.playlistmaker.core.utils.DelayProvider
 import com.practicum.playlistmaker.core.utils.FormatTrackDurationUseCase
 import com.practicum.playlistmaker.core.utils.FormatTrackDurationUseCaseImpl
 import com.practicum.playlistmaker.creator.domain.TrackFactory
-import com.practicum.playlistmaker.mediateka.data.repository.PlaylistsRepositoryImpl
-import com.practicum.playlistmaker.mediateka.domain.repository.PlaylistsRepository
+import com.practicum.playlistmaker.mediateka.data.repository.PlaylistsRepositoryImplMedia
+import com.practicum.playlistmaker.mediateka.domain.repository.PlaylistsRepositoryMedia
 import com.practicum.playlistmaker.mediateka.domain.usecase.CreatePlaylistUseCase
 import com.practicum.playlistmaker.mediateka.domain.usecase.LoadPlaylistsUseCase
 import com.practicum.playlistmaker.mediateka.ui.view.CreatePlaylistViewModel
@@ -28,9 +28,9 @@ import com.practicum.playlistmaker.settings.data.mapper.ThemeSettingsMapper
 import com.practicum.playlistmaker.settings.data.repository.SettingsRepositoryImpl
 import com.practicum.playlistmaker.sharing.data.provider.SupportEmailDataProviderImpl
 import com.practicum.playlistmaker.sharing.data.provider.ShareTextProviderImpl
-import com.practicum.playlistmaker.player.data.mapper.TrackParcelableMapper
 import com.practicum.playlistmaker.player.data.repository.FavoriteTracksRepositoryImpl
 import com.practicum.playlistmaker.player.data.repository.PlaylistRepositoryImpl
+import com.practicum.playlistmaker.player.data.storage.FileStorageService
 import com.practicum.playlistmaker.player.domain.repository.FavoriteTracksRepository
 import com.practicum.playlistmaker.player.domain.repository.PlayerRepository
 import com.practicum.playlistmaker.player.domain.repository.PlaylistRepository
@@ -57,6 +57,7 @@ import com.practicum.playlistmaker.player.domain.usecase.playback.TogglePlayback
 import com.practicum.playlistmaker.player.domain.usecase.playback.TogglePlaybackUseCaseImpl
 import com.practicum.playlistmaker.player.domain.usecase.playlist.GetPlaylistsUseCase
 import com.practicum.playlistmaker.player.domain.usecase.playlist.GetPlaylistsUseCaseImpl
+import com.practicum.playlistmaker.player.domain.usecase.playlist.PlaylistInteractor
 import com.practicum.playlistmaker.player.domain.usecase.utils.DelayedTrackActionUseCase
 import com.practicum.playlistmaker.search.data.mapper.SearchHistoryMapper
 import com.practicum.playlistmaker.search.data.mapper.SearchResponseMapper
@@ -124,13 +125,13 @@ val appModule = module {
     // 3. Фабрики и базовые мапперы
     single { TrackFactory() }
     single { ThemeSettingsMapper() }
-    single { TrackParcelableMapper() }
 
     // 4. Мапперы с зависимостями
     single { TrackMapper(get()) }
     single { SearchResponseMapper(get()) }
     single { SearchHistoryMapper(get()) }
 
+    single { FileStorageService(get<Context>()) }
     // 5. Репозитории
     single<PlayerRepository> { PlayerRepositoryImpl() }
 
@@ -168,10 +169,12 @@ val appModule = module {
 
     single<PlaylistRepository> {
         PlaylistRepositoryImpl(
-            sharedPlaylistsRepository = get(),
-            playlistDao = get()
+            sharedPlaylistsRepositoryMedia = get(),
+            playlistDao = get(),
+            context = get()
         )
     }
+    single<PlaylistInteractor> { PlaylistInteractor(get()) }
 
     // 6. UseCases
     // UseCases поиска
@@ -228,12 +231,11 @@ val appModule = module {
         setCompletionListenerUseCase = get(),
         resetPlaybackUseCase = get(),
         formatTrackDurationUseCase = get(),
-        trackParcelableMapper = get(),
         addToFavoritesUseCase = get(),
         removeFromFavoritesUseCase = get(),
         isTrackFavoriteUseCase= get(),
         getPlaylistsUseCase = get(),
-        playlistRepository = get()
+        playlistInteractor = get()
     ) }
 
     viewModel { SettingsViewModel(
@@ -243,11 +245,11 @@ val appModule = module {
         sendSupportEmailUseCase = get()
     ) }
 
-    single<PlaylistsRepository> { PlaylistsRepositoryImpl(get()) }
+    single<PlaylistsRepositoryMedia> { PlaylistsRepositoryImplMedia(get()) }
 
     viewModel { CreatePlaylistViewModel(get()) }
-    viewModel { PlaylistsViewModel(get()) }
 
+    viewModel { PlaylistsViewModel(get()) }
 
     viewModel { FavoriteTracksViewModel(
         getFavoriteTracksUseCase = get()

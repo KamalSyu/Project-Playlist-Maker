@@ -19,7 +19,7 @@ import androidx.room.PrimaryKey
 )
 data class PlaylistTrackEntity(
     @PrimaryKey val id: Long,
-    val playlistId: Long, // добавлено поле для связи с PlaylistEntity
+    val playlistId: Long,
     val trackId: String,
     val title: String,
     val artist: String,

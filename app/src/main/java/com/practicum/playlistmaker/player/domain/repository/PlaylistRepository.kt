@@ -7,5 +7,5 @@ import com.practicum.playlistmaker.player.domain.model.PlaylistForPlayer
 interface PlaylistRepository {
     suspend fun getPlaylists(): List<PlaylistForPlayer>
     suspend fun addTrackToPlaylist(playlistId: String, track: Track): AddTrackStatus
-    suspend fun createPlaylist(name: String, coverPath: String? = null): String
+    suspend fun createPlaylist(name: String, coverPath: String? = null): Long
 }

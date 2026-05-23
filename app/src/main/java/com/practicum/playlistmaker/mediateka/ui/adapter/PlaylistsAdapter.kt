@@ -4,12 +4,12 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.R
-import com.practicum.playlistmaker.mediateka.domain.model.PlaylistForMediateka
+import com.practicum.playlistmaker.core.models.domain.Playlist
 import com.practicum.playlistmaker.mediateka.ui.view.PlaylistViewHolder
 
-class PlaylistsAdapter(
-    private var playlists: List<PlaylistForMediateka> = emptyList()
-) : RecyclerView.Adapter<PlaylistViewHolder>() {
+class PlaylistsAdapter : RecyclerView.Adapter<PlaylistViewHolder>() {
+
+    private var playlists: List<Playlist> = emptyList()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PlaylistViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -23,8 +23,8 @@ class PlaylistsAdapter(
 
     override fun getItemCount(): Int = playlists.size
 
-    fun updatePlaylists(newPlaylists: List<PlaylistForMediateka>) {
-        playlists = newPlaylists
+    fun updatePlaylists(newPlaylists: List<Playlist>) {
+        this.playlists = newPlaylists
         notifyDataSetChanged()
     }
 }
