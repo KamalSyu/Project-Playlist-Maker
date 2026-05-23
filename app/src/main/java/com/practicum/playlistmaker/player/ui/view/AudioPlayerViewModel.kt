@@ -1,5 +1,6 @@
 package com.practicum.playlistmaker.player.ui.view
 
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -8,7 +9,10 @@ import androidx.lifecycle.viewModelScope
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.core.utils.FormatTrackDurationUseCase
 import com.practicum.playlistmaker.player.data.mapper.TrackParcelableMapper
+import com.practicum.playlistmaker.player.data.repository.AddTrackStatus
 import com.practicum.playlistmaker.player.domain.model.PlaybackState
+import com.practicum.playlistmaker.player.domain.model.PlaylistForPlayer
+import com.practicum.playlistmaker.player.domain.repository.PlaylistRepository
 import com.practicum.playlistmaker.player.domain.usecase.favorite.AddToFavoritesUseCase
 import com.practicum.playlistmaker.player.domain.usecase.favorite.IsTrackFavoriteUseCase
 import com.practicum.playlistmaker.player.domain.usecase.favorite.RemoveFromFavoritesUseCase
@@ -18,6 +22,7 @@ import com.practicum.playlistmaker.player.domain.usecase.playback.ResetPlaybackU
 import com.practicum.playlistmaker.player.domain.usecase.playback.SetPlaybackCompletionListenerUseCase
 import com.practicum.playlistmaker.player.domain.usecase.playback.StopPlaybackUseCase
 import com.practicum.playlistmaker.player.domain.usecase.playback.TogglePlaybackUseCase
+import com.practicum.playlistmaker.player.domain.usecase.playlist.GetPlaylistsUseCase
 import com.practicum.playlistmaker.player.ui.PlayerUiState
 import com.practicum.playlistmaker.search.ui.parcel.ParcelableTrack
 import kotlinx.coroutines.Job
@@ -36,7 +41,9 @@ class AudioPlayerViewModel(
     private val trackParcelableMapper: TrackParcelableMapper,
     private val addToFavoritesUseCase: AddToFavoritesUseCase,
     private val removeFromFavoritesUseCase: RemoveFromFavoritesUseCase,
-    private val isTrackFavoriteUseCase: IsTrackFavoriteUseCase
+    private val isTrackFavoriteUseCase: IsTrackFavoriteUseCase,
+    private val getPlaylistsUseCase: GetPlaylistsUseCase,
+    private val playlistRepository: PlaylistRepository
 ) : ViewModel() {
 
     companion object {
@@ -48,10 +55,19 @@ class AudioPlayerViewModel(
             playbackState = PlaybackState(isPlaying = false, position = 0L),
             formattedTime = formatTrackDurationUseCase(0L),
             playbackCompleted = false,
+            shouldPoll = false,
+            error = null,
+            isInitialized = false,
             isFavorite = false,
-            currentTrack = null
+            currentTrack = null,
+            playlistsForBottomSheet = emptyList(),
+            isBottomSheetExpanded = false,
+            isLoadingPlaylists = false,
+            addTrackStatus = null,
+            isCreatingPlaylist = false
         )
     )
+
 
     private var currentTrackId: String? = null
     private var favoriteStatusJob: Job? = null
@@ -97,6 +113,36 @@ class AudioPlayerViewModel(
         )
     }
 
+    fun showPlaylistsBottomSheet() = viewModelScope.launch {
+        _uiState.value = _uiState.value?.copy(
+            isBottomSheetExpanded = true,
+            isLoadingPlaylists = true
+        )
+        loadPlaylistsForBottomSheet()
+    }
+
+    private fun loadPlaylistsForBottomSheet() = viewModelScope.launch {
+        try {
+            _uiState.value = _uiState.value?.copy(isLoadingPlaylists = true)
+            val playlists = getPlaylistsUseCase() // Вызов UseCase
+            _uiState.value = _uiState.value?.copy(
+                playlistsForBottomSheet = playlists,
+                isLoadingPlaylists = false
+            )
+        } catch (e: Exception) {
+            Log.e("AudioPlayerViewModel", "Failed to load playlists", e)
+            _uiState.value = _uiState.value?.copy(
+                isLoadingPlaylists = false,
+                error = e
+            )
+        }
+    }
+
+    fun hidePlaylistsBottomSheet() {
+        _uiState.value = _uiState.value?.copy(
+            isBottomSheetExpanded = false
+        )
+    }
 
     fun clearError() {
         _uiState.value = _uiState.value?.copy(error = null)
@@ -278,4 +324,29 @@ class AudioPlayerViewModel(
             Log.w("AudioPlayerViewModel", "currentTrackId is null, cannot check favorite status")
         }
     }
+
+    fun addTrackToPlaylist(playlist: PlaylistForPlayer) = viewModelScope.launch {
+        val currentTrack = _uiState.value?.currentTrack ?: return@launch
+
+        // Локальная проверка наличия трека в плейлисте (без обращения к репозиторию)
+        if (playlist.trackIds?.contains(currentTrack.trackId) == true) {
+            _uiState.value = _uiState.value?.copy(addTrackStatus = AddTrackStatus.ALREADY_EXISTS)
+            return@launch
+        }
+
+        try {
+            // Если трека нет, передаём в репозиторий для сохранения
+            val status = playlistRepository.addTrackToPlaylist(playlist.playlistId, currentTrack)
+            _uiState.value = _uiState.value?.copy(addTrackStatus = status)
+        } catch (e: Exception) {
+            Log.e("AudioPlayerViewModel", "Ошибка добавления трека в плейлист", e)
+            _uiState.value = _uiState.value?.copy(addTrackStatus = AddTrackStatus.ERROR)
+        }
+    }
+
+    // Метод для сброса статуса после отображения Toast
+    fun clearAddTrackStatus() {
+        _uiState.value = _uiState.value?.copy(addTrackStatus = null)
+    }
+
 }

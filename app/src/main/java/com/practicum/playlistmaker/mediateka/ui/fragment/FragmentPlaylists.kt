@@ -11,7 +11,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.R
-import com.practicum.playlistmaker.mediateka.domain.model.PlaylistData
+import com.practicum.playlistmaker.mediateka.domain.model.PlaylistForMediateka
 import com.practicum.playlistmaker.mediateka.ui.PlaylistsUiState
 import com.practicum.playlistmaker.mediateka.ui.adapter.PlaylistsAdapter
 import com.practicum.playlistmaker.mediateka.ui.view.PlaylistsViewModel
@@ -56,7 +56,7 @@ class FragmentPlaylists : Fragment() {
     fun refreshPlaylists() {
         viewModel.loadPlaylists()
     }
-    private fun showPlaylistsList(playlists: List<PlaylistData>) {
+    private fun showPlaylistsList(playlists: List<PlaylistForMediateka>) {
         emptyPlaylistsLayout.visibility = View.GONE
         playlistsRecyclerView.visibility = View.VISIBLE
         playlistsRecyclerView.layoutManager = GridLayoutManager(requireContext(), 2)

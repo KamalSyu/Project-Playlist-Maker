@@ -2,7 +2,7 @@ package com.practicum.playlistmaker.mediateka.domain.usecase
 
 import android.content.Context
 import android.net.Uri
-import com.practicum.playlistmaker.mediateka.domain.model.PlaylistData
+import com.practicum.playlistmaker.mediateka.domain.model.PlaylistForMediateka
 import com.practicum.playlistmaker.mediateka.domain.repository.PlaylistsRepository
 import java.io.File
 
@@ -18,12 +18,13 @@ class CreatePlaylistUseCase(
         // Копируем изображение в приватное хранилище
         val coverPath = coverUri?.let { copyImageToAppStorage(it, context) }
 
-        // Формируем данные плейлиста
-        val newPlaylist = PlaylistData(
+        // Формируем данные плейлиста с использованием PlaylistForMediateka
+        val newPlaylist = PlaylistForMediateka(
+            id = 0L,  // ID будет сгенерирован при сохранении
             name = playlistName,
             description = playlistDescription,
             coverPath = coverPath,
-            trackIds = "[]", // Изначально пустой список треков
+            trackIds = "[]",
             trackCount = 0,
             createdAt = System.currentTimeMillis()
         )

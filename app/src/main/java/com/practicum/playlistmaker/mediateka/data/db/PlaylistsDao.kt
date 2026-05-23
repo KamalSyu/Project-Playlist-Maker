@@ -3,9 +3,9 @@ package com.practicum.playlistmaker.mediateka.data.db
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PlaylistsDao {
@@ -20,4 +20,7 @@ interface PlaylistsDao {
 
     @Query("DELETE FROM playlists WHERE id = :playlistId")
     suspend fun delete(playlistId: Long)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertTrackToPlaylist(track: PlaylistTrackEntity)
 }

@@ -30,8 +30,10 @@ import com.practicum.playlistmaker.sharing.data.provider.SupportEmailDataProvide
 import com.practicum.playlistmaker.sharing.data.provider.ShareTextProviderImpl
 import com.practicum.playlistmaker.player.data.mapper.TrackParcelableMapper
 import com.practicum.playlistmaker.player.data.repository.FavoriteTracksRepositoryImpl
+import com.practicum.playlistmaker.player.data.repository.PlaylistRepositoryImpl
 import com.practicum.playlistmaker.player.domain.repository.FavoriteTracksRepository
 import com.practicum.playlistmaker.player.domain.repository.PlayerRepository
+import com.practicum.playlistmaker.player.domain.repository.PlaylistRepository
 import com.practicum.playlistmaker.player.domain.usecase.favorite.AddToFavoritesUseCase
 import com.practicum.playlistmaker.player.domain.usecase.favorite.AddToFavoritesUseCaseImpl
 import com.practicum.playlistmaker.player.domain.usecase.favorite.GetFavoriteTracksUseCase
@@ -53,6 +55,8 @@ import com.practicum.playlistmaker.player.domain.usecase.playback.StopPlaybackUs
 import com.practicum.playlistmaker.player.domain.usecase.playback.StopPlaybackUseCaseImpl
 import com.practicum.playlistmaker.player.domain.usecase.playback.TogglePlaybackUseCase
 import com.practicum.playlistmaker.player.domain.usecase.playback.TogglePlaybackUseCaseImpl
+import com.practicum.playlistmaker.player.domain.usecase.playlist.GetPlaylistsUseCase
+import com.practicum.playlistmaker.player.domain.usecase.playlist.GetPlaylistsUseCaseImpl
 import com.practicum.playlistmaker.player.domain.usecase.utils.DelayedTrackActionUseCase
 import com.practicum.playlistmaker.search.data.mapper.SearchHistoryMapper
 import com.practicum.playlistmaker.search.data.mapper.SearchResponseMapper
@@ -162,6 +166,13 @@ val appModule = module {
         )
     }
 
+    single<PlaylistRepository> {
+        PlaylistRepositoryImpl(
+            sharedPlaylistsRepository = get(),
+            playlistDao = get()
+        )
+    }
+
     // 6. UseCases
     // UseCases поиска
     factory<SearchTracksUseCase> { SearchTracksUseCaseImpl(get()) }
@@ -196,6 +207,7 @@ val appModule = module {
     // UseCases медиатеки
     factory<CreatePlaylistUseCase> { CreatePlaylistUseCase(get()) }
     factory<LoadPlaylistsUseCase> { LoadPlaylistsUseCase(get()) }
+    factory<GetPlaylistsUseCase> { GetPlaylistsUseCaseImpl(get()) }
 
     // 7. ViewModel
     viewModel { SearchViewModel(
@@ -219,7 +231,9 @@ val appModule = module {
         trackParcelableMapper = get(),
         addToFavoritesUseCase = get(),
         removeFromFavoritesUseCase = get(),
-        isTrackFavoriteUseCase= get()
+        isTrackFavoriteUseCase= get(),
+        getPlaylistsUseCase = get(),
+        playlistRepository = get()
     ) }
 
     viewModel { SettingsViewModel(
@@ -251,6 +265,7 @@ val dataModule = module {
     }
 
     single { get<AppDatabase>().favoriteTracksDao() }
+    single { get<AppDatabase>().playlistsDao() }
 }
 
 

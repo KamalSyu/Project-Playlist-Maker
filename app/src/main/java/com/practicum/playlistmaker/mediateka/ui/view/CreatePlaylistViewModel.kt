@@ -2,55 +2,73 @@ package com.practicum.playlistmaker.mediateka.ui.view
 
 import android.content.Context
 import android.net.Uri
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.mediateka.domain.usecase.CreatePlaylistUseCase
+import com.practicum.playlistmaker.mediateka.ui.CreatePlaylistUiState
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import java.io.File
 
 class CreatePlaylistViewModel(
     private val createPlaylistUseCase: CreatePlaylistUseCase
 ) : ViewModel() {
-    private val _success = MutableLiveData<String?>()
-    val success: LiveData<String?> = _success
-    private val _error = MutableLiveData<String?>()
-    val error: LiveData<String?> = _error
 
-    fun createPlaylist(
-        playlistName: String,
-        playlistDescription: String,
-        coverUri: Uri?,
-        context: Context
-    ) {
-        viewModelScope.launch {
-            try {
-                val playlistId = createPlaylistUseCase(playlistName, playlistDescription, coverUri, context)
-                _success.value = context.getString(R.string.playlist_created, playlistName)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                _error.value = context.getString(R.string.error_creating_playlist)
-            } finally {
-                _success.value = null
-                _error.value = null
-            }
-        }
+    private val _uiState = MutableStateFlow(CreatePlaylistUiState())
+    val uiState: StateFlow<CreatePlaylistUiState> = _uiState
+
+    fun updatePlaylistName(name: String) {
+        _uiState.value = _uiState.value.copy(playlistName = name)
     }
-    private fun copyImageToAppStorage(uri: Uri, context: Context): String? {
-        return try {
-            context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                val fileName = "playlist_cover_${System.currentTimeMillis()}.jpg"
-                val outputFile = File(context.filesDir, fileName)
-                outputFile.outputStream().use { outputStream ->
-                    inputStream.copyTo(outputStream)
-                }
-                outputFile.absolutePath
-            }
+
+    fun updatePlaylistDescription(description: String) {
+        _uiState.value = _uiState.value.copy(playlistDescription = description)
+    }
+
+    fun updateSelectedCoverUri(uri: Uri?) {
+        _uiState.value = _uiState.value.copy(selectedCoverUri = uri)
+    }
+
+    fun createPlaylist(context: Context) = viewModelScope.launch {
+        val currentState = _uiState.value
+        val playlistName = currentState.playlistName.trim()
+        val playlistDescription = currentState.playlistDescription
+        val coverUri = currentState.selectedCoverUri
+
+        // Валидация: название не должно быть пустым
+        if (playlistName.isEmpty()) {
+            _uiState.value = currentState.copy(createPlaylistError = context.getString(R.string.playlist_name_required))
+            return@launch
+        }
+
+        try {
+            createPlaylistUseCase(playlistName, playlistDescription, coverUri, context)
+            _uiState.value = CreatePlaylistUiState(
+                createPlaylistSuccess = context.getString(R.string.playlist_created, playlistName)
+            )
         } catch (e: Exception) {
             e.printStackTrace()
-            null
+            _uiState.value = currentState.copy(createPlaylistError = context.getString(R.string.error_creating_playlist))
         }
+    }
+
+    fun clearCreatePlaylistState() {
+        _uiState.value = CreatePlaylistUiState()
+    }
+
+    // В ViewModel
+    fun clearForm() {
+        _uiState.value = CreatePlaylistUiState()
+    }
+
+    fun clearSuccess() {
+        val currentState = _uiState.value
+        _uiState.value = currentState.copy(createPlaylistSuccess = null)
+    }
+
+    fun clearError() {
+        val currentState = _uiState.value
+        _uiState.value = currentState.copy(createPlaylistError = null)
     }
 }
