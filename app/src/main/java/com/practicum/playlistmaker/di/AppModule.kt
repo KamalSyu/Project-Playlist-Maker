@@ -227,7 +227,6 @@ val appModule = module {
     factory<AddTrackToPlaylistUseCase> {
         AddTrackToPlaylistUseCase(get())
     }
-
     factory<PlaylistInteractor> { PlaylistInteractorImpl(get()) }
 
     // 7. ViewModel

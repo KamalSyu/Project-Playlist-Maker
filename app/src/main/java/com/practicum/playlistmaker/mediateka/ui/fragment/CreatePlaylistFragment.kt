@@ -30,10 +30,11 @@ import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.practicum.playlistmaker.mediateka.ui.CreatePlaylistUiState
 import com.practicum.playlistmaker.mediateka.ui.view.CreatePlaylistViewModel
+import org.koin.android.ext.android.inject
 
 class CreatePlaylistFragment : Fragment() {
 
-    private val viewModel: CreatePlaylistViewModel by viewModels()
+    private val viewModel: CreatePlaylistViewModel by inject()
     private lateinit var createButton: Button
     private lateinit var nameField: TextInputLayout
     private lateinit var descriptionField: TextInputLayout
