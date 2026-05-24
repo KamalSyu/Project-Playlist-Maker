@@ -25,6 +25,7 @@ import androidx.activity.OnBackPressedCallback
 import android.os.Build
 import android.view.inputmethod.InputMethodManager
 import androidx.activity.result.PickVisualMediaRequest
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.practicum.playlistmaker.mediateka.ui.CreatePlaylistUiState
@@ -32,7 +33,7 @@ import com.practicum.playlistmaker.mediateka.ui.view.CreatePlaylistViewModel
 
 class CreatePlaylistFragment : Fragment() {
 
-    private lateinit var viewModel: CreatePlaylistViewModel
+    private val viewModel: CreatePlaylistViewModel by viewModels()
     private lateinit var createButton: Button
     private lateinit var nameField: TextInputLayout
     private lateinit var descriptionField: TextInputLayout
@@ -70,7 +71,6 @@ class CreatePlaylistFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel = ViewModelProvider(this)[CreatePlaylistViewModel::class.java]
 
         savedInstanceState?.let { bundle ->
             val playlistName = bundle.getString("playlistName", "")

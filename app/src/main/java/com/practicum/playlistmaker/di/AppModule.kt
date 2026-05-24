@@ -265,7 +265,9 @@ val appModule = module {
     ) }
 
 
-    viewModel { CreatePlaylistViewModel(get()) }
+    viewModel<CreatePlaylistViewModel> {
+        CreatePlaylistViewModel(get())
+    }
 
     viewModel { PlaylistsViewModel(get(), get()) }
 
