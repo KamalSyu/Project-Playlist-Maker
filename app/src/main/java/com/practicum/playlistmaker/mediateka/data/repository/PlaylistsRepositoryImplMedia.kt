@@ -67,6 +67,7 @@ class PlaylistsRepositoryImplMedia(
         val playlistTrackEntity = PlaylistTrackEntity(
             id = UUID.randomUUID().mostSignificantBits and Long.MAX_VALUE,
             playlistId = playlistId,
+            trackId = track.trackId,
             title = track.trackName,
             artist = track.artistName,
             duration = ((track.trackTimeMillis ?: 0L) / 1000).toInt(),

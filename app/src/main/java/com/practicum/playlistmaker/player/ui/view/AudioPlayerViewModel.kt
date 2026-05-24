@@ -6,9 +6,12 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.practicum.playlistmaker.core.models.Track
+import com.practicum.playlistmaker.core.models.domain.AddTrackStatus
 import com.practicum.playlistmaker.core.utils.FormatTrackDurationUseCase
 import com.practicum.playlistmaker.player.data.mapper.TrackParcelableMapper
 import com.practicum.playlistmaker.player.domain.model.PlaybackState
+import com.practicum.playlistmaker.player.domain.model.PlaylistForPlayer
+import com.practicum.playlistmaker.player.domain.repository.PlaylistRepository
 import com.practicum.playlistmaker.player.domain.usecase.favorite.AddToFavoritesUseCase
 import com.practicum.playlistmaker.player.domain.usecase.favorite.IsTrackFavoriteUseCase
 import com.practicum.playlistmaker.player.domain.usecase.favorite.RemoveFromFavoritesUseCase
@@ -22,6 +25,7 @@ import com.practicum.playlistmaker.player.ui.PlayerUiState
 import com.practicum.playlistmaker.search.ui.parcel.ParcelableTrack
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
@@ -36,7 +40,8 @@ class AudioPlayerViewModel(
     private val trackParcelableMapper: TrackParcelableMapper,
     private val addToFavoritesUseCase: AddToFavoritesUseCase,
     private val removeFromFavoritesUseCase: RemoveFromFavoritesUseCase,
-    private val isTrackFavoriteUseCase: IsTrackFavoriteUseCase
+    private val isTrackFavoriteUseCase: IsTrackFavoriteUseCase,
+    private val playlistRepository: PlaylistRepository
 ) : ViewModel() {
 
     companion object {
@@ -57,6 +62,8 @@ class AudioPlayerViewModel(
     private var favoriteStatusJob: Job? = null
     private var pollingJob: Job? = null
     val uiState: LiveData<PlayerUiState> = _uiState
+    val playlists: Flow<List<PlaylistForPlayer>> = playlistRepository.getPlaylists()
+
 
     fun onFavoriteClicked() = viewModelScope.launch {
         try {
@@ -233,6 +240,10 @@ class AudioPlayerViewModel(
     fun stopProgressUpdates() {
         stopPolling()
     }
+    suspend fun addTrackToPlaylist(playlistId: String, track: Track): AddTrackStatus {
+        return playlistRepository.addTrackToPlaylist(playlistId, track)
+    }
+
 
     private fun startPolling() {
         stopPolling()

@@ -2,7 +2,6 @@ package com.practicum.playlistmaker.player.ui
 
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.core.models.domain.AddTrackStatus
-import com.practicum.playlistmaker.player.data.repository.AddTrackStatus
 import com.practicum.playlistmaker.player.domain.model.PlaybackState
 import com.practicum.playlistmaker.player.domain.model.PlaylistForPlayer
 

@@ -2,12 +2,17 @@ package com.practicum.playlistmaker.mediateka.domain.usecase
 
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.core.models.domain.AddTrackStatus
-import com.practicum.playlistmaker.player.domain.repository.PlaylistRepository
+import com.practicum.playlistmaker.mediateka.domain.repository.PlaylistsRepositoryMedia
 
 class AddTrackToPlaylistUseCase(
-    private val playlistRepository: PlaylistRepository
+    private val playlistsRepository: PlaylistsRepositoryMedia
 ) {
     suspend operator fun invoke(playlistId: Long, track: Track): AddTrackStatus {
-        return playlistRepository.addTrackToPlaylist(playlistId.toString(), track)
+        return try {
+            playlistsRepository.addTrackToPlaylist(playlistId, track)
+            AddTrackStatus.SUCCESS
+        } catch (e: Exception) {
+            AddTrackStatus.ERROR
+        }
     }
 }

@@ -15,12 +15,14 @@ import com.practicum.playlistmaker.mediateka.data.repository.PlaylistsRepository
 import com.practicum.playlistmaker.mediateka.domain.interactor.PlaylistInteractor
 import com.practicum.playlistmaker.mediateka.domain.interactor.PlaylistInteractorImpl
 import com.practicum.playlistmaker.mediateka.domain.repository.PlaylistsRepositoryMedia
+import com.practicum.playlistmaker.mediateka.domain.usecase.AddTrackToPlaylistUseCase
 import com.practicum.playlistmaker.mediateka.domain.usecase.CreatePlaylistUseCase
 import com.practicum.playlistmaker.mediateka.domain.usecase.LoadPlaylistsUseCase
 import com.practicum.playlistmaker.mediateka.ui.view.CreatePlaylistViewModel
 import com.practicum.playlistmaker.mediateka.ui.view.FavoriteTracksViewModel
 import com.practicum.playlistmaker.mediateka.ui.view.PlaylistsViewModel
 import com.practicum.playlistmaker.player.data.db.AppDatabase
+import com.practicum.playlistmaker.player.data.mapper.TrackParcelableMapper
 import com.practicum.playlistmaker.player.ui.view.AudioPlayerViewModel
 import com.practicum.playlistmaker.search.data.network.ItunesApi
 import com.practicum.playlistmaker.search.data.repository.HistoryRepositoryImpl
@@ -168,14 +170,23 @@ val appModule = module {
         )
     }
 
+    single<PlaylistsRepositoryMedia> {
+        PlaylistsRepositoryImplMedia(
+            dao = get(),
+            context = get()
+        )
+    }
+
     single<PlaylistRepository> {
         PlaylistRepositoryImpl(
-            sharedPlaylistsRepositoryMedia = get(),
+            playlistsRepositoryMedia = get(),
             playlistDao = get(),
             context = get()
         )
     }
-    single<PlaylistInteractor> { PlaylistInteractor(get()) }
+    single { TrackParcelableMapper() }
+
+    single<PlaylistInteractor> { PlaylistInteractorImpl(get()) }  // Исправлено: используем реализацию
 
     // 6. UseCases
     // UseCases поиска
@@ -213,8 +224,12 @@ val appModule = module {
     factory<LoadPlaylistsUseCase> { LoadPlaylistsUseCase(get()) }
     factory<GetPlaylistsUseCase> { GetPlaylistsUseCaseImpl(get()) }
 
+    factory<AddTrackToPlaylistUseCase> {
+        AddTrackToPlaylistUseCase(get())
+    }
+
     factory<PlaylistInteractor> { PlaylistInteractorImpl(get()) }
-    viewModel { PlaylistsViewModel(get(), get(), get(), get()) }
+
     // 7. ViewModel
     viewModel { SearchViewModel(
         searchTracksUseCase = get(),
@@ -234,12 +249,13 @@ val appModule = module {
         setCompletionListenerUseCase = get(),
         resetPlaybackUseCase = get(),
         formatTrackDurationUseCase = get(),
+        trackParcelableMapper = get(),
         addToFavoritesUseCase = get(),
         removeFromFavoritesUseCase = get(),
-        isTrackFavoriteUseCase= get(),
-        getPlaylistsUseCase = get(),
-        playlistInteractor = get()
+        isTrackFavoriteUseCase = get(),
+        playlistRepository = get()
     ) }
+
 
     viewModel { SettingsViewModel(
         getThemeStateUseCase = get(),
@@ -248,11 +264,10 @@ val appModule = module {
         sendSupportEmailUseCase = get()
     ) }
 
-    single<PlaylistsRepositoryMedia> { PlaylistsRepositoryImplMedia(get()) }
 
     viewModel { CreatePlaylistViewModel(get()) }
 
-    viewModel { PlaylistsViewModel(get()) }
+    viewModel { PlaylistsViewModel(get(), get()) }
 
     viewModel { FavoriteTracksViewModel(
         getFavoriteTracksUseCase = get()

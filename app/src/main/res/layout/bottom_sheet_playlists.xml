@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="?attr/colorBackgroundFloating">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Плейлисты"
+        android:textSize="16sp"
+        android:textColor="?attr/colorOnSurface"
+        android:padding="16dp"
+        android:gravity="center_horizontal" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="?attr/colorOutline" />
+
+    <!-- Здесь будет список плейлистов -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/playlistsBottomSheetRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:nestedScrollingEnabled="false" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="?attr/colorOutline" />
+
+    <Button
+        android:id="@+id/newPlaylistBottomSheetButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Новый плейлист"
+        style="?attr/borderlessButtonStyle"
+        android:paddingVertical="16dp" />
+</LinearLayout>

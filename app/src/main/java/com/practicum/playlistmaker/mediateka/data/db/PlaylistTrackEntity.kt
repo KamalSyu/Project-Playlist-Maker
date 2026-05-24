@@ -15,12 +15,13 @@ import androidx.room.PrimaryKey
             onDelete = ForeignKey.CASCADE
         )
     ],
-    indices = [Index(value = ["playlistId"])]
+    indices = [Index(value = ["playlistId"]), Index(value = ["trackId"])]
 )
 data class PlaylistTrackEntity(
     @PrimaryKey
     val id: Long,
     val playlistId: Long,
+    val trackId: String,
     val title: String,
     val artist: String,
     val duration: Int,

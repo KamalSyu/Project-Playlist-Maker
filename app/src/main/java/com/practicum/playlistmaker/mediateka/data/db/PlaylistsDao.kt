@@ -28,7 +28,7 @@ interface PlaylistsDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertTrackToPlaylist(track: PlaylistTrackEntity)
 
-    @Query("SELECT COUNT(*) FROM playlist_tracks WHERE playlistId = :playlistId")
+    @Query("SELECT COUNT(*) FROM playlist_tracks WHERE playlistId = :playlistId AND trackId = :trackId")
     suspend fun isTrackInPlaylist(playlistId: Long, trackId: String): Int
 
     @Query("UPDATE playlists SET trackCount = trackCount + 1 WHERE id = :playlistId")

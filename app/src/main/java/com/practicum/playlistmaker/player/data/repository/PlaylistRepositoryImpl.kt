@@ -11,7 +11,9 @@ import com.practicum.playlistmaker.player.domain.model.PlaylistForPlayer
 import com.practicum.playlistmaker.player.domain.repository.PlaylistRepository
 import com.practicum.playlistmaker.mediateka.domain.repository.PlaylistsRepositoryMedia
 import com.practicum.playlistmaker.player.data.storage.FileStorageService
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 
 class PlaylistRepositoryImpl(
     private val playlistDao: PlaylistsDao,
@@ -21,14 +23,17 @@ class PlaylistRepositoryImpl(
 
     private val fileStorageService = FileStorageService(context)
 
-    override suspend fun getPlaylists(): List<PlaylistForPlayer> {
+    override fun getPlaylists(): Flow<List<PlaylistForPlayer>> {
         return playlistDao.getAllPlaylists()
-            .first()
-            .map { playlistEntity ->
-                val domainPlaylist = playlistEntity.toDomain()
-                PlaylistForPlayer.fromDomain(domainPlaylist)
+            .map { entities ->
+                entities.map { playlistEntity ->
+                    val domainPlaylist = playlistEntity.toDomain()
+                    PlaylistForPlayer.fromDomain(domainPlaylist)
+                }
             }
     }
+
+
 
     override suspend fun addTrackToPlaylist(playlistId: String, track: Track): AddTrackStatus {
         val playlistIdLong = playlistId.toLongOrNull() ?: return AddTrackStatus.ERROR
@@ -41,18 +46,15 @@ class PlaylistRepositoryImpl(
         }
     }
 
-
-
     override suspend fun createPlaylist(
         name: String,
-        coverPath: String? = null,
-        description: String? = null
-    ): Result<String> {
+        coverPath: String?,
+        description: String?
+    ): String {
+        if (name.isBlank()) {
+            throw IllegalArgumentException("Название плейлиста не может быть пустым")
+        }
         return try {
-            if (name.isBlank()) {
-                return Result.failure(IllegalArgumentException("Название плейлиста не может быть пустым"))
-            }
-
             val savedCoverPath = coverPath?.let { safeCopyToPrivateStorage(it) }
             val newDomainPlaylist = Playlist(
                 id = "",
@@ -62,13 +64,15 @@ class PlaylistRepositoryImpl(
                 description = description,
                 createdAt = System.currentTimeMillis()
             )
-            val playlistId = playlistsRepositoryMedia.addPlaylist(newDomainPlaylist)
-            Result.success(playlistId)
+            val playlistIdLong = playlistsRepositoryMedia.addPlaylist(newDomainPlaylist)
+            playlistIdLong.toString() // Преобразуем Long в String
         } catch (e: Exception) {
             Log.e("PlaylistRepositoryImpl", "Ошибка при создании плейлиста", e)
-            Result.failure(e)
+            throw e
         }
+
     }
+
 
     /**
      * Безопасное копирование файла обложки в приватное хранилище.
@@ -83,3 +87,4 @@ class PlaylistRepositoryImpl(
         }
     }
 }
+
