@@ -41,14 +41,23 @@
         android:layout_marginTop="32dp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
-        app:boxStrokeColor="#888"
-        app:boxBackgroundColor="#FFFFFF">
+        app:boxStrokeWidth="0dp"
+        >
 
         <com.google.android.material.textfield.TextInputEditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:minHeight="54dp"
             android:hint="@string/playlist_description_hint"
-            android:inputType="textMultiLine" />
+            android:inputType="textMultiLine"
+            android:textColor="#1A1B22"
+            android:background="@drawable/text_input_outline_border"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="18dp"
+        android:paddingBottom="19dp"
+        android:focusable="true"
+        android:focusableInTouchMode="true" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <!-- Поле названия -->
@@ -59,15 +68,22 @@
         android:layout_marginTop="17dp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
-        app:boxStrokeColor="#888"
-        app:boxBackgroundColor="#FFFFFF"
-        app:errorEnabled="true">
+        app:boxStrokeWidth="0dp">
 
         <com.google.android.material.textfield.TextInputEditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/playlist_name_hint"
-            android:inputType="text" />
+            android:minHeight="54dp"
+            android:hint="@string/playlist_description"
+            android:inputType="textMultiLine"
+            android:textColor="#1A1B22"
+            android:background="@drawable/text_input_outline_border"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="18dp"
+            android:paddingBottom="19dp"
+            android:focusable="true"
+            android:focusableInTouchMode="true" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <!-- Кнопка «Создать» -->

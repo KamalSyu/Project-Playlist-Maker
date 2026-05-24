@@ -61,8 +61,8 @@
 
 
     <string name="playlist_name_hint">Название плейлиста</string>
-    <string name="playlist_description_hint">Описание (необязательно)</string>
-
+    <string name="playlist_description_hint">Название*</string>
+    <string name="playlist_description">Описание</string>
     <string name="add_to_playlist">Добавить в плейлист</string>
 
     <string name="new_playlist">Новый плейлист</string>
