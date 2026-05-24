@@ -7,13 +7,12 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.practicum.playlistmaker.R
+import com.practicum.playlistmaker.mediateka.domain.usecase.CreatePlaylistUseCase
 import com.practicum.playlistmaker.mediateka.ui.CreatePlaylistUiState
-import com.practicum.playlistmaker.player.data.storage.FileStorageService
-import com.practicum.playlistmaker.player.domain.repository.PlaylistRepository
 import kotlinx.coroutines.launch
 
 class CreatePlaylistViewModel(
-    private val playlistRepository: PlaylistRepository
+    private val createPlaylistUseCase: CreatePlaylistUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableLiveData<CreatePlaylistUiState>(
@@ -37,37 +36,39 @@ class CreatePlaylistViewModel(
         val currentState = _uiState.value ?: return@launch
         val name = currentState.playlistName.trim()
         val description = currentState.playlistDescription
-        val coverUri = currentState.selectedCoverUri
-
-        // Валидация: название не должно быть пустым
+        // Передаём selectedCoverUri, а не coverFilePath
         if (name.isEmpty()) {
             _uiState.value = currentState.copy(error = context.getString(R.string.playlist_name_required))
             return@launch
         }
-
         _uiState.value = currentState.copy(isLoading = true, error = null)
-
         try {
-            // Копируем обложку в приватное хранилище
-            val coverPath = coverUri?.let { uri ->
-                FileStorageService(context).copyToPrivateStorage(uri.toString())
-            }
-
-            // Создаём плейлист
-            val playlistId = playlistRepository.createPlaylist(name, coverPath)
-            _uiState.value = CreatePlaylistUiState(
-                isCreated = true,
-                playlistId = playlistId,
-                successMessage = context.getString(R.string.playlist_created, name)
+            // coverFilePath убираем, передаём selectedCoverUri
+            val result = createPlaylistUseCase(name, description, currentState.selectedCoverUri, context)
+            result.fold(
+                onSuccess = { playlistId ->
+                    _uiState.value = CreatePlaylistUiState(
+                        isCreated = true,
+                        playlistId = playlistId,
+                        successMessage = context.getString(R.string.playlist_created, name)
+                    )
+                },
+                onFailure = { error ->
+                    _uiState.value = currentState.copy(
+                        isLoading = false,
+                        error = context.getString(R.string.error_creating_playlist)
+                    )
+                }
             )
         } catch (e: Exception) {
             e.printStackTrace()
             _uiState.value = currentState.copy(
-                isLoading = false,  // Обязательно сбрасываем isLoading
+                isLoading = false,
                 error = context.getString(R.string.error_creating_playlist)
             )
         }
     }
+
 
 
     fun clearForm() {
@@ -83,4 +84,16 @@ class CreatePlaylistViewModel(
         val currentState = _uiState.value ?: return
         _uiState.value = currentState.copy(error = null)
     }
+
+    fun showExitDialog() {
+        _uiState.value = _uiState.value?.copy(showExitDialog = true)
+    }
+
+    fun hideExitDialog() {
+        _uiState.value = _uiState.value?.copy(showExitDialog = false)
+    }
+    fun updateCoverFilePath(filePath: String?) {
+        _uiState.value = _uiState.value?.copy(coverFilePath = filePath)
+    }
+
 }

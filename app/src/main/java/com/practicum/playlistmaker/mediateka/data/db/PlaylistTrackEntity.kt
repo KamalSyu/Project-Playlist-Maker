@@ -18,9 +18,9 @@ import androidx.room.PrimaryKey
     indices = [Index(value = ["playlistId"])]
 )
 data class PlaylistTrackEntity(
-    @PrimaryKey val id: Long,
+    @PrimaryKey
+    val id: Long,
     val playlistId: Long,
-    val trackId: String,
     val title: String,
     val artist: String,
     val duration: Int,

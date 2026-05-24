@@ -4,38 +4,47 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.practicum.playlistmaker.core.models.Track
+import com.practicum.playlistmaker.mediateka.domain.interactor.PlaylistInteractor
 import com.practicum.playlistmaker.mediateka.domain.usecase.LoadPlaylistsUseCase
 import com.practicum.playlistmaker.mediateka.ui.PlaylistsUiState
 import kotlinx.coroutines.launch
 
 class PlaylistsViewModel(
-    private val loadPlaylistsUseCase: LoadPlaylistsUseCase
-) : ViewModel() {
+    private val loadPlaylistsUseCase: LoadPlaylistsUseCase,
+    private val playlistInteractor: PlaylistInteractor)
+    : ViewModel() {
 
-    private var isObserving = false
 
     private val _uiState = MutableLiveData<PlaylistsUiState>(PlaylistsUiState.Loading)
     val uiState: LiveData<PlaylistsUiState> = _uiState
 
     init {
-        loadPlaylists()  // Автоматически подписываемся на обновления
+        loadPlaylists()
     }
-
     fun loadPlaylists() {
-        if (isObserving) return
-
-        _uiState.value = PlaylistsUiState.Loading
-        isObserving = true
-
-        loadPlaylistsUseCase().observeForever { playlists ->
-            viewModelScope.launch {
-                if (playlists.isEmpty()) {
-                    _uiState.value = PlaylistsUiState.Empty
-                } else {
-                    _uiState.value = PlaylistsUiState.Success(playlists)
-                }
+        viewModelScope.launch {
+            try {
+                loadPlaylistsUseCase()
+                    .collect { playlists ->
+                        val state = if (playlists.isEmpty()) {
+                            PlaylistsUiState.Empty
+                        } else {
+                            PlaylistsUiState.Success(playlists)
+                        }
+                        _uiState.value = state
+                    }
+            } catch (e: Exception) {
+                _uiState.value = PlaylistsUiState.Error(e)
             }
         }
     }
-}
 
+
+    fun addTrackToPlaylist(playlistId: String, track: Track) = viewModelScope.launch {
+        _uiState.value = PlaylistsUiState.Loading
+        val result = playlistInteractor.addTrackToPlaylist(playlistId, track)
+    }
+
+
+}

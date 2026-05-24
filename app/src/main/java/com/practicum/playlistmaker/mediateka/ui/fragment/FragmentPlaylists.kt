@@ -20,7 +20,7 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 class FragmentPlaylists : Fragment() {
 
     private val viewModel: PlaylistsViewModel by viewModel()
-    private lateinit var newPlaylistButton: View
+    private lateinit var newPlaylistButton: Button
     private lateinit var playlistsRecyclerView: RecyclerView
     private lateinit var emptyPlaylistsLayout: View
 
@@ -33,11 +33,11 @@ class FragmentPlaylists : Fragment() {
         newPlaylistButton = view.findViewById(R.id.newPlaylistButton)
         playlistsRecyclerView = view.findViewById(R.id.playlistsRecyclerView)
         emptyPlaylistsLayout = view.findViewById(R.id.emptyPlaylistsLayout)
+
         newPlaylistButton.setOnClickListener {
-            findNavController().navigate(
-                R.id.action_mediatekaFragment_to_createPlaylistFragment
-            )
+            findNavController().navigate(R.id.action_mediatekaFragment_to_createPlaylistFragment)
         }
+
         viewModel.uiState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 PlaylistsUiState.Loading -> showLoading()
@@ -46,6 +46,7 @@ class FragmentPlaylists : Fragment() {
                 PlaylistsUiState.Empty -> showEmptyState()
             }
         }
+
         viewModel.loadPlaylists()
         return view
     }
@@ -63,16 +64,10 @@ class FragmentPlaylists : Fragment() {
         emptyPlaylistsLayout.visibility = View.GONE
         playlistsRecyclerView.visibility = View.VISIBLE
         playlistsRecyclerView.layoutManager = GridLayoutManager(requireContext(), 2)
-        val adapter = PlaylistsAdapter()
-        playlistsRecyclerView.adapter = adapter
-        adapter.updatePlaylists(playlists)
-    }
-
-    private fun setupNewPlaylistButton(view: View) {
-        val newPlaylistButton: Button = view.findViewById(R.id.newPlaylistButton)
-        newPlaylistButton.setOnClickListener {
-            findNavController().navigate(R.id.action_mediatekaFragment_to_createPlaylistFragment)
+        val adapter = PlaylistsAdapter(playlists) { playlist ->
+            // Логика обработки клика по плейлисту
         }
+        playlistsRecyclerView.adapter = adapter
     }
 
     private fun showLoading() {

@@ -9,6 +9,13 @@ data class CreatePlaylistUiState(
     val playlistId: String? = null,
     val playlistName: String = "",
     val playlistDescription: String = "",
+    val coverFilePath: String? = null,
     val selectedCoverUri: Uri? = null,
-    val successMessage: String? = null
-)
+    val successMessage: String? = null,
+    val showExitDialog: Boolean = false // для диалога «Завершить создание плейлиста?»
+) {
+    // Вычисляемое свойство для состояния кнопки «Создать»
+    val isCreateButtonEnabled: Boolean
+        get() = playlistName.isNotBlank()
+}
+

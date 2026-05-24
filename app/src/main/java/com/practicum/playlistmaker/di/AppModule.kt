@@ -12,6 +12,8 @@ import com.practicum.playlistmaker.core.utils.FormatTrackDurationUseCase
 import com.practicum.playlistmaker.core.utils.FormatTrackDurationUseCaseImpl
 import com.practicum.playlistmaker.creator.domain.TrackFactory
 import com.practicum.playlistmaker.mediateka.data.repository.PlaylistsRepositoryImplMedia
+import com.practicum.playlistmaker.mediateka.domain.interactor.PlaylistInteractor
+import com.practicum.playlistmaker.mediateka.domain.interactor.PlaylistInteractorImpl
 import com.practicum.playlistmaker.mediateka.domain.repository.PlaylistsRepositoryMedia
 import com.practicum.playlistmaker.mediateka.domain.usecase.CreatePlaylistUseCase
 import com.practicum.playlistmaker.mediateka.domain.usecase.LoadPlaylistsUseCase
@@ -57,7 +59,6 @@ import com.practicum.playlistmaker.player.domain.usecase.playback.TogglePlayback
 import com.practicum.playlistmaker.player.domain.usecase.playback.TogglePlaybackUseCaseImpl
 import com.practicum.playlistmaker.player.domain.usecase.playlist.GetPlaylistsUseCase
 import com.practicum.playlistmaker.player.domain.usecase.playlist.GetPlaylistsUseCaseImpl
-import com.practicum.playlistmaker.player.domain.usecase.playlist.PlaylistInteractor
 import com.practicum.playlistmaker.player.domain.usecase.utils.DelayedTrackActionUseCase
 import com.practicum.playlistmaker.search.data.mapper.SearchHistoryMapper
 import com.practicum.playlistmaker.search.data.mapper.SearchResponseMapper
@@ -212,6 +213,8 @@ val appModule = module {
     factory<LoadPlaylistsUseCase> { LoadPlaylistsUseCase(get()) }
     factory<GetPlaylistsUseCase> { GetPlaylistsUseCaseImpl(get()) }
 
+    factory<PlaylistInteractor> { PlaylistInteractorImpl(get()) }
+    viewModel { PlaylistsViewModel(get(), get(), get(), get()) }
     // 7. ViewModel
     viewModel { SearchViewModel(
         searchTracksUseCase = get(),

@@ -15,7 +15,13 @@ class PlaylistViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
     fun bind(playlist: Playlist) {
         nameText.text = playlist.name
-        trackCountText.text = "${playlist.trackCount} треков"
+        trackCountText.text = if (playlist.trackCount == 1) {
+            "${playlist.trackCount} трек"
+        } else if (playlist.trackCount in 2..4) {
+            "${playlist.trackCount} трека"
+        } else {
+            "${playlist.trackCount} треков"
+        }
 
         if (!playlist.coverPath.isNullOrEmpty()) {
             coverImage.setImageURI(Uri.parse(playlist.coverPath))

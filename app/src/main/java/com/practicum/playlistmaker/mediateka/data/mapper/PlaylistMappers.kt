@@ -9,7 +9,6 @@ fun PlaylistEntity.toDomain(): Playlist {
         name = this.name,
         description = this.description,
         coverPath = this.coverPath,
-        trackIds = this.trackIds,
         trackCount = this.trackCount,
         createdAt = this.createdAt
     )
@@ -23,7 +22,6 @@ fun Playlist.toEntity(): PlaylistEntity {
         name = this.name,
         description = this.description,
         coverPath = this.coverPath,
-        trackIds = this.trackIds,
         trackCount = this.trackCount,
         createdAt = this.createdAt
     )

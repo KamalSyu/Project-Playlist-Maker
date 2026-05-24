@@ -25,16 +25,10 @@ import androidx.activity.OnBackPressedCallback
 import android.os.Build
 import android.view.inputmethod.InputMethodManager
 import androidx.activity.result.PickVisualMediaRequest
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import com.bumptech.glide.Glide
 import com.practicum.playlistmaker.mediateka.ui.CreatePlaylistUiState
 import com.practicum.playlistmaker.mediateka.ui.view.CreatePlaylistViewModel
-import kotlinx.coroutines.launch
-
-
 
 class CreatePlaylistFragment : Fragment() {
 
@@ -53,7 +47,6 @@ class CreatePlaylistFragment : Fragment() {
         }
     }
 
-
     private val requestPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -63,6 +56,7 @@ class CreatePlaylistFragment : Fragment() {
             showPermissionRationale()
         }
     }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -71,19 +65,9 @@ class CreatePlaylistFragment : Fragment() {
         requireActivity().findViewById<View>(R.id.bottom_navigation)?.visibility = View.GONE
         val view = inflater.inflate(R.layout.fragment_create_playlist, container, false)
         setupViews(view)
-
-        val savedCoverUri = savedInstanceState?.getParcelable<Uri>("selectedCoverUri")
-        if (savedCoverUri != null) {
-            Glide.with(this)
-                .load(savedCoverUri)
-                .placeholder(R.drawable.ic_placeholder_312)
-                .error(R.drawable.ic_placeholder_312)
-                .into(coverImage)
-        } else {
-            coverImage.setImageResource(R.drawable.ic_placeholder_312)
-        }
         return view
     }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(this)[CreatePlaylistViewModel::class.java]
@@ -105,26 +89,12 @@ class CreatePlaylistFragment : Fragment() {
         setupObservers()
         updateCreateButtonState()
 
-        savedInstanceState?.let { bundle ->
-            if (bundle.getBoolean("nameFieldHasError", false)) {
-                nameField.error = getString(R.string.playlist_name_required)
-            }
-        }
-
         if (savedInstanceState == null) {
             nameField.editText?.requestFocus()
             val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.showSoftInput(nameField.editText, InputMethodManager.SHOW_IMPLICIT)
-        } else {
-            if (savedInstanceState.containsKey("playlistName") && nameField.editText != null) {
-                val savedName = savedInstanceState.getString("playlistName", "")
-                nameField.editText?.setText(savedName)
-                nameField.editText?.setSelection(savedName.length)
-                nameField.editText?.requestFocus()
-                val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.showSoftInput(nameField.editText, InputMethodManager.SHOW_IMPLICIT)
-            }
         }
+
         val callback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (hasUnsavedChanges()) {
@@ -137,13 +107,31 @@ class CreatePlaylistFragment : Fragment() {
         }
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
     }
+
     private fun setupViews(view: View) {
         createButton = view.findViewById(R.id.createPlaylistButton)
         nameField = view.findViewById(R.id.playlistNameField)
         descriptionField = view.findViewById(R.id.playlistDescriptionField)
         coverImage = view.findViewById(R.id.playlistCoverImage)
         backButton = view.findViewById(R.id.back)
+
+        // Инициализация изображения обложки — берём данные из ViewModel
+        val currentState = viewModel.uiState.value
+        updateCoverImage(currentState?.selectedCoverUri)
     }
+
+    private fun updateCoverImage(uri: Uri?) {
+        uri?.let {
+            Glide.with(this)
+                .load(it)
+                .placeholder(R.drawable.ic_placeholder_312)
+                .error(R.drawable.ic_placeholder_312)
+                .into(coverImage)
+        } ?: run {
+            coverImage.setImageResource(R.drawable.ic_placeholder_312)
+        }
+    }
+
     private fun setupTextWatchers() {
         val textWatcher = object : TextWatcher {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
@@ -155,6 +143,7 @@ class CreatePlaylistFragment : Fragment() {
         nameField.editText?.addTextChangedListener(textWatcher)
         descriptionField.editText?.addTextChangedListener(textWatcher)
     }
+
     private fun updateCreateButtonState() {
         val state = viewModel.uiState.value
         val playlistName = state?.playlistName?.trim().orEmpty()
@@ -164,6 +153,7 @@ class CreatePlaylistFragment : Fragment() {
             nameField.error = null
         }
     }
+
     private fun setupClickListeners() {
         coverImage.setOnClickListener {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -183,6 +173,7 @@ class CreatePlaylistFragment : Fragment() {
             createPlaylist()
         }
     }
+
     private fun createPlaylist() {
         nameField.error = null
         val state = viewModel.uiState.value ?: return
@@ -196,18 +187,11 @@ class CreatePlaylistFragment : Fragment() {
             nameField.error = getString(R.string.playlist_name_required)
         }
     }
+
     private fun setupObservers() {
         viewModel.uiState.observe(viewLifecycleOwner) { state: CreatePlaylistUiState ->
             // Обновляем изображение обложки
-            state.selectedCoverUri?.let { uri ->
-                Glide.with(this@CreatePlaylistFragment)
-                    .load(uri)
-                    .placeholder(R.drawable.ic_placeholder_312)
-                    .error(R.drawable.ic_placeholder_312)
-                    .into(coverImage)
-            } ?: run {
-                coverImage.setImageResource(R.drawable.ic_placeholder_312)
-            }
+            updateCoverImage(state.selectedCoverUri)
 
             // Обновляем текстовые поля (если они не в фокусе)
             if (!nameField.hasFocus()) {
@@ -229,15 +213,23 @@ class CreatePlaylistFragment : Fragment() {
             state.error?.let { errorMessage ->
                 createButton.isEnabled = true
                 createButton.text = getString(R.string.create_playlist)
-                Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_LONG).show()
+                when {
+                    errorMessage.contains("Не удалось скопировать обложку") -> {
+                        Toast.makeText(
+                            requireContext(),
+                            "Не удалось сохранить обложку. Проверьте доступ к хранилищу.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                    else -> {
+                        Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_LONG).show()
+                    }
+                }
                 viewModel.clearError()
             }
-
-            // Обновляем состояние кнопки — без аргументов
             updateCreateButtonState()
         }
     }
-
 
     private fun requestReadStoragePermission() {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -246,6 +238,7 @@ class CreatePlaylistFragment : Fragment() {
             pickImage.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
         }
     }
+
     private fun showPermissionRationale() {
         AlertDialog.Builder(requireContext())
             .setTitle(getString(R.string.permission_rationale_title))
@@ -258,6 +251,7 @@ class CreatePlaylistFragment : Fragment() {
             }
             .show()
     }
+
     private fun hasUnsavedChanges(): Boolean {
         val state = viewModel.uiState.value ?: return false
         val name = state.playlistName.trim()
@@ -265,20 +259,18 @@ class CreatePlaylistFragment : Fragment() {
         return name.isNotBlank() || description.isNotBlank() || state.selectedCoverUri != null
     }
 
-
     private fun showDiscardChangesDialog() {
         AlertDialog.Builder(requireContext())
-            .setTitle(getString(R.string.discard_changes_title)) // ТРЕБОВАНИЕ: Заголовок диалога «Завершить создание плейлиста?»
-            .setMessage(getString(R.string.discard_changes_message)) // ТРЕБОВАНИЕ: Сообщение «Все несохранённые данные будут потеряны»
+            .setTitle(getString(R.string.discard_changes_title)) // «Завершить создание плейлиста?»
+            .setMessage(getString(R.string.discard_changes_message)) // «Все несохранённые данные будут потеряны»
             .setPositiveButton(getString(R.string.discard)) { _, _ ->
                 viewModel.clearSuccess()  // Сброс состояния успеха
                 viewModel.clearError()   // Сброс состояния ошибки
                 clearFormState()
                 findNavController().popBackStack()
             }
-
             .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
-                dialog.dismiss() // ТРЕБОВАНИЕ: Закрытие диалога, пользователь остаётся на экране
+                dialog.dismiss() // Закрытие диалога, пользователь остаётся на экране
             }
             .setOnCancelListener { }
             .create()
@@ -289,7 +281,6 @@ class CreatePlaylistFragment : Fragment() {
         viewModel.clearForm()
         nameField.error = null
     }
-
 
     override fun onDestroyView() {
         super.onDestroyView()
@@ -308,8 +299,12 @@ class CreatePlaylistFragment : Fragment() {
         if (descriptionField.hasFocus()) {
             outState.putString("playlistDescription", descriptionField.editText?.text.toString())
         }
-    }
 
+        val currentState = viewModel.uiState.value
+        currentState?.selectedCoverUri?.let { uri ->
+            outState.putParcelable("selectedCoverUri", uri)
+        }
+    }
 
     companion object {
         private const val REQUEST_READ_STORAGE = 1001
