@@ -37,7 +37,7 @@
 
 
     <string name="playlist_cover">Обложка плейлиста</string>
-    <string name="create_playlist">Создание плейлиста</string>
+    <string name="create_playlist">Создать</string>
     <string name="playlist_name_required">Введите название плейлиста</string>
 
     <string name="playlist_created">Плейлист %s создан</string>
@@ -65,7 +65,6 @@
     <string name="playlist_description">Описание</string>
     <string name="add_to_playlist">Добавить в плейлист</string>
 
-    <string name="new_playlist">Новый плейлист</string>
 
 
 </resources>
