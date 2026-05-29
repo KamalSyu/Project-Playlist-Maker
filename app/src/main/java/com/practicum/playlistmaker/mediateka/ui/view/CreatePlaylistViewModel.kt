@@ -89,8 +89,5 @@ class CreatePlaylistViewModel(
     fun hideExitDialog() {
         _uiState.value = _uiState.value?.copy(showExitDialog = false)
     }
-    fun updateCoverFilePath(filePath: String?) {
-        _uiState.value = _uiState.value?.copy(coverFilePath = filePath)
-    }
 
 }

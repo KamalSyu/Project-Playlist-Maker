@@ -40,16 +40,17 @@
         android:layout_marginTop="32dp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
+        android:hint="@string/playlist_name_hint"
+        app:expandedHintEnabled="true"
         app:hintTextColor="#888888">
 
         <com.google.android.material.textfield.TextInputEditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="54dp"
-            android:hint="@string/playlist_name_hint"
             android:inputType="text"
             android:textColor="#1A1B22"
-            android:background="@drawable/text_input_outline_border"
+            android:background="?attr/editTextBackground"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
             android:paddingTop="18dp"
@@ -67,16 +68,17 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="170dp"
+        android:hint="@string/playlist_description_hint"
+        app:expandedHintEnabled="true"
         app:hintTextColor="#888888">
 
         <com.google.android.material.textfield.TextInputEditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="54dp"
-            android:hint="@string/playlist_description_hint"
             android:inputType="textMultiLine"
             android:textColor="#1A1B22"
-            android:background="@drawable/text_input_outline_border"
+            android:background="?attr/editTextBackground"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
             android:paddingTop="18dp"

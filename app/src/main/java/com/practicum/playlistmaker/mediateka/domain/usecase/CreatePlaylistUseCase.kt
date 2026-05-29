@@ -7,6 +7,7 @@ import android.util.Log
 import com.practicum.playlistmaker.core.models.domain.Playlist
 import com.practicum.playlistmaker.mediateka.domain.repository.PlaylistsRepositoryMedia
 import java.io.File
+import java.util.UUID
 
 class CreatePlaylistUseCase(
     private val playlistsRepositoryMedia: PlaylistsRepositoryMedia
@@ -19,8 +20,10 @@ class CreatePlaylistUseCase(
     ): Result<String> {
         val trimmedName = playlistName.trim()
         if (trimmedName.isBlank()) {
+            Log.e("CreatePlaylistUseCase", "Название плейлиста пустое")
             return Result.failure(IllegalArgumentException("Название плейлиста не может быть пустым"))
         }
+        Log.d("CreatePlaylistUseCase", "Начинаем обработку обложки, coverUri: $coverUri")
         val coverPathResult = coverUri?.let { uri ->
             try {
                 context.contentResolver.openInputStream(uri)?.use { inputStream ->
@@ -38,6 +41,8 @@ class CreatePlaylistUseCase(
                     }
                     playlistsRepositoryMedia.safeCopyToPrivateStorage(tempFile.absolutePath).also {
                         tempFile.delete()
+                    }.also { path ->
+                        Log.d("CreatePlaylistUseCase", "Обложка успешно скопирована, путь: $path")
                     }
                 }
             } catch (e: Exception) {
@@ -45,21 +50,29 @@ class CreatePlaylistUseCase(
                 null
             }
         }
+        if (coverUri != null && coverPathResult == null) {
+            Log.e("CreatePlaylistUseCase", "coverPathResult == null при coverUri != null")
+            return Result.failure(IllegalStateException("Не удалось скопировать обложку в приватное хранилище"))
+        }
         val coverPath = coverPathResult
         return if (coverUri != null && coverPathResult == null) {
             Result.failure(IllegalStateException("Не удалось скопировать обложку в приватное хранилище"))
+
         } else try {
             val newPlaylist = Playlist(
-                id = "",
+                id = "0", // маркер нового плейлиста: будет заменён на реальный ID из БД
                 name = trimmedName,
                 description = playlistDescription,
                 coverPath = coverPath,
                 trackCount = 0,
                 createdAt = System.currentTimeMillis()
             )
-            val playlistId = playlistsRepositoryMedia.addPlaylist(newPlaylist)
-            Result.success(playlistId.toString())
+            Log.d("CreatePlaylistUseCase", "Создаём плейлист: $newPlaylist")
+            val resultId = playlistsRepositoryMedia.addPlaylist(newPlaylist)
+            Log.d("CreatePlaylistUseCase", "Плейлист создан, ID: $resultId")
+            Result.success(resultId.toString())
         } catch (e: Exception) {
+            Log.e("CreatePlaylistUseCase", "Ошибка при добавлении плейлиста в репозиторий", e)
             Result.failure(e)
         }
     }

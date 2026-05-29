@@ -59,34 +59,36 @@ class CreatePlaylistFragment : Fragment() {
             val coverUri = bundle.getParcelable<Uri>("selectedCoverUri")
             val nameFieldHasError = bundle.getBoolean("nameFieldHasError", false)
 
-            val currentName = nameField.editText?.text.toString()
-            if (currentName.isBlank() && playlistName.isNotBlank()) {
-                // Устанавливаем текст, только если он не пустой — это сохранит корректное состояние TextInputLayout
+            // Восстанавливаем название плейлиста, только если оно не пустое
+            if (playlistName.isNotBlank()) {
                 nameField.editText?.setText(playlistName)
                 nameField.editText?.setSelection(playlistName.length)
-            } else if (currentName.isBlank() && playlistName.isBlank()) {
-                // Если playlistName пустой, не вызываем setText, чтобы не нарушать состояние TextInputLayout
-                // Подсказка отобразится автоматически благодаря XML-разметке
-            }
-            val currentDescription = descriptionField.editText?.text.toString()
-            if (currentDescription.isBlank()) {
-                descriptionField.editText?.setText(playlistDescription)
-                descriptionField.editText?.setSelection(playlistDescription.length)
             }
 
+            // Восстанавливаем описание плейлиста
+            if (playlistDescription.isNotBlank()) {
+                descriptionField.editText?.setText(playlistDescription)
+                descriptionField.editText?.setSelection(playlistDescription.length)
+            } else {
+                // Если описание пустое, не вызываем setText — подсказка отобразится автоматически
+            }
+
+            // Восстанавливаем изображение обложки
             if (coverUri != null) {
                 viewModel.updateSelectedCoverUri(coverUri)
                 updateCoverImage(coverUri)
             }
 
+            // Отложенная установка ошибки, чтобы дать TextInputLayout корректно инициализироваться
             if (nameFieldHasError) {
-                // Откладываем установку ошибки, чтобы дать TextInputLayout корректно обработать восстановление состояния
                 nameField.post {
                     nameField.error = getString(R.string.playlist_name_required)
                 }
             }
         }
         setupTextWatchers()
+        setupErrorClearingOnInput()  // Добавляем вызов нового метода
+
         setupClickListeners()
         setupObservers()
         if (savedInstanceState == null) {
@@ -139,12 +141,28 @@ class CreatePlaylistFragment : Fragment() {
         descriptionField = view.findViewById(R.id.playlistDescriptionField)
         coverImage = view.findViewById(R.id.playlistCoverImage)
         backButton = view.findViewById(R.id.back)
-        if (!this::backButton.isInitialized || backButton == null) {
-            throw IllegalStateException("Элемент backButton (ID: R.id.back) не найден в разметке fragment_create_playlist.xml")
+
+        // Проверяем, что все элементы инициализированы
+        if (!this::createButton.isInitialized || createButton == null) {
+            throw IllegalStateException("Элемент createButton (ID: R.id.createPlaylistButton) не найден в разметке")
         }
+        if (!this::nameField.isInitialized || nameField == null) {
+            throw IllegalStateException("Элемент nameField (ID: R.id.playlistNameField) не найден в разметке")
+        }
+        if (!this::descriptionField.isInitialized || descriptionField == null) {
+            throw IllegalStateException("Элемент descriptionField (ID: R.id.playlistDescriptionField) не найден в разметке")
+        }
+        if (!this::coverImage.isInitialized || coverImage == null) {
+            throw IllegalStateException("Элемент coverImage (ID: R.id.playlistCoverImage) не найден в разметке")
+        }
+        if (!this::backButton.isInitialized || backButton == null) {
+            throw IllegalStateException("Элемент backButton (ID: R.id.back) не найден в разметке")
+        }
+
         val currentState = viewModel.uiState.value
         updateCoverImage(currentState?.selectedCoverUri)
     }
+
     private fun updateCoverImage(uri: Uri?) {
         uri?.let {
             Glide.with(this)
@@ -181,8 +199,6 @@ class CreatePlaylistFragment : Fragment() {
         }
         descriptionField.editText?.addTextChangedListener(descriptionTextWatcher)
     }
-
-
     private fun setupClickListeners() {
         coverImage.setOnClickListener {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -206,11 +222,15 @@ class CreatePlaylistFragment : Fragment() {
         nameField.error = null
         val state = viewModel.uiState.value ?: return
         if (state.isCreateButtonEnabled) {
-            viewModel.createPlaylist(requireContext()) // ViewModel установит isLoading = true
+            viewModel.createPlaylist(requireContext())
         } else {
-            nameField.error = getString(R.string.playlist_name_required)
+            // Устанавливаем ошибку с небольшой задержкой, чтобы не конфликтовать с анимацией подсказки
+            nameField.postDelayed({
+                nameField.error = getString(R.string.playlist_name_required)
+            }, 100)
         }
     }
+
     private fun setupObservers() {
         viewModel.uiState.observe(viewLifecycleOwner) { state: CreatePlaylistUiState ->
             updateCoverImage(state.selectedCoverUri)
@@ -313,7 +333,11 @@ class CreatePlaylistFragment : Fragment() {
     private fun clearFormState() {
         viewModel.clearForm()
         nameField.error = null
+        nameField.editText?.setText("")
+        descriptionField.editText?.setText("")
+        updateCoverImage(null)
     }
+
     override fun onDestroyView() {
         super.onDestroyView()
         requireActivity().findViewById<View>(R.id.bottom_navigation)?.visibility = View.VISIBLE
@@ -321,13 +345,40 @@ class CreatePlaylistFragment : Fragment() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         val state = viewModel.uiState.value ?: return
+
+        // Сохраняем введённые пользователем данные
         outState.putString("playlistName", state.playlistName)
         outState.putString("playlistDescription", state.playlistDescription)
+
+        // Сохраняем URI выбранной обложки, если она есть
         state.selectedCoverUri?.let { uri ->
             outState.putParcelable("selectedCoverUri", uri)
         }
+
+        // Сохраняем флаг наличия ошибки в поле названия плейлиста
+        // (чтобы при пересоздании фрагмента восстановить отображение ошибки, если она была)
         outState.putBoolean("nameFieldHasError", nameField.error != null)
+
+        // Дополнительно сохраняем текущее состояние кнопки создания (опционально,
+        // может пригодиться для сложных сценариев восстановления UI)
+        outState.putBoolean("isCreateButtonEnabled", state.isCreateButtonEnabled)
     }
+    private fun setupErrorClearingOnInput() {
+        val nameTextWatcher = object : TextWatcher {
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                // Если в поле есть ошибка и пользователь начал вводить текст — сбрасываем ошибку
+                if (nameField.error != null && !s.isNullOrEmpty()) {
+                    nameField.error = null
+                }
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+            override fun afterTextChanged(s: Editable?) {}
+        }
+        nameField.editText?.addTextChangedListener(nameTextWatcher)
+    }
+
     companion object {
         private const val REQUEST_READ_STORAGE = 1001
     }

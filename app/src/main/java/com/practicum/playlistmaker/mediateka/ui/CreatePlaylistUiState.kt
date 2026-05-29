@@ -9,7 +9,7 @@ data class CreatePlaylistUiState(
     val playlistId: String? = null,
     val playlistName: String = "",
     val playlistDescription: String = "",
-    val coverFilePath: String? = null,
+//    val coverFilePath: String? = null,
     val selectedCoverUri: Uri? = null,
     val successMessage: String? = null,
     val showExitDialog: Boolean = false
