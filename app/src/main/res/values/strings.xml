@@ -60,10 +60,14 @@
     <string name="error_creating_playlist">Не удалось создать плейлист. Попробуйте ещё раз.</string>
 
 
-    <string name="playlist_name_hint">Название плейлиста</string>
-    <string name="playlist_description_hint">Название*</string>
+    <string name="playlist_name_hint">Название*</string>
+    <string name="playlist_description_hint">Название плейлиста</string>
     <string name="playlist_description">Описание</string>
     <string name="add_to_playlist">Добавить в плейлист</string>
+
+    <string name="permission_rationale_title2">Необходимое разрешение</string>
+    <string name="permission_denied_permanently_message">Для выбора изображения из галереи требуется разрешение. Вы можете включить его в настройках приложения.</string>
+    <string name="go_to_settings">Настройки</string>
 
 
 

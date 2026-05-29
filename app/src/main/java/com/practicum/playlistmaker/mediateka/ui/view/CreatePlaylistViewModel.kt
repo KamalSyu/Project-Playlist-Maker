@@ -68,9 +68,6 @@ class CreatePlaylistViewModel(
             )
         }
     }
-
-
-
     fun clearForm() {
         _uiState.value = CreatePlaylistUiState()
     }

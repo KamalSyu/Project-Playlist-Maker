@@ -18,12 +18,10 @@ import com.practicum.playlistmaker.mediateka.ui.view.PlaylistsViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class FragmentPlaylists : Fragment() {
-
     private val viewModel: PlaylistsViewModel by viewModel()
     private lateinit var newPlaylistButton: Button
     private lateinit var playlistsRecyclerView: RecyclerView
     private lateinit var emptyPlaylistsLayout: View
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -33,11 +31,9 @@ class FragmentPlaylists : Fragment() {
         newPlaylistButton = view.findViewById(R.id.newPlaylistButton)
         playlistsRecyclerView = view.findViewById(R.id.playlistsRecyclerView)
         emptyPlaylistsLayout = view.findViewById(R.id.emptyPlaylistsLayout)
-
         newPlaylistButton.setOnClickListener {
             findNavController().navigate(R.id.action_mediatekaFragment_to_createPlaylistFragment)
         }
-
         viewModel.uiState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 PlaylistsUiState.Loading -> showLoading()
@@ -46,40 +42,32 @@ class FragmentPlaylists : Fragment() {
                 PlaylistsUiState.Empty -> showEmptyState()
             }
         }
-
         viewModel.loadPlaylists()
         return view
     }
-
     private fun showEmptyState() {
         playlistsRecyclerView.visibility = View.GONE
         emptyPlaylistsLayout.visibility = View.VISIBLE
     }
-
     fun refreshPlaylists() {
         viewModel.loadPlaylists()
     }
-
     private fun showPlaylistsList(playlists: List<Playlist>) {
         emptyPlaylistsLayout.visibility = View.GONE
         playlistsRecyclerView.visibility = View.VISIBLE
         playlistsRecyclerView.layoutManager = GridLayoutManager(requireContext(), 2)
         val adapter = PlaylistsAdapter(playlists) { playlist ->
-            // Логика обработки клика по плейлисту
         }
         playlistsRecyclerView.adapter = adapter
     }
-
     private fun showLoading() {
         playlistsRecyclerView.visibility = View.GONE
         emptyPlaylistsLayout.visibility = View.VISIBLE
     }
-
     private fun showError(error: Throwable) {
         Toast.makeText(requireContext(), "Ошибка загрузки: ${error.message}", Toast.LENGTH_LONG).show()
         showEmptyState()
     }
-
     companion object {
         fun newInstance(): Fragment {
             return FragmentPlaylists()

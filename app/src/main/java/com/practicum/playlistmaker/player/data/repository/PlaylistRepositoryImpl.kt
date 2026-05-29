@@ -20,9 +20,7 @@ class PlaylistRepositoryImpl(
     private val playlistsRepositoryMedia: PlaylistsRepositoryMedia,
     private val context: Context
 ) : PlaylistRepository {
-
     private val fileStorageService = FileStorageService(context)
-
     override fun getPlaylists(): Flow<List<PlaylistForPlayer>> {
         return playlistDao.getAllPlaylists()
             .map { entities ->
@@ -32,9 +30,6 @@ class PlaylistRepositoryImpl(
                 }
             }
     }
-
-
-
     override suspend fun addTrackToPlaylist(playlistId: String, track: Track): AddTrackStatus {
         val playlistIdLong = playlistId.toLongOrNull() ?: return AddTrackStatus.ERROR
         return try {
@@ -45,7 +40,6 @@ class PlaylistRepositoryImpl(
             AddTrackStatus.ERROR
         }
     }
-
     override suspend fun createPlaylist(
         name: String,
         coverPath: String?,
@@ -72,12 +66,6 @@ class PlaylistRepositoryImpl(
         }
 
     }
-
-
-    /**
-     * Безопасное копирование файла обложки в приватное хранилище.
-     * Возвращает путь к скопированному файлу или null, если копирование не удалось.
-     */
     private suspend fun safeCopyToPrivateStorage(originalPath: String): String? {
         return try {
             fileStorageService.copyToPrivateStorage(originalPath)

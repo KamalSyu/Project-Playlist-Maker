@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.practicum.playlistmaker.core.models.Track
+import com.practicum.playlistmaker.core.models.domain.AddTrackStatus
 import com.practicum.playlistmaker.mediateka.domain.interactor.PlaylistInteractor
 import com.practicum.playlistmaker.mediateka.domain.usecase.LoadPlaylistsUseCase
 import com.practicum.playlistmaker.mediateka.ui.PlaylistsUiState
@@ -14,11 +15,8 @@ class PlaylistsViewModel(
     private val loadPlaylistsUseCase: LoadPlaylistsUseCase,
     private val playlistInteractor: PlaylistInteractor)
     : ViewModel() {
-
-
     private val _uiState = MutableLiveData<PlaylistsUiState>(PlaylistsUiState.Loading)
     val uiState: LiveData<PlaylistsUiState> = _uiState
-
     init {
         loadPlaylists()
     }
@@ -39,12 +37,8 @@ class PlaylistsViewModel(
             }
         }
     }
-
-
-    fun addTrackToPlaylist(playlistId: String, track: Track) = viewModelScope.launch {
+    suspend fun addTrackToPlaylist(playlistId: String, track: Track): AddTrackStatus {
         _uiState.value = PlaylistsUiState.Loading
-        val result = playlistInteractor.addTrackToPlaylist(playlistId, track)
+        return playlistInteractor.addTrackToPlaylist(playlistId, track)
     }
-
-
 }

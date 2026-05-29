@@ -21,12 +21,9 @@ class CreatePlaylistUseCase(
         if (trimmedName.isBlank()) {
             return Result.failure(IllegalArgumentException("Название плейлиста не может быть пустым"))
         }
-
-        // Получаем путь из Uri через ContentResolver
         val coverPathResult = coverUri?.let { uri ->
             try {
                 context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                    // Получаем имя файла через OpenableColumns
                     val fileName = context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
                         if (cursor.moveToFirst()) {
                             val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
@@ -35,16 +32,11 @@ class CreatePlaylistUseCase(
                             null
                         }
                     } ?: "cover_${System.currentTimeMillis()}.jpg"
-
-                    // Создаём временный файл в cacheDir
                     val tempFile = File(context.cacheDir, fileName)
                     tempFile.outputStream().use { outputStream ->
                         inputStream.copyTo(outputStream)
                     }
-
-                    // Копируем из cacheDir в приватное хранилище приложения
                     playlistsRepositoryMedia.safeCopyToPrivateStorage(tempFile.absolutePath).also {
-                        // Удаляем временный файл после копирования
                         tempFile.delete()
                     }
                 }
@@ -53,10 +45,7 @@ class CreatePlaylistUseCase(
                 null
             }
         }
-
-
         val coverPath = coverPathResult
-
         return if (coverUri != null && coverPathResult == null) {
             Result.failure(IllegalStateException("Не удалось скопировать обложку в приватное хранилище"))
         } else try {
@@ -68,7 +57,6 @@ class CreatePlaylistUseCase(
                 trackCount = 0,
                 createdAt = System.currentTimeMillis()
             )
-
             val playlistId = playlistsRepositoryMedia.addPlaylist(newPlaylist)
             Result.success(playlistId.toString())
         } catch (e: Exception) {

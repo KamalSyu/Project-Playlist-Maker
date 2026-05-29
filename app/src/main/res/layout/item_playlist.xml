@@ -1,19 +1,15 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="8dp"
     android:background="?attr/selectableItemBackground">
-
     <ImageView
         android:id="@+id/playlistCover"
         android:layout_width="match_parent"
         android:layout_height="120dp"
         android:scaleType="centerCrop"
-        android:contentDescription="@string/playlist_cover"
-        android:background="@drawable/ic_placeholder_312" />
-
+        android:contentDescription="@string/playlist_cover" />
     <TextView
         android:id="@+id/playlistName"
         android:layout_width="match_parent"
@@ -24,5 +20,12 @@
         android:gravity="center"
         android:maxLines="2"
         android:ellipsize="end" />
-
+    <TextView
+        android:id="@+id/playlistTrackCount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textSize="12sp"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:gravity="center" />
 </LinearLayout>
