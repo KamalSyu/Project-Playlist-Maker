@@ -149,16 +149,21 @@ class CreatePlaylistFragment : Fragment() {
         updateCoverImage(currentState?.selectedCoverUri)
     }
     private fun updateCoverImage(uri: Uri?) {
-        uri?.let {
-            Glide.with(this)
-                .load(it)
-                .placeholder(R.drawable.ic_placeholder_312)
-                .error(R.drawable.ic_placeholder_312)
-                .into(coverImage)
-        } ?: run {
+        val state = viewModel.uiState.value
+        if (state?.isCreated == true && uri == null) {
             coverImage.setImageResource(R.drawable.ic_placeholder_312)
+        } else {
+            uri?.let {
+                Glide.with(this)
+                    .load(it)
+                    .error(R.drawable.ic_placeholder_312) // Заглушка только на случай ошибки загрузки
+                    .into(coverImage)
+            } ?: run {
+                coverImage.setImageDrawable(null)
+            }
         }
     }
+
     private fun setupTextWatchers() {
         val nameTextWatcher = object : TextWatcher {
             private var isUpdating = false

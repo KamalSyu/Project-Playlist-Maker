@@ -103,6 +103,15 @@
 
     </style>
 
+    <style name="PlaylistCenterIconStyle">
+        <item name="android:layout_width">80dp</item>
+        <item name="android:layout_height">80dp</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:layout_marginStart">130dp</item>
+        <item name="android:layout_marginEnd">130dp</item>
+    </style>
+
+
     <style name="TextStyleTopScreen2" parent="Widget.MaterialComponents.TextView">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
@@ -390,6 +399,15 @@
         <item name="android:layout_marginEnd">24dp</item>
         <item name="android:layout_marginTop">0dp</item>
         <item name="android:scaleType">centerCrop</item>
+    </style>
+
+    <style name="AlbumImageViewStyle2">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">24dp</item>
+        <item name="android:layout_marginEnd">24dp</item>
+        <item name="android:layout_marginTop">0dp</item>
+        <item name="android:scaleType">fitCenter</item>
     </style>
 
         <style name="EmptyStateImage">

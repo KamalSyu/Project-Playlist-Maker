@@ -5,103 +5,134 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-<LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    style="@style/BackgroundAudioplayer">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        style="@style/BackgroundAudioplayer">
 
         <TextView
-        android:id="@+id/back"
-        style="@style/TextStyleTopScreen"
-        app:drawableStartCompat="@drawable/ic_back_arrow_48"
-        android:layout_marginBottom="26dp"
-        android:text="@string/new_playlist" />
+            android:id="@+id/back"
+            style="@style/TextStyleTopScreen"
+            app:drawableStartCompat="@drawable/ic_back_arrow_48"
+            android:layout_marginBottom="26dp"
+            android:text="@string/new_playlist" />
 
-    <ImageView
-        android:id="@+id/playlistCoverImage"
-        android:scaleType="centerCrop"
-        android:layout_marginTop="2dp"
-        android:contentDescription="@string/playlist_cover"
-        android:background="@drawable/playlist_cover_border"
-        android:clickable="true"
-        android:focusable="true"
-        style="@style/AlbumImageViewStyle"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintDimensionRatio="1:1" />
+        <!-- Контейнер с ConstraintLayout для корректной работы ограничений -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-    <!-- Поле названия -->
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/playlistNameField"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:hint="@string/playlist_name_hint"
-        app:expandedHintEnabled="true"
-        app:hintTextColor="#888888">
+            <!-- Контейнер с рамкой и пользовательским изображением -->
+            <FrameLayout
+                android:id="@+id/playlistCoverContainer"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp"
+                android:layout_marginTop="2dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintDimensionRatio="1:1">
 
-        <com.google.android.material.textfield.TextInputEditText
+                <!-- Фон: рамка с пунктиром и скруглёнными углами (нижний слой) -->
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/playlist_cover_border"
+                    android:scaleType="fitCenter"
+                    android:contentDescription="@string/playlist_cover" />
+
+                <!-- Пользовательское изображение (поверх рамки) -->
+                <ImageView
+                    android:id="@+id/playlistCoverImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:adjustViewBounds="true" />
+            </FrameLayout>
+
+            <!-- Иконка, центрированная относительно FrameLayout -->
+            <ImageView
+                android:id="@+id/playlistCenterIcon"
+                style="@style/PlaylistCenterIconStyle"
+                android:src="@drawable/vector1"
+                app:layout_constraintStart_toStartOf="@+id/playlistCoverContainer"
+                app:layout_constraintEnd_toEndOf="@+id/playlistCoverContainer"
+                app:layout_constraintTop_toTopOf="@+id/playlistCoverContainer"
+                app:layout_constraintBottom_toBottomOf="@+id/playlistCoverContainer" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Поле названия -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/playlistNameField"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="54dp"
-            android:inputType="text"
-            android:textColor="#1A1B22"
-            android:background="?attr/editTextBackground"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:paddingTop="18dp"
-            android:paddingBottom="19dp"
-            android:focusable="true"
-            android:focusableInTouchMode="true" />
-    </com.google.android.material.textfield.TextInputLayout>
+            android:layout_marginTop="32dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:hint="@string/playlist_name_hint"
+            app:expandedHintEnabled="true"
+            app:hintTextColor="#888888">
 
-    <!-- Поле описания -->
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/playlistDescriptionField"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="17dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="170dp"
-        android:hint="@string/playlist_description_hint"
-        app:expandedHintEnabled="true"
-        app:hintTextColor="#888888">
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="54dp"
+                android:inputType="text"
+                android:textColor="#1A1B22"
+                android:background="?attr/editTextBackground"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="18dp"
+                android:paddingBottom="19dp"
+                android:focusable="true"
+                android:focusableInTouchMode="true" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.textfield.TextInputEditText
+        <!-- Поле описания -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/playlistDescriptionField"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="54dp"
-            android:inputType="textMultiLine"
-            android:textColor="#1A1B22"
-            android:background="?attr/editTextBackground"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:paddingTop="18dp"
-            android:paddingBottom="19dp"
-            android:focusable="true"
-            android:focusableInTouchMode="true" />
-    </com.google.android.material.textfield.TextInputLayout>
+            android:layout_marginTop="17dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="170dp"
+            android:hint="@string/playlist_description_hint"
+            app:expandedHintEnabled="true"
+            app:hintTextColor="#888888">
 
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="54dp"
+                android:inputType="textMultiLine"
+                android:textColor="#1A1B22"
+                android:background="?attr/editTextBackground"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="18dp"
+                android:paddingBottom="19dp"
+                android:focusable="true"
+                android:focusableInTouchMode="true" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Кнопка «Создать» -->
-    <Button
-        android:id="@+id/createPlaylistButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="17dp"
-        android:layout_marginEnd="17dp"
-        android:paddingBottom="1dp"
-        android:background="@drawable/button_create_playlist_background"
-        android:text="@string/create_playlist"
-        android:textColor="#FFFFFF"
-        android:textAllCaps="false"
-        android:enabled="false"
-        />
+        <!-- Кнопка «Создать» -->
+        <Button
+            android:id="@+id/createPlaylistButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="17dp"
+            android:layout_marginEnd="17dp"
+            android:paddingBottom="1dp"
+            android:background="@drawable/button_create_playlist_background"
+            android:text="@string/create_playlist"
+            android:textColor="#FFFFFF"
+            android:textAllCaps="false"
+            android:enabled="false" />
     </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
