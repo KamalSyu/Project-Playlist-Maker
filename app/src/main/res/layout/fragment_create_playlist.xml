@@ -75,7 +75,9 @@
             android:layout_marginEnd="16dp"
             android:hint="@string/playlist_name_hint"
             app:expandedHintEnabled="true"
-            app:hintTextColor="#888888">
+            app:hintTextColor="#888888"
+            app:boxStrokeWidth="0dp"
+            app:boxStrokeWidthFocused="0dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:layout_width="match_parent"
@@ -83,14 +85,18 @@
                 android:minHeight="54dp"
                 android:inputType="text"
                 android:textColor="#1A1B22"
-                android:background="?attr/editTextBackground"
+                android:background="@drawable/outline_border"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
                 android:paddingTop="18dp"
                 android:paddingBottom="19dp"
                 android:focusable="true"
                 android:focusableInTouchMode="true" />
+
         </com.google.android.material.textfield.TextInputLayout>
+
+
+
 
         <!-- Поле описания -->
         <com.google.android.material.textfield.TextInputLayout
@@ -103,7 +109,9 @@
             android:layout_marginBottom="170dp"
             android:hint="@string/playlist_description_hint"
             app:expandedHintEnabled="true"
-            app:hintTextColor="#888888">
+            app:hintTextColor="#888888"
+            app:boxStrokeWidth="0dp"
+            app:boxStrokeWidthFocused="0dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:layout_width="match_parent"
@@ -111,7 +119,7 @@
                 android:minHeight="54dp"
                 android:inputType="textMultiLine"
                 android:textColor="#1A1B22"
-                android:background="?attr/editTextBackground"
+                android:background="@drawable/outline_border"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
                 android:paddingTop="18dp"

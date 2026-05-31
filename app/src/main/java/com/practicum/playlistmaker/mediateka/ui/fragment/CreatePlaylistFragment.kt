@@ -156,7 +156,7 @@ class CreatePlaylistFragment : Fragment() {
             uri?.let {
                 Glide.with(this)
                     .load(it)
-                    .error(R.drawable.ic_placeholder_312) // Заглушка только на случай ошибки загрузки
+                    .error(R.drawable.ic_placeholder_312)
                     .into(coverImage)
             } ?: run {
                 coverImage.setImageDrawable(null)
