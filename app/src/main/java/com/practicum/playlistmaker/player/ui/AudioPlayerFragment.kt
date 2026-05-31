@@ -32,6 +32,7 @@ import com.practicum.playlistmaker.player.ui.view.AudioPlayerViewModel
 import com.practicum.playlistmaker.search.ui.parcel.ParcelableTrack
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -47,6 +48,8 @@ class AudioPlayerFragment : Fragment() {
     private lateinit var adapter: PlayerTrackAdapter
     private var bottomSheetDialog: BottomSheetDialog? = null
     private var newPlaylistButton: Button? = null
+    private var currentPlaylists: List<PlaylistForPlayer> = emptyList()
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -57,29 +60,47 @@ class AudioPlayerFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val backButton: TextView = requireView().findViewById(R.id.back)
-        backButton.setOnClickListener {
-            handleBackPress()
-        }
+        backButton.setOnClickListener { handleBackPress() }
+
         val callback = object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                handleBackPress()
-            }
+            override fun handleOnBackPressed() { handleBackPress() }
         }
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
+
         ViewCompat.setOnApplyWindowInsetsListener(view) { view, insets ->
             val statusBar = insets.getInsets(WindowInsetsCompat.Type.statusBars())
             view.updatePadding(top = statusBar.top)
             insets
         }
+
         val track = getTrackFromIntent()
         viewModel.setCurrentTrack(track)
         viewModel.updateFavoriteStatusAfterTrackSet()
         viewModel.uiState.observe(viewLifecycleOwner) { state ->
             updateUI(state)
+            state.lastAddToPlaylistStatus?.let { status ->
+                when (status) {
+                    AddTrackStatus.SUCCESS -> {
+                        Toast.makeText(requireContext(), "Трек добавлен в плейлист", Toast.LENGTH_SHORT).show()
+                    }
+                    AddTrackStatus.ALREADY_EXISTS -> {
+                        Toast.makeText(requireContext(), "Трек уже есть в этом плейлисте", Toast.LENGTH_SHORT).show()
+                    }
+                    AddTrackStatus.ERROR -> {
+                        Toast.makeText(requireContext(), "Ошибка при добавлении трека", Toast.LENGTH_SHORT).show()
+                    }
+                    else -> {}
+                }
+            }
             if (state.shouldPoll && state.playbackState.isPlaying) {
                 viewModel.startProgressUpdates()
             } else {
                 viewModel.stopProgressUpdates()
+            }
+        }
+        lifecycleScope.launch {
+            viewModel.playlists.collect { playlists ->
+                currentPlaylists = playlists
             }
         }
         setupRecyclerView(track)
@@ -97,28 +118,21 @@ class AudioPlayerFragment : Fragment() {
         bottomSheetDialog?.setContentView(R.layout.bottom_sheet_playlists)
         val recyclerView = bottomSheetDialog?.findViewById<RecyclerView>(R.id.playlistsBottomSheetRecyclerView)
         recyclerView?.layoutManager = LinearLayoutManager(requireContext())
-
         val adapter = PlaylistSelectionAdapter { playlist: PlaylistForPlayer ->
             viewModel.addTrackToPlaylist(playlist.id, track)
+            bottomSheetDialog?.dismiss()
         }
         recyclerView?.adapter = adapter
-
-        // Подписываемся на обновления списка плейлистов
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             viewModel.playlists.collect { playlists ->
                 adapter.updatePlaylists(playlists)
-                // Если плейлистов нет, можно скрыть RecyclerView или показать заглушку — логика на ваш выбор
             }
         }
-
-        // Кнопка «Новый плейлист»
         val newPlaylistButton = bottomSheetDialog?.findViewById<Button>(R.id.newPlaylistBottomSheetButton)
         newPlaylistButton?.setOnClickListener {
             bottomSheetDialog?.dismiss()
             findNavController().navigate(R.id.action_audioPlayerFragment_to_createPlaylistFragment)
         }
-
-        // Настройка поведения bottom sheet
         val bottomSheet = bottomSheetDialog?.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
         bottomSheet?.let {
             val behavior = BottomSheetBehavior.from(it)
@@ -131,39 +145,16 @@ class AudioPlayerFragment : Fragment() {
                     }
                 }
                 override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                    // При сильном свайпе вниз — скрываем
-                    if (slideOffset < -0.5f) {
-                        behavior.state = BottomSheetBehavior.STATE_HIDDEN
-                    }
                 }
             })
         }
-
         bottomSheetDialog?.show()
-
-        // Дополнительно: подписываемся на статус добавления трека, чтобы показывать тосты
-        viewModel.uiState.observe(viewLifecycleOwner) { state ->
-            when (state.lastAddToPlaylistStatus) {
-                AddTrackStatus.SUCCESS -> {
-                    Toast.makeText(requireContext(), "Трек добавлен в плейлист", Toast.LENGTH_SHORT).show()
-                }
-                AddTrackStatus.ALREADY_EXISTS -> {
-                    Toast.makeText(requireContext(), "Трек уже есть в этом плейлисте", Toast.LENGTH_SHORT).show()
-                }
-                AddTrackStatus.ERROR -> {
-                    Toast.makeText(requireContext(), "Ошибка при добавлении трека", Toast.LENGTH_SHORT).show()
-                }
-                else -> {}
-            }
-        }
     }
-
     private fun getTrackFromIntent(): Track {
         val parcelableTrack: ParcelableTrack = arguments?.getParcelable("track")
             ?: throw IllegalArgumentException("Track is required but not provided in arguments.")
         val mapper = TrackParcelableMapper()
         val track = mapper.toDomain(parcelableTrack)
-
         Log.d("AudioPlayerFragment", "Трек получен: ${track.trackName}, isFavorite=${track.isFavorite}")
         return track
     }
@@ -185,14 +176,12 @@ class AudioPlayerFragment : Fragment() {
         recyclerViewAudioPlayer.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
-
                 val layoutManager = recyclerView.layoutManager as LinearLayoutManager
                 val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
                 val firstItem = layoutManager.findViewByPosition(firstVisibleItemPosition)
                 if ((firstVisibleItemPosition <= 0) &&
                     dy < -5 &&
                     firstItem != null) {
-
                     val visibleHeight = firstItem.height - firstItem.top
                     if (visibleHeight > firstItem.height * 0.5f) {
                         showToolbarWithAutoHide()

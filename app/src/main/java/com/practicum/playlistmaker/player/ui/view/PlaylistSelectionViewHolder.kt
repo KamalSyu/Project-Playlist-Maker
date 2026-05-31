@@ -1,6 +1,7 @@
 package com.practicum.playlistmaker.player.ui.view
 
 import android.net.Uri
+import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
@@ -17,8 +18,10 @@ class PlaylistSelectionViewHolder(
     private val playlistName: TextView = itemView.findViewById(R.id.playlistName)
     private val playlistTrackCount: TextView = itemView.findViewById(R.id.playlistTrackCount)
     fun bind(playlist: PlaylistForPlayer) {
+        Log.d("PlaylistSelectionViewHolder", "Binding playlist: ${playlist.name}, trackCount: ${playlist.trackCount}")
         playlistName.text = playlist.name
         playlistTrackCount.text = formatTrackCount(playlist.trackCount)
+
         if (!playlist.coverPath.isNullOrEmpty()) {
             Glide.with(itemView.context)
                 .load(Uri.parse(playlist.coverPath))
@@ -30,6 +33,7 @@ class PlaylistSelectionViewHolder(
         }
         itemView.setOnClickListener { onPlaylistClick(playlist) }
     }
+
     companion object {
         fun formatTrackCount(trackCount: Int): String = when (trackCount) {
             0 -> "Нет треков"

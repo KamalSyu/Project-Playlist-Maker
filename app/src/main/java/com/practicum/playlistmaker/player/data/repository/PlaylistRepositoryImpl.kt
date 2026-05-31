@@ -22,15 +22,30 @@ class PlaylistRepositoryImpl(
     private val context: Context
 ) : PlaylistRepository {
     private val fileStorageService = FileStorageService(context)
-    override fun getPlaylists(): Flow<List<PlaylistForPlayer>> {
-        return playlistDao.getAllPlaylists()
-            .map { entities ->
-                entities.map { playlistEntity ->
-                    val domainPlaylist = playlistEntity.toDomain()
-                    PlaylistForPlayer.fromDomain(domainPlaylist)
-                }
+
+//    override fun getPlaylists(): Flow<List<PlaylistForPlayer>> {
+//        return playlistDao.getAllPlaylists()
+//            .map { entities ->
+//                entities.map { playlistEntity ->
+//                    val domainPlaylist = playlistEntity.toDomain()
+//                    PlaylistForPlayer.fromDomain(domainPlaylist)
+//                }
+//            }
+//    }
+override fun getPlaylists(): Flow<List<PlaylistForPlayer>> {
+    return playlistDao.getAllPlaylists()
+        .map { entities ->
+            val playlists = entities.map { playlistEntity ->
+                val domainPlaylist = playlistEntity.toDomain()
+                PlaylistForPlayer.fromDomain(domainPlaylist)
             }
-    }
+            Log.d("PlaylistRepositoryImpl", "Количество загруженных плейлистов: ${playlists.size}")
+            playlists.forEachIndexed { index, playlist ->
+                Log.d("PlaylistRepositoryImpl", "Плейлист $index: name='${playlist.name}', trackCount=${playlist.trackCount}, coverPath='${playlist.coverPath}'")
+            }
+            playlists
+        }
+}
     override suspend fun addTrackToPlaylist(playlistId: Long, track: Track): AddTrackStatus {
         return withContext(Dispatchers.IO) {
             try {

@@ -8,6 +8,7 @@
     android:focusable="true"
     android:background="?attr/selectableItemBackground">
 
+    <!-- Область для обложки плейлиста -->
     <ImageView
         android:id="@+id/playlistCover"
         android:layout_width="48dp"
@@ -16,18 +17,32 @@
         android:contentDescription="@string/playlist_cover"
         android:background="@drawable/ic_placeholder_312" />
 
-    <TextView
-        android:id="@+id/playlistName"
+    <!-- Контейнер для текстовой информации -->
+    <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
+        android:orientation="vertical"
         android:layout_marginStart="16dp"
-        android:textSize="16sp"
-        android:textStyle="bold" />
-    <TextView
-        android:id="@+id/playlistTrackCount"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="14sp"/>
+        android:minHeight="48dp">
 
+        <!-- Название плейлиста -->
+        <TextView
+            android:id="@+id/playlistName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:textColor="@color/black" />
+
+        <!-- Количество треков в плейлисте -->
+        <TextView
+            android:id="@+id/playlistTrackCount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:textColor="@color/gray" />
+    </LinearLayout>
 </LinearLayout>
