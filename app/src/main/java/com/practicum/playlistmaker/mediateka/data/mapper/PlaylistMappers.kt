@@ -13,7 +13,6 @@ fun PlaylistEntity.toDomain(): Playlist {
         createdAt = this.createdAt
     )
 }
-
 fun Playlist.toEntity(): PlaylistEntity {
     val id = this.id.toLongOrNull()
         ?: throw IllegalArgumentException("Invalid playlist ID: ${this.id}")

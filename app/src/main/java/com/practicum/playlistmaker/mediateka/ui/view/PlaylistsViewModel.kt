@@ -37,8 +37,23 @@ class PlaylistsViewModel(
             }
         }
     }
-    suspend fun addTrackToPlaylist(playlistId: String, track: Track): AddTrackStatus {
-        _uiState.value = PlaylistsUiState.Loading
-        return playlistInteractor.addTrackToPlaylist(playlistId, track)
+    fun addTrackToPlaylist(playlistId: String, track: Track) {
+        viewModelScope.launch {
+            val currentState = _uiState.value
+            if (currentState is PlaylistsUiState.Success) {
+                _uiState.value = currentState.copy(addTrackStatus = null)
+            }
+            try {
+                val status = playlistInteractor.addTrackToPlaylist(playlistId, track)
+                if (currentState is PlaylistsUiState.Success) {
+                    _uiState.value = currentState.copy(addTrackStatus = status)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                if (currentState is PlaylistsUiState.Success) {
+                    _uiState.value = currentState.copy(addTrackStatus = AddTrackStatus.ERROR)
+                }
+            }
+        }
     }
 }

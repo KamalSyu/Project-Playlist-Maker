@@ -15,19 +15,16 @@ class PlayerTrackAdapter(
     private var onFavorite: (Track) -> Unit = {},
     private val formatDurationUseCase: FormatTrackDurationUseCase
 ) : RecyclerView.Adapter<PlayerTrackAdapter.PlayerViewHolder>() {
-
     var isPlaying: Boolean = false
     var currentTimeMillis: Long = 0
     var currentPosition: Int = -1
     private var formattedTime: String = "00:00"
     private var currentPlayerViewHolder: AlbumViewHolder? = null
-
     data class UpdatePlaybackStatePayload(
         val isPlaying: Boolean,
         val formattedTime: String,
         val isFavorite: Boolean
     )
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PlayerViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_audioplayer, parent, false)
@@ -40,20 +37,16 @@ class PlayerTrackAdapter(
             formatDurationUseCase = formatDurationUseCase
         ))
     }
-
     override fun onBindViewHolder(holder: PlayerViewHolder, position: Int) {
         val track = tracks[position]
         val isFavorite = track.isFavorite
         holder.bind(track, position, isFavorite)
     }
-
-
     override fun onBindViewHolder(holder: PlayerViewHolder, position: Int, payloads: MutableList<Any>) {
         if (payloads.isEmpty()) {
             super.onBindViewHolder(holder, position, payloads)
             return
         }
-
         for (payload in payloads) {
             when (payload) {
                 is UpdatePlaybackStatePayload -> {
@@ -69,9 +62,7 @@ class PlayerTrackAdapter(
             }
         }
     }
-
     override fun getItemCount(): Int = tracks.size
-
     fun notifyDataSetChangedWithState(
         isPlaying: Boolean,
         currentTimeMillis: Long,
@@ -93,7 +84,6 @@ class PlayerTrackAdapter(
             notifyDataSetChanged()
         }
     }
-
     inner class PlayerViewHolder(
         val viewHolder: AlbumViewHolder
     ) : RecyclerView.ViewHolder(viewHolder.itemView) {
@@ -108,19 +98,16 @@ class PlayerTrackAdapter(
             )
         }
     }
-
     override fun onViewAttachedToWindow(holder: PlayerViewHolder) {
         super.onViewAttachedToWindow(holder)
         currentPlayerViewHolder = holder.viewHolder
     }
-
     override fun onViewDetachedFromWindow(holder: PlayerViewHolder) {
         super.onViewDetachedFromWindow(holder)
         if (currentPlayerViewHolder == holder.viewHolder) {
             currentPlayerViewHolder = null
         }
     }
-
     fun updateFavoriteStateForTrack(trackId: String, isFavorite: Boolean) {
         val index = tracks.indexOfFirst { it.trackId == trackId }
         if (index != -1) {

@@ -71,11 +71,6 @@ class AudioPlayerFragment : Fragment() {
             view.updatePadding(top = statusBar.top)
             insets
         }
-        val addToPlaylistButton: Button = requireView().findViewById(R.id.ic_button_plus)
-        addToPlaylistButton.setOnClickListener {
-            val track = getTrackFromIntent()
-            showPlaylistSelectionBottomSheet(track)
-        }
         val track = getTrackFromIntent()
         viewModel.setCurrentTrack(track)
         viewModel.updateFavoriteStatusAfterTrackSet()
@@ -102,48 +97,28 @@ class AudioPlayerFragment : Fragment() {
         bottomSheetDialog?.setContentView(R.layout.bottom_sheet_playlists)
         val recyclerView = bottomSheetDialog?.findViewById<RecyclerView>(R.id.playlistsBottomSheetRecyclerView)
         recyclerView?.layoutManager = LinearLayoutManager(requireContext())
+
         val adapter = PlaylistSelectionAdapter { playlist: PlaylistForPlayer ->
-            lifecycleScope.launch {
-                val result = withContext(Dispatchers.IO) {
-                    viewModel.addTrackToPlaylist(playlist.id, track)
-                }
-                when (result) {
-                    AddTrackStatus.SUCCESS -> {
-                        bottomSheetDialog?.dismiss()
-                        Toast.makeText(
-                            requireContext(),
-                            "Добавлено в плейлист ${playlist.name}",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                    AddTrackStatus.ALREADY_EXISTS -> {
-                        Toast.makeText(
-                            requireContext(),
-                            "Трек уже добавлен в плейлист ${playlist.name}",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                    else -> {
-                        Toast.makeText(
-                            requireContext(),
-                            "Ошибка при добавлении трека",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
-            }
+            viewModel.addTrackToPlaylist(playlist.id, track)
         }
         recyclerView?.adapter = adapter
+
+        // Подписываемся на обновления списка плейлистов
         lifecycleScope.launch {
             viewModel.playlists.collect { playlists ->
                 adapter.updatePlaylists(playlists)
+                // Если плейлистов нет, можно скрыть RecyclerView или показать заглушку — логика на ваш выбор
             }
         }
+
+        // Кнопка «Новый плейлист»
         val newPlaylistButton = bottomSheetDialog?.findViewById<Button>(R.id.newPlaylistBottomSheetButton)
         newPlaylistButton?.setOnClickListener {
             bottomSheetDialog?.dismiss()
             findNavController().navigate(R.id.action_audioPlayerFragment_to_createPlaylistFragment)
         }
+
+        // Настройка поведения bottom sheet
         val bottomSheet = bottomSheetDialog?.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
         bottomSheet?.let {
             val behavior = BottomSheetBehavior.from(it)
@@ -156,14 +131,33 @@ class AudioPlayerFragment : Fragment() {
                     }
                 }
                 override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                    // При сильном свайпе вниз — скрываем
                     if (slideOffset < -0.5f) {
                         behavior.state = BottomSheetBehavior.STATE_HIDDEN
                     }
                 }
             })
         }
+
         bottomSheetDialog?.show()
+
+        // Дополнительно: подписываемся на статус добавления трека, чтобы показывать тосты
+        viewModel.uiState.observe(viewLifecycleOwner) { state ->
+            when (state.lastAddToPlaylistStatus) {
+                AddTrackStatus.SUCCESS -> {
+                    Toast.makeText(requireContext(), "Трек добавлен в плейлист", Toast.LENGTH_SHORT).show()
+                }
+                AddTrackStatus.ALREADY_EXISTS -> {
+                    Toast.makeText(requireContext(), "Трек уже есть в этом плейлисте", Toast.LENGTH_SHORT).show()
+                }
+                AddTrackStatus.ERROR -> {
+                    Toast.makeText(requireContext(), "Ошибка при добавлении трека", Toast.LENGTH_SHORT).show()
+                }
+                else -> {}
+            }
+        }
     }
+
     private fun getTrackFromIntent(): Track {
         val parcelableTrack: ParcelableTrack = arguments?.getParcelable("track")
             ?: throw IllegalArgumentException("Track is required but not provided in arguments.")

@@ -108,16 +108,13 @@ val appModule = module {
             Context.MODE_PRIVATE
         )
     }
-
     single { Gson() }
-
     single {
         Retrofit.Builder()
             .baseUrl("https://itunes.apple.com/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
-
     single<ItunesApi> { get<Retrofit>().create(ItunesApi::class.java) }
 
     // 2. Утилиты
@@ -133,11 +130,10 @@ val appModule = module {
     single { TrackMapper(get()) }
     single { SearchResponseMapper(get()) }
     single { SearchHistoryMapper(get()) }
-
     single { FileStorageService(get<Context>()) }
+
     // 5. Репозитории
     single<PlayerRepository> { PlayerRepositoryImpl() }
-
     single<SettingsRepository> {
         SettingsRepositoryImpl(
             sharedPreferences = get(),
@@ -145,21 +141,18 @@ val appModule = module {
             dtoMapper = get()
         )
     }
-
     single<HistoryRepository> {
         HistoryRepositoryImpl(
             sharedPreferences = get(),
             gson = get(),
         )
     }
-
     single<ItunesRepository> {
         ItunesRepositoryImpl(
             api = get(),
             searchResponseMapper = get()
         )
     }
-
     single<SupportEmailDataProvider> { SupportEmailDataProviderImpl(get()) }
     single<ShareTextProvider> { ShareTextProviderImpl(get()) }
 
@@ -179,11 +172,11 @@ val appModule = module {
 
     single<PlaylistRepository> {
         PlaylistRepositoryImpl(
-            playlistsRepositoryMedia = get(),
             playlistDao = get(),
             context = get()
         )
     }
+
     single { TrackParcelableMapper() }
 
     single<PlaylistInteractor> { PlaylistInteractorImpl(get()) }  // Исправлено: используем реализацию
@@ -255,14 +248,12 @@ val appModule = module {
         playlistRepository = get()
     ) }
 
-
     viewModel { SettingsViewModel(
         getThemeStateUseCase = get(),
         switchThemeUseCase = get(),
         shareAppUseCase = get(),
         sendSupportEmailUseCase = get()
     ) }
-
 
     viewModel<CreatePlaylistViewModel> {
         CreatePlaylistViewModel(get())
@@ -273,7 +264,6 @@ val appModule = module {
     viewModel { FavoriteTracksViewModel(
         getFavoriteTracksUseCase = get()
     ) }
-
 }
 
 val dataModule = module {
@@ -283,7 +273,7 @@ val dataModule = module {
             AppDatabase::class.java,
             "app_database.db"
         )
-            .fallbackToDestructiveMigration()  // добавляем эту строку
+            .fallbackToDestructiveMigration()
             .build()
     }
 

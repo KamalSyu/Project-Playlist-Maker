@@ -2,32 +2,42 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    >
+    android:orientation="vertical">
+
+    <Button
+        android:id="@+id/newPlaylistButton"
+        style="@style/CustomButton"
+        android:layout_width="wrap_content"
+        android:text="@string/new_playlist"
+        android:layout_gravity="center_horizontal"
+        />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/playlistsRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:visibility="gone" />
+
     <LinearLayout
         android:id="@+id/emptyPlaylistsLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
         android:orientation="vertical">
-        <Button
-            android:id="@+id/newPlaylistButton"
-            style="@style/CustomButton"
-            android:layout_width="wrap_content"
-            android:text="@string/new_playlist" />
+
         <ImageView
+            android:id="@+id/emptyStateImage"
             style="@style/EmptyStateImage2"
             android:contentDescription="@string/empty_state_image" />
+
         <TextView
+            android:id="@+id/emptyStateText"
             style="@style/EmptyStateText2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/no_playlists_message" />
     </LinearLayout>
 </LinearLayout>
+
+

@@ -58,28 +58,19 @@ class CreatePlaylistFragment : Fragment() {
             val playlistDescription = bundle.getString("playlistDescription", "")
             val coverUri = bundle.getParcelable<Uri>("selectedCoverUri")
             val nameFieldHasError = bundle.getBoolean("nameFieldHasError", false)
-
-            // Восстанавливаем название плейлиста, только если оно не пустое
             if (playlistName.isNotBlank()) {
                 nameField.editText?.setText(playlistName)
                 nameField.editText?.setSelection(playlistName.length)
             }
-
-            // Восстанавливаем описание плейлиста
             if (playlistDescription.isNotBlank()) {
                 descriptionField.editText?.setText(playlistDescription)
                 descriptionField.editText?.setSelection(playlistDescription.length)
             } else {
-                // Если описание пустое, не вызываем setText — подсказка отобразится автоматически
             }
-
-            // Восстанавливаем изображение обложки
             if (coverUri != null) {
                 viewModel.updateSelectedCoverUri(coverUri)
                 updateCoverImage(coverUri)
             }
-
-            // Отложенная установка ошибки, чтобы дать TextInputLayout корректно инициализироваться
             if (nameFieldHasError) {
                 nameField.post {
                     nameField.error = getString(R.string.playlist_name_required)
@@ -87,7 +78,7 @@ class CreatePlaylistFragment : Fragment() {
             }
         }
         setupTextWatchers()
-        setupErrorClearingOnInput()  // Добавляем вызов нового метода
+        setupErrorClearingOnInput()
 
         setupClickListeners()
         setupObservers()
@@ -113,8 +104,6 @@ class CreatePlaylistFragment : Fragment() {
         }
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
     }
-
-
     private val pickImage = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) {
             viewModel.updateSelectedCoverUri(uri)
@@ -141,8 +130,6 @@ class CreatePlaylistFragment : Fragment() {
         descriptionField = view.findViewById(R.id.playlistDescriptionField)
         coverImage = view.findViewById(R.id.playlistCoverImage)
         backButton = view.findViewById(R.id.back)
-
-        // Проверяем, что все элементы инициализированы
         if (!this::createButton.isInitialized || createButton == null) {
             throw IllegalStateException("Элемент createButton (ID: R.id.createPlaylistButton) не найден в разметке")
         }
@@ -158,11 +145,9 @@ class CreatePlaylistFragment : Fragment() {
         if (!this::backButton.isInitialized || backButton == null) {
             throw IllegalStateException("Элемент backButton (ID: R.id.back) не найден в разметке")
         }
-
         val currentState = viewModel.uiState.value
         updateCoverImage(currentState?.selectedCoverUri)
     }
-
     private fun updateCoverImage(uri: Uri?) {
         uri?.let {
             Glide.with(this)
@@ -186,7 +171,6 @@ class CreatePlaylistFragment : Fragment() {
             override fun afterTextChanged(s: Editable?) {}
         }
         nameField.editText?.addTextChangedListener(nameTextWatcher)
-
         val descriptionTextWatcher = object : TextWatcher {
             private var isUpdating = false
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
@@ -224,32 +208,23 @@ class CreatePlaylistFragment : Fragment() {
         if (state.isCreateButtonEnabled) {
             viewModel.createPlaylist(requireContext())
         } else {
-            // Устанавливаем ошибку с небольшой задержкой, чтобы не конфликтовать с анимацией подсказки
             nameField.postDelayed({
                 nameField.error = getString(R.string.playlist_name_required)
             }, 100)
         }
     }
-
     private fun setupObservers() {
         viewModel.uiState.observe(viewLifecycleOwner) { state: CreatePlaylistUiState ->
             updateCoverImage(state.selectedCoverUri)
-
-            // Синхронизация кнопки с состоянием ViewModel — обязательно!
             createButton.isEnabled = state.isCreateButtonEnabled
-
             state.successMessage?.let { successMessage ->
                 Toast.makeText(requireContext(), successMessage, Toast.LENGTH_SHORT).show()
                 findNavController().popBackStack()
                 viewModel.clearSuccess()
             }
-
             state.error?.let { errorMessage ->
-                // Возвращаем кнопке исходный текст, если меняли его при загрузке
                 createButton.text = getString(R.string.create_playlist)
-                // При ошибке кнопка должна быть активна, чтобы пользователь мог исправить ввод
                 createButton.isEnabled = true
-
                 when {
                     errorMessage.contains("Не удалось скопировать обложку") -> {
                         Toast.makeText(
@@ -312,7 +287,6 @@ class CreatePlaylistFragment : Fragment() {
         val name = state.playlistName.trim()
         return name.isNotBlank()
     }
-
     private fun showDiscardChangesDialog() {
         AlertDialog.Builder(requireContext())
             .setTitle(getString(R.string.discard_changes_title))
@@ -337,7 +311,6 @@ class CreatePlaylistFragment : Fragment() {
         descriptionField.editText?.setText("")
         updateCoverImage(null)
     }
-
     override fun onDestroyView() {
         super.onDestroyView()
         requireActivity().findViewById<View>(R.id.bottom_navigation)?.visibility = View.VISIBLE
@@ -345,40 +318,26 @@ class CreatePlaylistFragment : Fragment() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         val state = viewModel.uiState.value ?: return
-
-        // Сохраняем введённые пользователем данные
         outState.putString("playlistName", state.playlistName)
         outState.putString("playlistDescription", state.playlistDescription)
-
-        // Сохраняем URI выбранной обложки, если она есть
         state.selectedCoverUri?.let { uri ->
             outState.putParcelable("selectedCoverUri", uri)
         }
-
-        // Сохраняем флаг наличия ошибки в поле названия плейлиста
-        // (чтобы при пересоздании фрагмента восстановить отображение ошибки, если она была)
         outState.putBoolean("nameFieldHasError", nameField.error != null)
-
-        // Дополнительно сохраняем текущее состояние кнопки создания (опционально,
-        // может пригодиться для сложных сценариев восстановления UI)
         outState.putBoolean("isCreateButtonEnabled", state.isCreateButtonEnabled)
     }
     private fun setupErrorClearingOnInput() {
         val nameTextWatcher = object : TextWatcher {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                // Если в поле есть ошибка и пользователь начал вводить текст — сбрасываем ошибку
                 if (nameField.error != null && !s.isNullOrEmpty()) {
                     nameField.error = null
                 }
             }
-
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-
             override fun afterTextChanged(s: Editable?) {}
         }
         nameField.editText?.addTextChangedListener(nameTextWatcher)
     }
-
     companion object {
         private const val REQUEST_READ_STORAGE = 1001
     }

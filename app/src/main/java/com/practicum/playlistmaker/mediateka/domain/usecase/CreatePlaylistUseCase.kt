@@ -7,7 +7,6 @@ import android.util.Log
 import com.practicum.playlistmaker.core.models.domain.Playlist
 import com.practicum.playlistmaker.mediateka.domain.repository.PlaylistsRepositoryMedia
 import java.io.File
-import java.util.UUID
 
 class CreatePlaylistUseCase(
     private val playlistsRepositoryMedia: PlaylistsRepositoryMedia
@@ -57,10 +56,9 @@ class CreatePlaylistUseCase(
         val coverPath = coverPathResult
         return if (coverUri != null && coverPathResult == null) {
             Result.failure(IllegalStateException("Не удалось скопировать обложку в приватное хранилище"))
-
         } else try {
             val newPlaylist = Playlist(
-                id = "0", // маркер нового плейлиста: будет заменён на реальный ID из БД
+                id = "0",
                 name = trimmedName,
                 description = playlistDescription,
                 coverPath = coverPath,

@@ -3,21 +3,21 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="?attr/colorBackgroundFloating">
+    android:background="@color/white">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Плейлисты"
         android:textSize="16sp"
-        android:textColor="?attr/colorOnSurface"
+        android:textColor="@color/black"
         android:padding="16dp"
         android:gravity="center_horizontal" />
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="?attr/colorOutline" />
+        android:background="#E0E0E0" />
 
     <!-- Здесь будет список плейлистов -->
     <androidx.recyclerview.widget.RecyclerView
@@ -29,13 +29,13 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="?attr/colorOutline" />
+        android:background="#E0E0E0" />
 
     <Button
         android:id="@+id/newPlaylistBottomSheetButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Новый плейлист"
-        style="?attr/borderlessButtonStyle"
+        style="@style/Widget.AppCompat.Button.Borderless"
         android:paddingVertical="16dp" />
 </LinearLayout>

@@ -12,7 +12,6 @@ class FavoriteTracksRepositoryImpl(
     private val dao: FavoriteTracksDao,
     private val trackFactory: TrackFactory
 ) : FavoriteTracksRepository {
-
     override suspend fun addTrackToFavorites(track: Track) {
         val entity = FavoriteTrackEntity(
             trackId = track.trackId,
@@ -29,7 +28,6 @@ class FavoriteTracksRepositoryImpl(
         )
         dao.addToFavorites(entity)
     }
-
     override suspend fun removeTrackFromFavorites(trackId: String) {
         dao.removeFromFavorites(FavoriteTrackEntity(
             trackId = trackId,
@@ -45,7 +43,6 @@ class FavoriteTracksRepositoryImpl(
             addedDate = System.currentTimeMillis()
         ))
     }
-
     override fun getFavoriteTracks(): Flow<List<Track>> {
         return dao.getAllFavoriteTracks().map { entities ->
             entities.map { entity ->
@@ -64,7 +61,6 @@ class FavoriteTracksRepositoryImpl(
             }
         }
     }
-
     override suspend fun isTrackFavorite(trackId: String): Boolean {
         return dao.getFavoriteTrackIds().contains(trackId)
     }

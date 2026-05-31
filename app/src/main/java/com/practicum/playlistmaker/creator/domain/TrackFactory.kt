@@ -31,7 +31,6 @@ class TrackFactory {
             addedDate = finalAddedDate
         )
     }
-
     private fun generateTrackId(
         trackName: String,
         artistName: String,

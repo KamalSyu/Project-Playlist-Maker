@@ -43,11 +43,9 @@ class AudioPlayerViewModel(
     private val isTrackFavoriteUseCase: IsTrackFavoriteUseCase,
     private val playlistRepository: PlaylistRepository
 ) : ViewModel() {
-
     companion object {
         private const val PROGRESS_UPDATE_INTERVAL_MS = 300L
     }
-
     private val _uiState = MutableLiveData<PlayerUiState>(
         PlayerUiState(
             playbackState = PlaybackState(isPlaying = false, position = 0L),
@@ -57,14 +55,11 @@ class AudioPlayerViewModel(
             currentTrack = null
         )
     )
-
     private var currentTrackId: String? = null
     private var favoriteStatusJob: Job? = null
     private var pollingJob: Job? = null
     val uiState: LiveData<PlayerUiState> = _uiState
     val playlists: Flow<List<PlaylistForPlayer>> = playlistRepository.getPlaylists()
-
-
     fun onFavoriteClicked() = viewModelScope.launch {
         try {
             val currentTrack = _uiState.value?.currentTrack ?: return@launch
@@ -81,7 +76,6 @@ class AudioPlayerViewModel(
             _uiState.postValue(_uiState.value?.copy(error = e))
         }
     }
-
     fun checkTrackFavoriteStatus(trackId: String) = viewModelScope.launch {
         try {
             val isFavorite = isTrackFavoriteUseCase(trackId)
@@ -92,7 +86,6 @@ class AudioPlayerViewModel(
             _uiState.value = _uiState.value?.copy(isFavorite = false)
         }
     }
-
     fun restorePlaybackState(isPlaying: Boolean, savedPosition: Long) {
         _uiState.value = _uiState.value?.copy(
             playbackState = PlaybackState(isPlaying, savedPosition),
@@ -103,12 +96,9 @@ class AudioPlayerViewModel(
             isInitialized = true
         )
     }
-
-
     fun clearError() {
         _uiState.value = _uiState.value?.copy(error = null)
     }
-
     fun saveCurrentPosition() = viewModelScope.launch {
         try {
             val currentPosition = getCurrentPositionUseCase()
@@ -120,7 +110,6 @@ class AudioPlayerViewModel(
             Log.e("AudioPlayerViewModel", "Ошибка сохранения позиции", e)
         }
     }
-
     fun initPlayback(previewUrl: String?) = viewModelScope.launch {
         try {
             val result = preparePlaybackUseCase(previewUrl)
@@ -142,7 +131,6 @@ class AudioPlayerViewModel(
             _uiState.value = _uiState.value?.copy(error = e)
         }
     }
-
     fun togglePlayback(resumePosition: Long? = null) = viewModelScope.launch {
         try {
             val currentState = _uiState.value?.playbackState ?: PlaybackState(false, 0L)
@@ -175,7 +163,6 @@ class AudioPlayerViewModel(
             _uiState.value = _uiState.value?.copy(error = e)
         }
     }
-
     fun stopPlayback() = viewModelScope.launch {
         saveCurrentPosition()
         try {
@@ -190,7 +177,6 @@ class AudioPlayerViewModel(
             Log.e("AudioPlayerViewModel", "Ошибка остановки воспроизведения", e)
         }
     }
-
     fun setupPlaybackCompletionListener() = viewModelScope.launch {
         setCompletionListenerUseCase {
             viewModelScope.launch {
@@ -204,7 +190,6 @@ class AudioPlayerViewModel(
             }
         }
     }
-
     fun resetPlaybackToStart() = viewModelScope.launch {
         try {
             stopPlaybackUseCase().isSuccess
@@ -222,28 +207,47 @@ class AudioPlayerViewModel(
             _uiState.value = _uiState.value?.copy(error = e)
         }
     }
-
     fun processTrack(parcelableTrack: ParcelableTrack): Track {
         return trackParcelableMapper.toDomain(parcelableTrack)
     }
-
     fun setCurrentTrack(track: Track) {
         favoriteStatusJob?.cancel()
         currentTrackId = track.trackId
         _uiState.value = _uiState.value?.copy(currentTrack = track)
     }
-
     fun startProgressUpdates() {
         startPolling()
     }
-
     fun stopProgressUpdates() {
         stopPolling()
     }
-    suspend fun addTrackToPlaylist(playlistId: String, track: Track): AddTrackStatus {
-        return playlistRepository.addTrackToPlaylist(playlistId, track)
+    fun addTrackToPlaylist(playlistId: String, track: Track) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value?.copy(
+                isAddingToPlaylistInProgress = true,
+                lastAddToPlaylistStatus = null
+            )
+            if (playlistId.isBlank()) {
+                Log.w("AudioPlayerViewModel", "Пустой playlistId")
+                _uiState.value = _uiState.value?.copy(
+                    isAddingToPlaylistInProgress = false,
+                    lastAddToPlaylistStatus = AddTrackStatus.ERROR
+                )
+                return@launch
+            }
+            val status = try {
+                val playlistIdLong = playlistId.toLong()
+                playlistRepository.addTrackToPlaylist(playlistIdLong, track)
+            } catch (e: NumberFormatException) {
+                Log.e("AudioPlayerViewModel", "Некорректный ID плейлиста: $playlistId", e)
+                AddTrackStatus.ERROR
+            }
+            _uiState.value = _uiState.value?.copy(
+                isAddingToPlaylistInProgress = false,
+                lastAddToPlaylistStatus = status
+            )
+        }
     }
-
 
     private fun startPolling() {
         stopPolling()
@@ -265,12 +269,10 @@ class AudioPlayerViewModel(
             }
         }
     }
-
     private fun stopPolling() {
         pollingJob?.cancel()
         pollingJob = null
     }
-
     fun updateFavoriteStatusAfterTrackSet() = viewModelScope.launch {
         favoriteStatusJob?.cancel()
         currentTrackId?.let { trackId ->

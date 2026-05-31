@@ -5,6 +5,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -22,6 +24,8 @@ class FragmentPlaylists : Fragment() {
     private lateinit var newPlaylistButton: Button
     private lateinit var playlistsRecyclerView: RecyclerView
     private lateinit var emptyPlaylistsLayout: View
+    private lateinit var emptyStateImage: ImageView
+    private lateinit var emptyStateText: TextView
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -31,6 +35,9 @@ class FragmentPlaylists : Fragment() {
         newPlaylistButton = view.findViewById(R.id.newPlaylistButton)
         playlistsRecyclerView = view.findViewById(R.id.playlistsRecyclerView)
         emptyPlaylistsLayout = view.findViewById(R.id.emptyPlaylistsLayout)
+        emptyStateImage = view.findViewById(R.id.emptyStateImage)
+        emptyStateText = view.findViewById(R.id.emptyStateText)
+
         newPlaylistButton.setOnClickListener {
             findNavController().navigate(R.id.action_mediatekaFragment_to_createPlaylistFragment)
         }
@@ -49,11 +56,10 @@ class FragmentPlaylists : Fragment() {
         playlistsRecyclerView.visibility = View.GONE
         emptyPlaylistsLayout.visibility = View.VISIBLE
     }
-    fun refreshPlaylists() {
-        viewModel.loadPlaylists()
-    }
     private fun showPlaylistsList(playlists: List<Playlist>) {
         emptyPlaylistsLayout.visibility = View.GONE
+        emptyStateImage.visibility = View.GONE
+        emptyStateText.visibility = View.GONE
         playlistsRecyclerView.visibility = View.VISIBLE
         playlistsRecyclerView.layoutManager = GridLayoutManager(requireContext(), 2)
         val adapter = PlaylistsAdapter(playlists) { playlist ->
@@ -63,10 +69,15 @@ class FragmentPlaylists : Fragment() {
     private fun showLoading() {
         playlistsRecyclerView.visibility = View.GONE
         emptyPlaylistsLayout.visibility = View.VISIBLE
+        emptyStateImage.visibility = View.GONE
+        emptyStateText.visibility = View.GONE
     }
     private fun showError(error: Throwable) {
         Toast.makeText(requireContext(), "Ошибка загрузки: ${error.message}", Toast.LENGTH_LONG).show()
         showEmptyState()
+    }
+    fun refreshPlaylists() {
+        viewModel.loadPlaylists()
     }
     companion object {
         fun newInstance(): Fragment {

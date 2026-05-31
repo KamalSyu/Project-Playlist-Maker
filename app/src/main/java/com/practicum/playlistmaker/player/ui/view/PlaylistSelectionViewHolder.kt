@@ -1,5 +1,6 @@
 package com.practicum.playlistmaker.player.ui.view
 
+import android.net.Uri
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
@@ -12,21 +13,21 @@ class PlaylistSelectionViewHolder(
     itemView: View,
     private val onPlaylistClick: (PlaylistForPlayer) -> Unit
 ) : RecyclerView.ViewHolder(itemView) {
-
     private val playlistCover: ImageView = itemView.findViewById(R.id.playlistCover)
     private val playlistName: TextView = itemView.findViewById(R.id.playlistName)
     private val playlistTrackCount: TextView = itemView.findViewById(R.id.playlistTrackCount)
-
     fun bind(playlist: PlaylistForPlayer) {
         playlistName.text = playlist.name
         playlistTrackCount.text = formatTrackCount(playlist.trackCount)
-
-        Glide.with(itemView.context)
-            .load(playlist.coverPath)
-            .placeholder(R.drawable.ic_placeholder_312)
-            .error(R.drawable.ic_placeholder_312)
-            .into(playlistCover)
-
+        if (!playlist.coverPath.isNullOrEmpty()) {
+            Glide.with(itemView.context)
+                .load(Uri.parse(playlist.coverPath))
+                .placeholder(R.drawable.ic_placeholder_312)
+                .error(R.drawable.ic_placeholder_312)
+                .into(playlistCover)
+        } else {
+            playlistCover.setImageResource(R.drawable.ic_placeholder_312)
+        }
         itemView.setOnClickListener { onPlaylistClick(playlist) }
     }
     companion object {

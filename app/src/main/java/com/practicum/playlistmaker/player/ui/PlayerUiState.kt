@@ -22,4 +22,8 @@ data class PlayerUiState(
 
     val isCreatingPlaylist: Boolean = false,
 
+    val isAddingToPlaylistInProgress: Boolean = false,
+    val lastAddToPlaylistStatus: AddTrackStatus? = null
+
+
 )

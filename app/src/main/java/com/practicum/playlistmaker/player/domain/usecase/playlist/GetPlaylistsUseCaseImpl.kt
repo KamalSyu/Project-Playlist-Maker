@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.Flow
 class GetPlaylistsUseCaseImpl(
     private val playlistRepository: PlaylistRepository,
 ) : GetPlaylistsUseCase {
-
     override suspend operator fun invoke(): Flow<List<PlaylistForPlayer>> {
         return playlistRepository.getPlaylists()
     }

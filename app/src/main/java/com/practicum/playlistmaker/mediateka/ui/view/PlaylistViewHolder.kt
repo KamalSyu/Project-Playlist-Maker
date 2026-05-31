@@ -31,6 +31,5 @@ class PlaylistViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             coverImage.setImageResource(R.drawable.ic_placeholder_312)
         }
     }
-
 }
 

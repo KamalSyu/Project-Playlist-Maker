@@ -5,12 +5,10 @@ import android.util.Log
 import com.practicum.playlistmaker.player.domain.repository.PlayerRepository
 
 class PlayerRepositoryImpl () : PlayerRepository {
-
     private var mediaPlayer: MediaPlayer? = null
     private var savedPosition: Long = 0L
     private var isPrepared: Boolean = false
     private var completionListener: (() -> Unit)? = null
-
     override suspend fun prepare(url: String?) {
         try {
             mediaPlayer = MediaPlayer().apply {
@@ -36,11 +34,9 @@ class PlayerRepositoryImpl () : PlayerRepository {
             mediaPlayer = null
         }
     }
-
     override suspend fun play() {
         playWithPosition(null)
     }
-
     override suspend fun playWithPosition(resumePosition: Long?) {
         mediaPlayer?.let { player ->
             if (!isPrepared) {
@@ -52,7 +48,6 @@ class PlayerRepositoryImpl () : PlayerRepository {
             resumeWithPosition(player, resumePosition)
         } ?: Log.e("PlayerRepository", "MediaPlayer is null in play()")
     }
-
     private fun resumeWithPosition(player: MediaPlayer, resumePosition: Long?) {
         val targetPosition = resumePosition ?: savedPosition
         if (targetPosition > 0L) {
@@ -61,17 +56,14 @@ class PlayerRepositoryImpl () : PlayerRepository {
         }
         player.start()
     }
-
     override suspend fun pause() {
         mediaPlayer?.pause()
         mediaPlayer?.currentPosition?.toLong()?.let { savedPosition = it }
     }
-
     override suspend fun stop() {
         mediaPlayer?.pause()
         mediaPlayer?.currentPosition?.toLong()?.let { savedPosition = it }
     }
-
     override suspend fun reset() {
         mediaPlayer?.release()
         mediaPlayer = null
@@ -79,20 +71,16 @@ class PlayerRepositoryImpl () : PlayerRepository {
         savedPosition = 0L
         isPrepared = false
     }
-
     override fun isPlaying(): Boolean {
         return mediaPlayer?.isPlaying ?: false
     }
-
     override fun getCurrentPosition(): Long {
         return mediaPlayer?.currentPosition?.toLong() ?: savedPosition
     }
-
     override fun setOnCompletionListener(listener: () -> Unit) {
         completionListener = listener
         mediaPlayer?.setOnCompletionListener { listener() }
     }
-
     override fun seekTo(position: Long) {
         mediaPlayer?.seekTo(position.toInt())
         savedPosition = position
