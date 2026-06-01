@@ -65,8 +65,9 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <!-- Поле названия -->
+        <!-- Поле названия: подсказка чёрная в покое, серая наверху при фокусе/вводе -->
         <com.google.android.material.textfield.TextInputLayout
+            style="@style/TextInputLayoutPrimaryHint"
             android:id="@+id/playlistNameField"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -74,73 +75,49 @@
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:hint="@string/playlist_name_hint"
-            app:expandedHintEnabled="true"
-            app:hintTextColor="#888888"
-            app:boxStrokeWidth="0dp"
-            app:boxStrokeWidthFocused="0dp">
+            app:expandedHintEnabled="true">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:minHeight="54dp"
-                android:inputType="text"
-                android:textColor="#1A1B22"
-                android:background="@drawable/outline_border"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:paddingTop="18dp"
-                android:paddingBottom="19dp"
-                android:focusable="true"
-                android:focusableInTouchMode="true" />
+                style="@style/TextInputEditText" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
-
-
-
-        <!-- Поле описания -->
+        <!-- Поле описания: подсказка всегда серая -->
         <com.google.android.material.textfield.TextInputLayout
+            style="@style/TextInputLayoutPrimaryHint"
             android:id="@+id/playlistDescriptionField"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="17dp"
+            android:layout_marginTop="16dp"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
-            android:layout_marginBottom="170dp"
             android:hint="@string/playlist_description_hint"
-            app:expandedHintEnabled="true"
-            app:hintTextColor="#888888"
-            app:boxStrokeWidth="0dp"
-            app:boxStrokeWidthFocused="0dp">
+            app:expandedHintEnabled="true">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:minHeight="54dp"
-                android:inputType="textMultiLine"
-                android:textColor="#1A1B22"
-                android:background="@drawable/outline_border"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:paddingTop="18dp"
-                android:paddingBottom="19dp"
-                android:focusable="true"
-                android:focusableInTouchMode="true" />
+                style="@style/TextInputEditText" />
+
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- Заполнитель: занимает всё свободное пространство и выталкивает кнопку вниз -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
         <!-- Кнопка «Создать» -->
+
         <Button
             android:id="@+id/createPlaylistButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="17dp"
-            android:layout_marginEnd="17dp"
-            android:paddingBottom="1dp"
+            style="@style/ButtonCreatePlaylist"
             android:background="@drawable/button_create_playlist_background"
             android:text="@string/create_playlist"
-            android:textColor="#FFFFFF"
-            android:textAllCaps="false"
-            android:enabled="false" />
+            />
+
+
     </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

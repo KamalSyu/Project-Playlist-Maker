@@ -21,6 +21,8 @@
     <color name="progressbar_blue">#3772E7</color>
     <color name="yp_icon">#1A1B22</color>
     <color name="yp_audiopleer">#FFFFFFFF</color>
+    <color name="button_disabled_color">#AEAFB4</color> <!-- Серый цвет для disabled -->
+    <color name="button_enabled_color">#3772E7</color>  <!-- Синий цвет для enabled -->
 
 
 </resources>
