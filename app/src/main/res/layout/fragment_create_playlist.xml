@@ -34,13 +34,13 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintDimensionRatio="1:1">
-
+                app:layout_constraintDimensionRatio="1:1"
+                >
                 <!-- Фон: рамка с пунктиром и скруглёнными углами (нижний слой) -->
                 <ImageView
+                    android:id="@+id/playlistBorderImage"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:src="@drawable/playlist_cover_border"
                     android:scaleType="fitCenter"
                     android:contentDescription="@string/playlist_cover" />
 
@@ -50,7 +50,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:scaleType="centerCrop"
-                    android:adjustViewBounds="true" />
+                    android:adjustViewBounds="true"
+                    />
             </FrameLayout>
 
             <!-- Иконка, центрированная относительно FrameLayout -->
@@ -116,8 +117,6 @@
             android:background="@drawable/button_create_playlist_background"
             android:text="@string/create_playlist"
             />
-
-
     </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

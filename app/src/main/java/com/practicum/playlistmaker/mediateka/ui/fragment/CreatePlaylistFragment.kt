@@ -31,6 +31,8 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.practicum.playlistmaker.core.utils.DashedRoundedBorderDrawable
 import com.practicum.playlistmaker.mediateka.ui.CreatePlaylistUiState
 import com.practicum.playlistmaker.mediateka.ui.view.CreatePlaylistViewModel
 import org.koin.android.ext.android.inject
@@ -42,6 +44,9 @@ class CreatePlaylistFragment : Fragment() {
     private lateinit var descriptionField: TextInputLayout
     private lateinit var coverImage: ImageView
     private lateinit var backButton: TextView
+    private lateinit var borderImage: ImageView
+
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -103,6 +108,7 @@ class CreatePlaylistFragment : Fragment() {
             }
         }
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
+        borderImage.setImageDrawable(DashedRoundedBorderDrawable())
     }
     private val pickImage = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) {
@@ -130,6 +136,9 @@ class CreatePlaylistFragment : Fragment() {
         descriptionField = view.findViewById(R.id.playlistDescriptionField)
         coverImage = view.findViewById(R.id.playlistCoverImage)
         backButton = view.findViewById(R.id.back)
+
+        borderImage = view.findViewById(R.id.playlistBorderImage)
+
         if (!this::createButton.isInitialized || createButton == null) {
             throw IllegalStateException("Элемент createButton (ID: R.id.createPlaylistButton) не найден в разметке")
         }
@@ -163,7 +172,6 @@ class CreatePlaylistFragment : Fragment() {
             }
         }
     }
-
     private fun setupTextWatchers() {
         val nameTextWatcher = object : TextWatcher {
             private var isUpdating = false

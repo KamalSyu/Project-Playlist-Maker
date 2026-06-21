@@ -115,6 +115,7 @@
         <item name="hintTextColor">@color/hint_text_color</item>
         <item name="android:textColorHint">@color/yp_black</item>
 
+
     </style>
 
     <!-- Стиль для полей, где подсказка всегда серая (например, для описания) -->
