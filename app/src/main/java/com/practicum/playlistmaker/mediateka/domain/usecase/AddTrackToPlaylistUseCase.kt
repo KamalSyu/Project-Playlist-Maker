@@ -11,8 +11,9 @@ class AddTrackToPlaylistUseCase(
         return try {
             playlistsRepository.addTrackToPlaylist(playlistId, track)
             AddTrackStatus.SUCCESS
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             AddTrackStatus.ERROR
         }
     }
 }
+

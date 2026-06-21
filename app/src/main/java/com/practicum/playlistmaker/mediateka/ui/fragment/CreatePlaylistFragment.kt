@@ -32,7 +32,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.practicum.playlistmaker.core.utils.DashedRoundedBorderDrawable
 import com.practicum.playlistmaker.mediateka.ui.CreatePlaylistUiState
 import com.practicum.playlistmaker.mediateka.ui.view.CreatePlaylistViewModel

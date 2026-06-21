@@ -27,7 +27,6 @@ class DashedRoundedBorderDrawable(
 
     override fun draw(canvas: Canvas) {
         val rect = RectF(bounds)
-        // Отступ на половину толщины, чтобы обводка была внутри границ View
         rect.inset(strokeWidth / 2f, strokeWidth / 2f)
 
         val path = Path()

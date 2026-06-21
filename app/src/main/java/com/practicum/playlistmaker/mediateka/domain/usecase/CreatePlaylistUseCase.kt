@@ -28,7 +28,6 @@ class CreatePlaylistUseCase(
         val coverPathResult = if (coverUri != null) {
             try {
                 context.contentResolver.openInputStream(coverUri)?.use { inputStream ->
-                    // Пытаемся получить имя файла из контент-провайдера
                     val fileName = context.contentResolver
                         .query(coverUri, null, null, null, null)
                         ?.use { cursor ->
@@ -47,13 +46,10 @@ class CreatePlaylistUseCase(
 
                     playlistsRepositoryMedia.safeCopyToPrivateStorage(tempFile.absolutePath)
                         .also {
-                            // Удаляем временный файл после копирования (даже если копирование неудачно, это ок)
                             tempFile.delete()
                         }
                         .also { path ->
                             Log.d("CreatePlaylistUseCase", "Обложка успешно скопирована, путь: $path")
-
-                            // --- ДИАГНОСТИКА: проверяем, что файл реально есть и не пустой ---
                             if (!path.isNullOrEmpty()) {
                                 val file = File(path)
                                 Log.d("CreatePlaylistUseCase", "file.exists(): ${file.exists()}")
@@ -69,7 +65,6 @@ class CreatePlaylistUseCase(
                             } else {
                                 Log.w("CreatePlaylistUseCase", "path оказался null или пустым после копирования")
                             }
-                            // -----------------------------------------------------------------
                         }
                 }
             } catch (e: Exception) {
@@ -79,16 +74,12 @@ class CreatePlaylistUseCase(
         } else {
             null
         }
-
-        // Если была обложка, но сохранить не удалось — сразу возвращаем ошибку
         if (coverUri != null && coverPathResult == null) {
             return Result.failure(
                 IllegalStateException("Не удалось скопировать обложку в приватное хранилище")
             )
         }
-
         val coverPath = coverPathResult
-
         return try {
             val newPlaylist = Playlist(
                 id = "0",
@@ -99,10 +90,8 @@ class CreatePlaylistUseCase(
                 createdAt = System.currentTimeMillis()
             )
             Log.d("CreatePlaylistUseCase", "Создаём плейлист: $newPlaylist")
-
             val resultId = playlistsRepositoryMedia.addPlaylist(newPlaylist)
             Log.d("CreatePlaylistUseCase", "Плейлист создан, ID: $resultId")
-
             Result.success(resultId.toString())
         } catch (e: Exception) {
             Log.e("CreatePlaylistUseCase", "Ошибка при добавлении плейлиста в репозиторий", e)

@@ -1,7 +1,6 @@
 package com.practicum.playlistmaker.mediateka.data.repository
 
 import android.content.Context
-import android.net.Uri
 import android.util.Log
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.core.models.domain.Playlist
@@ -20,14 +19,13 @@ import java.util.UUID
 
 class PlaylistsRepositoryImplMedia(
     private val dao: PlaylistsDao,
-    private val context: Context
+    context: Context
 ) : PlaylistsRepositoryMedia {
     private val fileStorageService = FileStorageService(context)
 
     override suspend fun safeCopyToPrivateStorage(sourcePath: String): String? {
         return try {
             val result = fileStorageService.copyToPrivateStorage(sourcePath)
-            // --- ДОБАВЛЕНО: диагностика результата от сервиса ---
             Log.d("RepoCheck", "sourcePath (входной): $sourcePath")
             Log.d("RepoCheck", "result from FileStorageService: $result")
             if (!result.isNullOrEmpty()) {
@@ -42,7 +40,6 @@ class PlaylistsRepositoryImplMedia(
             } else {
                 Log.w("RepoCheck", "WARNING: FileStorageService вернул null или пустую строку")
             }
-            // -----------------------------------------------------
             result
         } catch (e: Exception) {
             Log.w("PlaylistsRepositoryImplMedia", "Не удалось скопировать обложку: $sourcePath", e)
@@ -60,12 +57,10 @@ class PlaylistsRepositoryImplMedia(
         require(playlist.name.isNotBlank()) { "Название плейлиста не может быть пустым" }
         val entity = playlist.toEntity()
 
-        // --- ДОБАВЛЕНО: проверка перед вставкой в БД ---
         Log.d("RepoCheck", "Готов к вставке в БД entity.coverPath: ${entity.coverPath?.take(60)}")
         if (entity.coverPath.isNullOrEmpty()) {
             Log.e("RepoCheck", "ОШИБКА: entity.coverPath пуст перед insertPlaylist! playlist.name=${playlist.name}")
         }
-        // -------------------------------------------------
 
         dao.insertPlaylist(entity)
     }
