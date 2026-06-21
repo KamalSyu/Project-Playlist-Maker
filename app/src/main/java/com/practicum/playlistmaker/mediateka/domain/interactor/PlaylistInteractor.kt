@@ -5,4 +5,7 @@ import com.practicum.playlistmaker.core.models.domain.AddTrackStatus
 
 interface PlaylistInteractor {
     suspend fun addTrackToPlaylist(playlistId: String, track: Track): AddTrackStatus
+
+    suspend fun renamePlaylist(playlistId: String, newName: String)
+    suspend fun deletePlaylist(playlistId: String)
 }

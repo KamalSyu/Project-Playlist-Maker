@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -12,6 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.appcompat.app.AlertDialog
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.core.models.domain.Playlist
 import com.practicum.playlistmaker.mediateka.ui.PlaylistsUiState
@@ -26,6 +28,7 @@ class FragmentPlaylists : Fragment() {
     private lateinit var emptyPlaylistsLayout: View
     private lateinit var emptyStateImage: ImageView
     private lateinit var emptyStateText: TextView
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -41,6 +44,7 @@ class FragmentPlaylists : Fragment() {
         newPlaylistButton.setOnClickListener {
             findNavController().navigate(R.id.action_mediatekaFragment_to_createPlaylistFragment)
         }
+
         viewModel.uiState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 PlaylistsUiState.Loading -> showLoading()
@@ -49,36 +53,80 @@ class FragmentPlaylists : Fragment() {
                 PlaylistsUiState.Empty -> showEmptyState()
             }
         }
+
         viewModel.loadPlaylists()
         return view
     }
+
     private fun showEmptyState() {
         playlistsRecyclerView.visibility = View.GONE
         emptyPlaylistsLayout.visibility = View.VISIBLE
     }
+
     private fun showPlaylistsList(playlists: List<Playlist>) {
         emptyPlaylistsLayout.visibility = View.GONE
         emptyStateImage.visibility = View.GONE
         emptyStateText.visibility = View.GONE
         playlistsRecyclerView.visibility = View.VISIBLE
         playlistsRecyclerView.layoutManager = GridLayoutManager(requireContext(), 2)
-        val adapter = PlaylistsAdapter(playlists) { playlist ->
+
+        val adapter = PlaylistsAdapter(playlists) { playlist, action ->
+            when (action) {
+                PlaylistsAdapter.Action.RENAME -> showRenameDialog(playlist)
+                PlaylistsAdapter.Action.DELETE -> showDeleteDialog(playlist)
+            }
         }
         playlistsRecyclerView.adapter = adapter
     }
+
     private fun showLoading() {
         playlistsRecyclerView.visibility = View.GONE
         emptyPlaylistsLayout.visibility = View.VISIBLE
         emptyStateImage.visibility = View.GONE
         emptyStateText.visibility = View.GONE
     }
+
     private fun showError(error: Throwable) {
         Toast.makeText(requireContext(), "Ошибка загрузки: ${error.message}", Toast.LENGTH_LONG).show()
         showEmptyState()
     }
+
+    private fun showRenameDialog(playlist: Playlist) {
+        val input = EditText(requireContext()).apply {
+            setText(playlist.name)
+            setSelection(playlist.name.length)
+            inputType = android.text.InputType.TYPE_CLASS_TEXT
+        }
+        AlertDialog.Builder(requireContext())
+            .setTitle("Переименовать плейлист")
+            .setView(input)
+            .setPositiveButton("ОК") { _, _ ->
+                val newName = input.text.toString().trim()
+                if (newName.isNotEmpty()) {
+                    viewModel.renamePlaylist(playlist.id, newName)
+                } else {
+                    Toast.makeText(requireContext(), "Имя не может быть пустым", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
+
+    private fun showDeleteDialog(playlist: Playlist) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Удалить плейлист")
+            .setMessage("Вы уверены, что хотите удалить плейлист «${playlist.name}»?")
+            .setPositiveButton("Удалить") { _, _ ->
+                viewModel.deletePlaylist(playlist.id)
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
+
     fun refreshPlaylists() {
         viewModel.loadPlaylists()
     }
+
     companion object {
         fun newInstance(): Fragment {
             return FragmentPlaylists()

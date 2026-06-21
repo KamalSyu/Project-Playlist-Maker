@@ -179,7 +179,12 @@ val appModule = module {
 
     single { TrackParcelableMapper() }
 
-    single<PlaylistInteractor> { PlaylistInteractorImpl(get()) }  // Исправлено: используем реализацию
+    single<PlaylistInteractor> {
+        PlaylistInteractorImpl(
+            addTrackToPlaylistUseCase = get(),
+            playlistDao = get() // DAO уже объявлен в dataModule как single
+        )
+    }
 
     // 6. UseCases
     // UseCases поиска
@@ -220,7 +225,6 @@ val appModule = module {
     factory<AddTrackToPlaylistUseCase> {
         AddTrackToPlaylistUseCase(get())
     }
-    factory<PlaylistInteractor> { PlaylistInteractorImpl(get()) }
 
     // 7. ViewModel
     viewModel { SearchViewModel(
