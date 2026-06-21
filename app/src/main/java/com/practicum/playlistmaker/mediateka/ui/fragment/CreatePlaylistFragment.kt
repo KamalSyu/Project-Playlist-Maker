@@ -45,6 +45,8 @@ class CreatePlaylistFragment : Fragment() {
     private lateinit var coverImage: ImageView
     private lateinit var backButton: TextView
     private lateinit var borderImage: ImageView
+    private lateinit var playlistCenterIcon: ImageView
+
 
 
     override fun onCreateView(
@@ -136,8 +138,8 @@ class CreatePlaylistFragment : Fragment() {
         descriptionField = view.findViewById(R.id.playlistDescriptionField)
         coverImage = view.findViewById(R.id.playlistCoverImage)
         backButton = view.findViewById(R.id.back)
-
         borderImage = view.findViewById(R.id.playlistBorderImage)
+        playlistCenterIcon = view.findViewById(R.id.playlistCenterIcon)
 
         if (!this::createButton.isInitialized || createButton == null) {
             throw IllegalStateException("Элемент createButton (ID: R.id.createPlaylistButton) не найден в разметке")
@@ -161,14 +163,17 @@ class CreatePlaylistFragment : Fragment() {
         val state = viewModel.uiState.value
         if (state?.isCreated == true && uri == null) {
             coverImage.setImageResource(R.drawable.ic_placeholder_312)
+            playlistCenterIcon.visibility = View.VISIBLE
         } else {
             uri?.let {
                 Glide.with(this)
                     .load(it)
                     .error(R.drawable.ic_placeholder_312)
                     .into(coverImage)
+                playlistCenterIcon.visibility = View.GONE
             } ?: run {
                 coverImage.setImageDrawable(null)
+                playlistCenterIcon.visibility = View.VISIBLE
             }
         }
     }
