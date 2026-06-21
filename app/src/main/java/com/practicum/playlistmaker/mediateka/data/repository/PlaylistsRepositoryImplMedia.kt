@@ -15,6 +15,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import java.io.File
 import java.util.UUID
 
 class PlaylistsRepositoryImplMedia(
@@ -22,31 +23,63 @@ class PlaylistsRepositoryImplMedia(
     private val context: Context
 ) : PlaylistsRepositoryMedia {
     private val fileStorageService = FileStorageService(context)
+
     override suspend fun safeCopyToPrivateStorage(sourcePath: String): String? {
         return try {
-            fileStorageService.copyToPrivateStorage(sourcePath)
+            val result = fileStorageService.copyToPrivateStorage(sourcePath)
+            // --- ДОБАВЛЕНО: диагностика результата от сервиса ---
+            Log.d("RepoCheck", "sourcePath (входной): $sourcePath")
+            Log.d("RepoCheck", "result from FileStorageService: $result")
+            if (!result.isNullOrEmpty()) {
+                val file = File(result)
+                Log.d("RepoCheck", "file.exists(): ${file.exists()}, length: ${file.length()}")
+                if (!file.exists()) {
+                    Log.w("RepoCheck", "WARNING: FileStorageService вернул путь, но файла по нему нет!")
+                }
+                if (file.length() == 0L) {
+                    Log.w("RepoCheck", "WARNING: Файл существует, но он пустой (0 байт)!")
+                }
+            } else {
+                Log.w("RepoCheck", "WARNING: FileStorageService вернул null или пустую строку")
+            }
+            // -----------------------------------------------------
+            result
         } catch (e: Exception) {
             Log.w("PlaylistsRepositoryImplMedia", "Не удалось скопировать обложку: $sourcePath", e)
             null
         }
     }
+
     override fun getPlaylists(): Flow<List<Playlist>> {
         return dao.getAllPlaylists().map { entities ->
             entities.map { it.toDomain() }
         }
     }
+
     override suspend fun addPlaylist(playlist: Playlist): Long = withContext(Dispatchers.IO) {
         require(playlist.name.isNotBlank()) { "Название плейлиста не может быть пустым" }
         val entity = playlist.toEntity()
+
+        // --- ДОБАВЛЕНО: проверка перед вставкой в БД ---
+        Log.d("RepoCheck", "Готов к вставке в БД entity.coverPath: ${entity.coverPath?.take(60)}")
+        if (entity.coverPath.isNullOrEmpty()) {
+            Log.e("RepoCheck", "ОШИБКА: entity.coverPath пуст перед insertPlaylist! playlist.name=${playlist.name}")
+        }
+        // -------------------------------------------------
+
         dao.insertPlaylist(entity)
     }
+
     override suspend fun updatePlaylist(playlist: Playlist) = withContext(Dispatchers.IO) {
         val entity = playlist.toEntity()
+        Log.d("RepoCheck", "Обновление плейлиста, entity.coverPath: ${entity.coverPath?.take(60)}")
         dao.updatePlaylist(entity)
     }
+
     override suspend fun deletePlaylist(playlistId: Long) = withContext(Dispatchers.IO) {
         dao.deletePlaylistById(playlistId)
     }
+
     override suspend fun addTrackToPlaylist(playlistId: Long, track: Track) = withContext(Dispatchers.IO) {
         val isTrackPresent = dao.isTrackInPlaylist(playlistId, track.trackId) > 0
         if (isTrackPresent) {

@@ -1,5 +1,6 @@
 package com.practicum.playlistmaker.mediateka.ui.adapter
 
+import android.app.Notification.Action
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -9,8 +10,15 @@ import com.practicum.playlistmaker.mediateka.ui.view.PlaylistViewHolder
 
 class PlaylistsAdapter(
     private var playlists: List<Playlist> = emptyList(),
-    private val onPlaylistClick: (Playlist) -> Unit
+    private val onPlaylistClick: (Playlist) -> Unit,
+    private val onPlaylistAction: (Playlist, Action) -> Unit
 ) : RecyclerView.Adapter<PlaylistViewHolder>() {
+
+    enum class Action {
+        RENAME,
+        DELETE
+    }
+
     fun updatePlaylists(newPlaylists: List<Playlist>) {
         this.playlists = newPlaylists
         notifyDataSetChanged()

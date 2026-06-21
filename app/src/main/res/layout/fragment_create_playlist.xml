@@ -63,7 +63,6 @@
                 app:layout_constraintEnd_toEndOf="@+id/playlistCoverContainer"
                 app:layout_constraintTop_toTopOf="@+id/playlistCoverContainer"
                 app:layout_constraintBottom_toBottomOf="@+id/playlistCoverContainer" />
-
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <!-- Поле названия: подсказка чёрная в покое, серая наверху при фокусе/вводе -->

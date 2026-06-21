@@ -9,6 +9,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.core.models.domain.Playlist
+import java.io.File
 
 class PlaylistViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     private val coverImage: ImageView = itemView.findViewById(R.id.playlistCover)
@@ -24,15 +25,23 @@ class PlaylistViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         }
         val cornerRadiusPx = (8 * itemView.resources.displayMetrics.density).toInt()
         if (!playlist.coverPath.isNullOrEmpty()) {
-            Glide.with(coverImage)
-                .load(Uri.parse(playlist.coverPath))
-                .placeholder(R.drawable.ic_placeholder_312)
-                .error(R.drawable.ic_placeholder_312)
-                .transform(RoundedCorners(cornerRadiusPx))
-                .into(coverImage)
+            val file = File(playlist.coverPath)
+            if (file.exists()) {
+                val cornerRadiusPx = (8 * itemView.resources.displayMetrics.density).toInt()
+                Glide.with(coverImage)
+                    .load(file) // <-- Грузим File, а не Uri
+                    .placeholder(R.drawable.ic_placeholder_312)
+                    .error(R.drawable.ic_placeholder_312)
+                    .transform(RoundedCorners(cornerRadiusPx))
+                    .into(coverImage)
+            } else {
+                // Если файл по пути не найден — ставим заглушку
+                coverImage.setImageResource(R.drawable.ic_placeholder_312)
+            }
         } else {
             coverImage.setImageResource(R.drawable.ic_placeholder_312)
         }
+
     }
 }
 
