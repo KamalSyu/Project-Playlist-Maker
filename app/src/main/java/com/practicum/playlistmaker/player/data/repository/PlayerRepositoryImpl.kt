@@ -72,7 +72,7 @@ class PlayerRepositoryImpl () : PlayerRepository {
         isPrepared = false
     }
     override fun isPlaying(): Boolean {
-        return mediaPlayer?.isPlaying ?: false
+        return mediaPlayer?.isPlaying == true
     }
     override fun getCurrentPosition(): Long {
         return mediaPlayer?.currentPosition?.toLong() ?: savedPosition

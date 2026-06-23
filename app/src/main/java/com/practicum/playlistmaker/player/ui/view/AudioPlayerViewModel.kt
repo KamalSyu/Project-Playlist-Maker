@@ -76,16 +76,7 @@ class AudioPlayerViewModel(
             _uiState.postValue(_uiState.value?.copy(error = e))
         }
     }
-    fun checkTrackFavoriteStatus(trackId: String) = viewModelScope.launch {
-        try {
-            val isFavorite = isTrackFavoriteUseCase(trackId)
-            _uiState.value = _uiState.value?.copy(isFavorite = isFavorite)
 
-        } catch (e: Exception) {
-            Log.e("AudioPlayerViewModel", "Ошибка проверки статуса избранного", e)
-            _uiState.value = _uiState.value?.copy(isFavorite = false)
-        }
-    }
     fun restorePlaybackState(isPlaying: Boolean, savedPosition: Long) {
         _uiState.value = _uiState.value?.copy(
             playbackState = PlaybackState(isPlaying, savedPosition),

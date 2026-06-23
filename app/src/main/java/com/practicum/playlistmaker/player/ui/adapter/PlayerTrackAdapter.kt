@@ -108,10 +108,4 @@ class PlayerTrackAdapter(
             currentPlayerViewHolder = null
         }
     }
-    fun updateFavoriteStateForTrack(trackId: String, isFavorite: Boolean) {
-        val index = tracks.indexOfFirst { it.trackId == trackId }
-        if (index != -1) {
-            tracks[index].isFavorite = isFavorite
-        }
-    }
 }

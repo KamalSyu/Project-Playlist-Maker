@@ -70,9 +70,6 @@ class FragmentFavorites : Fragment() {
     }
     private fun navigateToAudioPlayer(track: Track) {
         val parcelableTrack = track.toParcelable()
-        if (parcelableTrack == null) {
-            throw IllegalArgumentException("Cannot convert Track to ParcelableTrack")
-        }
         val bundle = Bundle().apply {
             putParcelable("track", parcelableTrack)
         }

@@ -19,19 +19,10 @@ import java.util.UUID
 
 class PlaylistRepositoryImpl(
     private val playlistDao: PlaylistsDao,
-    private val context: Context
+    context: Context
 ) : PlaylistRepository {
     private val fileStorageService = FileStorageService(context)
 
-//    override fun getPlaylists(): Flow<List<PlaylistForPlayer>> {
-//        return playlistDao.getAllPlaylists()
-//            .map { entities ->
-//                entities.map { playlistEntity ->
-//                    val domainPlaylist = playlistEntity.toDomain()
-//                    PlaylistForPlayer.fromDomain(domainPlaylist)
-//                }
-//            }
-//    }
 override fun getPlaylists(): Flow<List<PlaylistForPlayer>> {
     return playlistDao.getAllPlaylists()
         .map { entities ->
@@ -98,7 +89,7 @@ override fun getPlaylists(): Flow<List<PlaylistForPlayer>> {
             }
         }
     }
-    private suspend fun safeCopyToPrivateStorage(originalPath: String): String? {
+    private  fun safeCopyToPrivateStorage(originalPath: String): String? {
         return try {
             fileStorageService.copyToPrivateStorage(originalPath)
         } catch (e: Exception) {

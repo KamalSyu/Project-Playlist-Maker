@@ -123,10 +123,6 @@ class FragmentPlaylists : Fragment() {
             .show()
     }
 
-    fun refreshPlaylists() {
-        viewModel.loadPlaylists()
-    }
-
     companion object {
         fun newInstance(): Fragment {
             return FragmentPlaylists()

@@ -1,6 +1,5 @@
 package com.practicum.playlistmaker.mediateka.ui.view
 
-import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel

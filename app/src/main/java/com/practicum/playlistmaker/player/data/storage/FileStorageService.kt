@@ -4,7 +4,7 @@ import android.content.Context
 import java.io.File
 import java.io.IOException
 
-class FileStorageService(private val context: Context) {
+class FileStorageService(context: Context) {
     private val privateDir: File = context.filesDir
     fun copyToPrivateStorage(sourcePath: String): String {
         val sourceFile = File(sourcePath)

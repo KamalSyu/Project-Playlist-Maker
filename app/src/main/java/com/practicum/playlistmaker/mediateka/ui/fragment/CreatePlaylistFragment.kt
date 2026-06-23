@@ -48,8 +48,6 @@ class CreatePlaylistFragment : Fragment() {
     private lateinit var borderImage: ImageView
     private lateinit var playlistCenterIcon: ImageView
 
-
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -64,7 +62,7 @@ class CreatePlaylistFragment : Fragment() {
         savedInstanceState?.let { bundle ->
             val playlistName = bundle.getString("playlistName", "")
             val playlistDescription = bundle.getString("playlistDescription", "")
-            val coverUri = bundle.getParcelable<Uri>("selectedCoverUri")
+            val coverUri = bundle.getParcelable("selectedCoverUri", Uri::class.java)
             val nameFieldHasError = bundle.getBoolean("nameFieldHasError", false)
             if (playlistName.isNotBlank()) {
                 nameField.editText?.setText(playlistName)
@@ -73,7 +71,6 @@ class CreatePlaylistFragment : Fragment() {
             if (playlistDescription.isNotBlank()) {
                 descriptionField.editText?.setText(playlistDescription)
                 descriptionField.editText?.setSelection(playlistDescription.length)
-            } else {
             }
             if (coverUri != null) {
                 viewModel.updateSelectedCoverUri(coverUri)
@@ -106,7 +103,7 @@ class CreatePlaylistFragment : Fragment() {
                     showDiscardChangesDialog()
                 } else {
                     this.remove()
-                    requireActivity().onBackPressed()
+                    findNavController().popBackStack()
                 }
             }
         }
@@ -141,22 +138,22 @@ class CreatePlaylistFragment : Fragment() {
         backButton = view.findViewById(R.id.back)
         borderImage = view.findViewById(R.id.playlistBorderImage)
         playlistCenterIcon = view.findViewById(R.id.playlistCenterIcon)
-
-        if (!this::createButton.isInitialized || createButton == null) {
-            throw IllegalStateException("Элемент createButton (ID: R.id.createPlaylistButton) не найден в разметке")
-        }
-        if (!this::nameField.isInitialized || nameField == null) {
-            throw IllegalStateException("Элемент nameField (ID: R.id.playlistNameField) не найден в разметке")
-        }
-        if (!this::descriptionField.isInitialized || descriptionField == null) {
-            throw IllegalStateException("Элемент descriptionField (ID: R.id.playlistDescriptionField) не найден в разметке")
-        }
-        if (!this::coverImage.isInitialized || coverImage == null) {
-            throw IllegalStateException("Элемент coverImage (ID: R.id.playlistCoverImage) не найден в разметке")
-        }
-        if (!this::backButton.isInitialized || backButton == null) {
-            throw IllegalStateException("Элемент backButton (ID: R.id.back) не найден в разметке")
-        }
+//
+//        if (!this::createButton.isInitialized || createButton == null) {
+//            throw IllegalStateException("Элемент createButton (ID: R.id.createPlaylistButton) не найден в разметке")
+//        }
+//        if (!this::nameField.isInitialized || nameField == null) {
+//            throw IllegalStateException("Элемент nameField (ID: R.id.playlistNameField) не найден в разметке")
+//        }
+//        if (!this::descriptionField.isInitialized || descriptionField == null) {
+//            throw IllegalStateException("Элемент descriptionField (ID: R.id.playlistDescriptionField) не найден в разметке")
+//        }
+//        if (!this::coverImage.isInitialized || coverImage == null) {
+//            throw IllegalStateException("Элемент coverImage (ID: R.id.playlistCoverImage) не найден в разметке")
+//        }
+//        if (!this::backButton.isInitialized || backButton == null) {
+//            throw IllegalStateException("Элемент backButton (ID: R.id.back) не найден в разметке")
+//        }
         val currentState = viewModel.uiState.value
         updateCoverImage(currentState?.selectedCoverUri)
     }
@@ -357,7 +354,7 @@ class CreatePlaylistFragment : Fragment() {
                 viewModel.clearSuccess()
                 viewModel.clearError()
                 clearFormState()
-                requireActivity().onBackPressed()
+                findNavController().popBackStack()
             }
             .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
                 dialog.dismiss()
@@ -399,8 +396,5 @@ class CreatePlaylistFragment : Fragment() {
             override fun afterTextChanged(s: Editable?) {}
         }
         nameField.editText?.addTextChangedListener(nameTextWatcher)
-    }
-    companion object {
-        private const val REQUEST_READ_STORAGE = 1001
     }
 }

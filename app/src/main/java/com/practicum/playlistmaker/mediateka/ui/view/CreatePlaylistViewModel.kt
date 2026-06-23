@@ -72,10 +72,4 @@ class CreatePlaylistViewModel(
         val currentState = _uiState.value ?: return
         _uiState.value = currentState.copy(error = null)
     }
-    fun showExitDialog() {
-        _uiState.value = _uiState.value?.copy(showExitDialog = true)
-    }
-    fun hideExitDialog() {
-        _uiState.value = _uiState.value?.copy(showExitDialog = false)
-    }
 }

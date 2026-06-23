@@ -103,10 +103,6 @@ class AlbumViewHolder(
         )
     }
 
-    fun updateCurrentTime(formattedTime: String) {
-        timeTextView.text = formattedTime
-    }
-
     fun updateFavoriteState(isFavorite: Boolean) {
         this.isFavorite = isFavorite
         updateFavoriteButtonImage()

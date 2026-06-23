@@ -31,11 +31,8 @@ import com.practicum.playlistmaker.player.ui.adapter.PlayerTrackAdapter
 import com.practicum.playlistmaker.player.ui.adapter.PlaylistSelectionAdapter
 import com.practicum.playlistmaker.player.ui.view.AudioPlayerViewModel
 import com.practicum.playlistmaker.search.ui.parcel.ParcelableTrack
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class AudioPlayerFragment : Fragment() {
@@ -48,7 +45,6 @@ class AudioPlayerFragment : Fragment() {
     private lateinit var recyclerViewAudioPlayer: RecyclerView
     private lateinit var adapter: PlayerTrackAdapter
     private var bottomSheetDialog: BottomSheetDialog? = null
-    private var newPlaylistButton: Button? = null
     private var currentPlaylists: List<PlaylistForPlayer> = emptyList()
 
     override fun onCreateView(
@@ -90,7 +86,6 @@ class AudioPlayerFragment : Fragment() {
                     AddTrackStatus.ERROR -> {
                         Toast.makeText(requireContext(), "Ошибка при добавлении трека", Toast.LENGTH_SHORT).show()
                     }
-                    else -> {}
                 }
             }
             if (state.shouldPoll && state.playbackState.isPlaying) {
