@@ -7,31 +7,37 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.player.domain.model.PlaylistForPlayer
-
 class PlaylistSelectionViewHolder(
     itemView: View,
     private val onPlaylistClick: (PlaylistForPlayer) -> Unit
 ) : RecyclerView.ViewHolder(itemView) {
+
     private val playlistCover: ImageView = itemView.findViewById(R.id.playlistCover)
     private val playlistName: TextView = itemView.findViewById(R.id.playlistName)
     private val playlistTrackCount: TextView = itemView.findViewById(R.id.playlistTrackCount)
+
     fun bind(playlist: PlaylistForPlayer) {
-        Log.d("PlaylistSelectionViewHolder", "Binding playlist: ${playlist.name}, trackCount: ${playlist.trackCount}")
         playlistName.text = playlist.name
         playlistTrackCount.text = formatTrackCount(playlist.trackCount)
+        loadPlaylistCover(playlist.coverPath)
+        itemView.setOnClickListener { onPlaylistClick(playlist) }
+    }
 
-        if (!playlist.coverPath.isNullOrEmpty()) {
+    private fun loadPlaylistCover(coverPath: String?) {
+        if (!coverPath.isNullOrEmpty()) {
             Glide.with(itemView.context)
-                .load(Uri.parse(playlist.coverPath))
+                .load(coverPath)
                 .placeholder(R.drawable.ic_placeholder_312)
                 .error(R.drawable.ic_placeholder_312)
+                .centerCrop()
+                .transform(RoundedCorners(8)) // как в AlbumViewHolder
                 .into(playlistCover)
         } else {
             playlistCover.setImageResource(R.drawable.ic_placeholder_312)
         }
-        itemView.setOnClickListener { onPlaylistClick(playlist) }
     }
 
     companion object {

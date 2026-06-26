@@ -23,7 +23,7 @@
 
         <TextView
             android:id="@+id/playlistText"
-            style="@style/EmptyStateText"
+            style="@style/text3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Добавить в плейлист" />
@@ -32,7 +32,7 @@
     <!-- Кнопка: ширина формируется за счёт 0dp + отступы, высота 36, отступ снизу 24 -->
     <Button
         android:id="@+id/newPlaylistBottomSheetButton"
-        style="@style/CustomButton"
+        style="@style/CustomButton2"
         android:layout_width="wrap_content"
         android:text="@string/new_playlist"
         android:layout_gravity="center_horizontal" />

@@ -1,34 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_width="160dp"
+    android:layout_height="196dp"
     android:orientation="vertical"
-    android:padding="8dp"
-    android:background="?attr/selectableItemBackground">
+    android:paddingStart="0dp"
+    android:paddingEnd="0dp"
+    android:background="?attr/selectableItemBackground"
+    android:clipChildren="false">
 
+    <!-- Область для обложки плейлиста -->
     <ImageView
         android:id="@+id/playlistCover"
-        android:layout_width="match_parent"
-        android:layout_height="120dp"
-        android:scaleType="centerCrop"
-        android:contentDescription="@string/playlist_cover" />
+        android:layout_width="160dp"
+        android:layout_height="160dp"
+        android:scaleType="fitCenter"
+        android:contentDescription="@string/playlist_cover"
+        android:translationZ="2dp"/>
+    <!-- translationZ нужен, чтобы скругление работало корректно поверх фона родителя -->
 
+    <!-- Название плейлиста -->
     <TextView
         android:id="@+id/playlistName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textStyle="bold"
-        android:textSize="14sp"
-        android:layout_marginTop="8dp"
-        android:gravity="center"
-        android:maxLines="2"
-        android:ellipsize="end" />
+        android:textSize="12sp"
+        android:lineHeight="16sp"
+        android:textColor="#1A1B22"
+        android:textStyle="normal"
+        android:fontWeight="400"
+        android:gravity="start"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:layout_marginTop="4dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"/>
 
+    <!-- Количество треков в плейлисте -->
     <TextView
         android:id="@+id/playlistTrackCount"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
         android:textSize="12sp"
-        android:textColor="@color/yp_text_gray"
-        android:gravity="center" />
+        android:lineHeight="16sp"
+        android:textColor="#1A1B22"
+        android:textStyle="normal"
+        android:fontWeight="400"
+        android:gravity="start"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"/>
+
 </LinearLayout>
