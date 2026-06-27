@@ -33,7 +33,6 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import com.bumptech.glide.Glide
 import com.practicum.playlistmaker.core.utils.DashedRoundedBorderDrawable
-import com.practicum.playlistmaker.mediateka.ui.CreatePlaylistUiState
 import com.practicum.playlistmaker.mediateka.ui.view.CreatePlaylistViewModel
 import org.koin.android.ext.android.inject
 import java.io.File
@@ -58,6 +57,7 @@ class CreatePlaylistFragment : Fragment() {
         setupViews(view)
         return view
     }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         savedInstanceState?.let { bundle ->
             val playlistName = bundle.getString("playlistName", "")
@@ -110,6 +110,7 @@ class CreatePlaylistFragment : Fragment() {
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
         borderImage.setImageDrawable(DashedRoundedBorderDrawable())
     }
+
     private val pickImage = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) {
             viewModel.updateSelectedCoverUri(uri)
@@ -117,6 +118,7 @@ class CreatePlaylistFragment : Fragment() {
             viewModel.updateSelectedCoverUri(null)
         }
     }
+
     private val requestPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -130,6 +132,7 @@ class CreatePlaylistFragment : Fragment() {
             }
         }
     }
+
     private fun setupViews(view: View) {
         createButton = view.findViewById(R.id.createPlaylistButton)
         nameField = view.findViewById(R.id.playlistNameField)
@@ -138,25 +141,11 @@ class CreatePlaylistFragment : Fragment() {
         backButton = view.findViewById(R.id.back)
         borderImage = view.findViewById(R.id.playlistBorderImage)
         playlistCenterIcon = view.findViewById(R.id.playlistCenterIcon)
-//
-//        if (!this::createButton.isInitialized || createButton == null) {
-//            throw IllegalStateException("Элемент createButton (ID: R.id.createPlaylistButton) не найден в разметке")
-//        }
-//        if (!this::nameField.isInitialized || nameField == null) {
-//            throw IllegalStateException("Элемент nameField (ID: R.id.playlistNameField) не найден в разметке")
-//        }
-//        if (!this::descriptionField.isInitialized || descriptionField == null) {
-//            throw IllegalStateException("Элемент descriptionField (ID: R.id.playlistDescriptionField) не найден в разметке")
-//        }
-//        if (!this::coverImage.isInitialized || coverImage == null) {
-//            throw IllegalStateException("Элемент coverImage (ID: R.id.playlistCoverImage) не найден в разметке")
-//        }
-//        if (!this::backButton.isInitialized || backButton == null) {
-//            throw IllegalStateException("Элемент backButton (ID: R.id.back) не найден в разметке")
-//        }
+
         val currentState = viewModel.uiState.value
         updateCoverImage(currentState?.selectedCoverUri)
     }
+
     private fun updateCoverImage(uri: Uri?) {
         val state = viewModel.uiState.value
         if (state?.isCreated == true && uri == null) {
@@ -164,15 +153,12 @@ class CreatePlaylistFragment : Fragment() {
             playlistCenterIcon.visibility = View.VISIBLE
         } else {
             uri?.let { sourceUri ->
-                // Превращаем Uri в File, если это файл (content:// или file://)
                 val file = try {
                     when (sourceUri.scheme) {
                         "file" -> File(sourceUri.path ?: "")
                         "content" -> {
-                            // Для content URI пробуем получить реальный путь через ContentResolver
                             val projection = arrayOf(android.provider.MediaStore.Images.Media.DATA)
                             val cursor = requireContext().contentResolver.query(sourceUri, projection, null, null, null)
-
                             if (cursor != null) {
                                 try {
                                     if (cursor.moveToFirst()) {
@@ -197,13 +183,12 @@ class CreatePlaylistFragment : Fragment() {
 
                 if (file != null && file.exists()) {
                     Glide.with(this)
-                        .load(file) // <-- Ключевое: грузим File
-                        .placeholder(R.drawable.ic_placeholder_312) // Обязательно
-                        .error(R.drawable.ic_placeholder_312)      // Обязательно
+                        .load(file)
+                        .placeholder(R.drawable.ic_placeholder_312)
+                        .error(R.drawable.ic_placeholder_312)
                         .into(coverImage)
                     playlistCenterIcon.visibility = View.GONE
                 } else {
-                    // Если файла нет или не удалось получить File — грузим через Uri (как запасной вариант)
                     Glide.with(this)
                         .load(sourceUri)
                         .placeholder(R.drawable.ic_placeholder_312)
@@ -230,6 +215,7 @@ class CreatePlaylistFragment : Fragment() {
             override fun afterTextChanged(s: Editable?) {}
         }
         nameField.editText?.addTextChangedListener(nameTextWatcher)
+
         val descriptionTextWatcher = object : TextWatcher {
             private var isUpdating = false
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
@@ -242,6 +228,7 @@ class CreatePlaylistFragment : Fragment() {
         }
         descriptionField.editText?.addTextChangedListener(descriptionTextWatcher)
     }
+
     private fun setupClickListeners() {
         coverImage.setOnClickListener {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -261,45 +248,39 @@ class CreatePlaylistFragment : Fragment() {
             createPlaylist()
         }
     }
+
+    // ИСПРАВЛЕНО: убрали popBackStack() отсюда
     private fun createPlaylist() {
         nameField.error = null
         val state = viewModel.uiState.value ?: return
         if (state.isCreateButtonEnabled) {
             viewModel.createPlaylist(requireContext())
+            // НЕ делаем popBackStack здесь — возврат только при успехе в наблюдателе
         } else {
             nameField.postDelayed({
                 nameField.error = getString(R.string.playlist_name_required)
             }, 100)
         }
     }
+
     private fun setupObservers() {
-        viewModel.uiState.observe(viewLifecycleOwner) { state: CreatePlaylistUiState ->
+        viewModel.uiState.observe(viewLifecycleOwner) { state ->
             updateCoverImage(state.selectedCoverUri)
             createButton.isEnabled = state.isCreateButtonEnabled
-            state.successMessage?.let { successMessage ->
-                Toast.makeText(requireContext(), successMessage, Toast.LENGTH_SHORT).show()
-                findNavController().popBackStack()
+
+            state.successMessage?.let { message ->
+                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+                findNavController().popBackStack()      // <-- единственный возврат при успехе
                 viewModel.clearSuccess()
             }
+
             state.error?.let { errorMessage ->
-                createButton.text = getString(R.string.create_playlist)
-                createButton.isEnabled = true
-                when {
-                    errorMessage.contains("Не удалось скопировать обложку") -> {
-                        Toast.makeText(
-                            requireContext(),
-                            "Не удалось сохранить обложку. Проверьте доступ к хранилищу.",
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
-                    else -> {
-                        Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_LONG).show()
-                    }
-                }
+                nameField.error = errorMessage
                 viewModel.clearError()
             }
         }
     }
+
     private fun requestReadStoragePermission() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -315,6 +296,7 @@ class CreatePlaylistFragment : Fragment() {
             pickImage.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
         }
     }
+
     private fun showGoToSettingsDialog() {
         AlertDialog.Builder(requireContext())
             .setTitle(getString(R.string.permission_rationale_title))
@@ -329,6 +311,7 @@ class CreatePlaylistFragment : Fragment() {
             }
             .show()
     }
+
     private fun showPermissionRationale() {
         AlertDialog.Builder(requireContext())
             .setTitle(getString(R.string.permission_rationale_title))
@@ -341,11 +324,13 @@ class CreatePlaylistFragment : Fragment() {
             }
             .show()
     }
+
     private fun hasUnsavedChanges(): Boolean {
         val state = viewModel.uiState.value ?: return false
         val name = state.playlistName.trim()
         return name.isNotBlank()
     }
+
     private fun showDiscardChangesDialog() {
         AlertDialog.Builder(requireContext())
             .setTitle(getString(R.string.discard_changes_title))
@@ -363,6 +348,7 @@ class CreatePlaylistFragment : Fragment() {
             .create()
             .show()
     }
+
     private fun clearFormState() {
         viewModel.clearForm()
         nameField.error = null
@@ -370,10 +356,12 @@ class CreatePlaylistFragment : Fragment() {
         descriptionField.editText?.setText("")
         updateCoverImage(null)
     }
+
     override fun onDestroyView() {
         super.onDestroyView()
         requireActivity().findViewById<View>(R.id.bottom_navigation)?.visibility = View.VISIBLE
     }
+
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         val state = viewModel.uiState.value ?: return
@@ -385,6 +373,7 @@ class CreatePlaylistFragment : Fragment() {
         outState.putBoolean("nameFieldHasError", nameField.error != null)
         outState.putBoolean("isCreateButtonEnabled", state.isCreateButtonEnabled)
     }
+
     private fun setupErrorClearingOnInput() {
         val nameTextWatcher = object : TextWatcher {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {

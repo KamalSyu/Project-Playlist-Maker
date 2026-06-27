@@ -66,6 +66,12 @@ class PlaylistsViewModel(
         playlistInteractor.deletePlaylist(playlistId)
         loadPlaylists()
     }
-
-
+    fun createPlaylist(name: String, coverPath: String?) = viewModelScope.launch {
+        try {
+            playlistInteractor.createPlaylist(name, coverPath)
+            loadPlaylists()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
 }

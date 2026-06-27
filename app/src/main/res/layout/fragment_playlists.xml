@@ -7,10 +7,9 @@
     <Button
         android:id="@+id/newPlaylistButton"
         style="@style/CustomButton"
-        android:layout_width="wrap_content"
         android:text="@string/new_playlist"
-        android:layout_gravity="center_horizontal"
-        />
+        android:layout_gravity="center_horizontal" />
+
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/playlistsRecyclerView"
@@ -24,7 +23,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:visibility="gone">
 
         <ImageView
             android:id="@+id/emptyStateImage"
@@ -39,5 +39,3 @@
             android:text="@string/no_playlists_message" />
     </LinearLayout>
 </LinearLayout>
-
-

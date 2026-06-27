@@ -1,24 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="160dp"
-    android:layout_height="196dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingStart="0dp"
-    android:paddingEnd="0dp"
     android:background="?attr/selectableItemBackground"
     android:clipChildren="false">
 
-    <!-- Область для обложки плейлиста -->
     <ImageView
         android:id="@+id/playlistCover"
-        android:layout_width="160dp"
+        android:layout_width="match_parent"
         android:layout_height="160dp"
         android:scaleType="fitCenter"
+        android:background="#FFFFFF"
         android:contentDescription="@string/playlist_cover"
-        android:translationZ="2dp"/>
-    <!-- translationZ нужен, чтобы скругление работало корректно поверх фона родителя -->
+        android:translationZ="2dp" />
 
-    <!-- Название плейлиста -->
+    <!-- Название плейлиста: строго слева, 12sp -->
     <TextView
         android:id="@+id/playlistName"
         android:layout_width="match_parent"
@@ -32,10 +29,10 @@
         android:maxLines="1"
         android:ellipsize="end"
         android:layout_marginTop="4dp"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"/>
+        android:paddingStart="0dp"
+        android:paddingEnd="0dp" />
 
-    <!-- Количество треков в плейлисте -->
+    <!-- Количество треков: строго слева, отступ 16dp по бокам, 12sp -->
     <TextView
         android:id="@+id/playlistTrackCount"
         android:layout_width="match_parent"
@@ -48,7 +45,6 @@
         android:gravity="start"
         android:maxLines="1"
         android:ellipsize="end"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"/>
-
+        android:paddingStart="0dp"
+        android:paddingEnd="0dp" />
 </LinearLayout>

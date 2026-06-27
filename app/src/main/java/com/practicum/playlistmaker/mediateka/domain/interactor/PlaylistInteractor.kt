@@ -8,4 +8,7 @@ interface PlaylistInteractor {
 
     suspend fun renamePlaylist(playlistId: String, newName: String)
     suspend fun deletePlaylist(playlistId: String)
+
+    suspend fun createPlaylist(name: String, coverPath: String?)
+
 }

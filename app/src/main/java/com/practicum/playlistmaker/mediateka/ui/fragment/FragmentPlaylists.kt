@@ -14,12 +14,14 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.appcompat.app.AlertDialog
+
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.core.models.domain.Playlist
 import com.practicum.playlistmaker.mediateka.ui.PlaylistsUiState
 import com.practicum.playlistmaker.mediateka.ui.adapter.PlaylistsAdapter
 import com.practicum.playlistmaker.mediateka.ui.view.PlaylistsViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import com.practicum.playlistmaker.core.utils.GridSpacingItemDecoration
 
 class FragmentPlaylists : Fragment() {
     private val viewModel: PlaylistsViewModel by viewModel()
@@ -28,6 +30,9 @@ class FragmentPlaylists : Fragment() {
     private lateinit var emptyPlaylistsLayout: View
     private lateinit var emptyStateImage: ImageView
     private lateinit var emptyStateText: TextView
+
+    // Создаём адаптер один раз и храним в поле
+    private lateinit var playlistsAdapter: PlaylistsAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -45,10 +50,33 @@ class FragmentPlaylists : Fragment() {
             findNavController().navigate(R.id.action_mediatekaFragment_to_createPlaylistFragment)
         }
 
+        // Настраиваем LayoutManager и Decoration один раз
+        val spanCount = 2
+        val edgeSpacing = resources.getDimensionPixelSize(R.dimen.spacing_16)
+        val columnSpacing = resources.getDimensionPixelSize(R.dimen.spacing_8)
+
+        playlistsRecyclerView.layoutManager = GridLayoutManager(requireContext(), spanCount)
+        playlistsRecyclerView.addItemDecoration(
+            GridSpacingItemDecoration(spanCount, edgeSpacing, columnSpacing)
+        )
+
+        // Инициализируем адаптер пустым списком
+        playlistsAdapter = PlaylistsAdapter(emptyList()) { playlist, action ->
+            when (action) {
+                PlaylistsAdapter.Action.RENAME -> showRenameDialog(playlist)
+                PlaylistsAdapter.Action.DELETE -> showDeleteDialog(playlist)
+            }
+        }
+        playlistsRecyclerView.adapter = playlistsAdapter
+
         viewModel.uiState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 PlaylistsUiState.Loading -> showLoading()
-                is PlaylistsUiState.Success -> showPlaylistsList(state.playlists)
+                is PlaylistsUiState.Success -> {
+                    // Обновляем список через submitList — без пересоздания адаптера
+                    playlistsAdapter.submitList(state.playlists)
+                    showPlaylistsList()
+                }
                 is PlaylistsUiState.Error -> showError(state.error)
                 PlaylistsUiState.Empty -> showEmptyState()
             }
@@ -61,22 +89,18 @@ class FragmentPlaylists : Fragment() {
     private fun showEmptyState() {
         playlistsRecyclerView.visibility = View.GONE
         emptyPlaylistsLayout.visibility = View.VISIBLE
+        emptyStateImage.visibility = View.VISIBLE
+        emptyStateText.visibility = View.VISIBLE
+
     }
 
-    private fun showPlaylistsList(playlists: List<Playlist>) {
+
+    private fun showPlaylistsList() {
         emptyPlaylistsLayout.visibility = View.GONE
         emptyStateImage.visibility = View.GONE
         emptyStateText.visibility = View.GONE
         playlistsRecyclerView.visibility = View.VISIBLE
-        playlistsRecyclerView.layoutManager = GridLayoutManager(requireContext(), 2)
-
-        val adapter = PlaylistsAdapter(playlists) { playlist, action ->
-            when (action) {
-                PlaylistsAdapter.Action.RENAME -> showRenameDialog(playlist)
-                PlaylistsAdapter.Action.DELETE -> showDeleteDialog(playlist)
-            }
-        }
-        playlistsRecyclerView.adapter = adapter
+        // LayoutManager и ItemDecoration уже настроены в onCreateView
     }
 
     private fun showLoading() {
@@ -123,9 +147,13 @@ class FragmentPlaylists : Fragment() {
             .show()
     }
 
+    override fun onResume() {
+        super.onResume()
+        // Гарантируем, что при возврате список перечитается из базы
+        viewModel.loadPlaylists()
+    }
+
     companion object {
-        fun newInstance(): Fragment {
-            return FragmentPlaylists()
-        }
+        fun newInstance(): Fragment = FragmentPlaylists()
     }
 }

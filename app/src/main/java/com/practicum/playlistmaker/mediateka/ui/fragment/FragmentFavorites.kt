@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.core.models.toParcelable
+import com.practicum.playlistmaker.core.utils.FirstItemTopMarginDecoration
 import com.practicum.playlistmaker.core.utils.FormatTrackDurationUseCase
 import com.practicum.playlistmaker.mediateka.ui.adapter.FavoriteTrackAdapter
 import com.practicum.playlistmaker.mediateka.ui.view.FavoriteTracksViewModel
@@ -49,6 +50,10 @@ class FragmentFavorites : Fragment() {
         favoritesRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         favoritesRecyclerView.adapter = adapter
         adapter.submitList(emptyList())
+
+        val density = resources.displayMetrics.density
+        val margin16dp = (16 * density).toInt()
+        favoritesRecyclerView.addItemDecoration(FirstItemTopMarginDecoration(margin16dp))
     }
     private fun observeViewModel() {
         viewModel.state.observe(viewLifecycleOwner) { state ->

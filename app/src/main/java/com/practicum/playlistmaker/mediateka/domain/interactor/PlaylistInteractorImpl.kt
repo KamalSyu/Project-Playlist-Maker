@@ -3,6 +3,7 @@ package com.practicum.playlistmaker.mediateka.domain.interactor
 import android.util.Log
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.core.models.domain.AddTrackStatus
+import com.practicum.playlistmaker.mediateka.data.db.PlaylistEntity
 import com.practicum.playlistmaker.mediateka.data.db.PlaylistsDao
 import com.practicum.playlistmaker.mediateka.domain.usecase.AddTrackToPlaylistUseCase
 
@@ -39,5 +40,17 @@ class PlaylistInteractorImpl(
             return
         }
         playlistDao.deletePlaylistById(idLong)
+    }
+
+    override suspend fun createPlaylist(name: String, coverPath: String?) {
+        val newPlaylist = PlaylistEntity(
+            id = 0L,                 // Room сам подставит реальный ID
+            name = name,
+            description = null,      // описание при создании можно оставить пустым
+            coverPath = coverPath,  // может быть null, если обложки нет
+            trackCount = 0,          // новый плейлист пустой
+            createdAt = System.currentTimeMillis() // текущее время
+        )
+        playlistDao.insertPlaylist(newPlaylist)
     }
 }

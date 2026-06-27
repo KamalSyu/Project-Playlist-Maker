@@ -1,7 +1,5 @@
 package com.practicum.playlistmaker.player.ui.view
 
-import android.net.Uri
-import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
@@ -10,6 +8,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.player.domain.model.PlaylistForPlayer
+
 class PlaylistSelectionViewHolder(
     itemView: View,
     private val onPlaylistClick: (PlaylistForPlayer) -> Unit
@@ -33,7 +32,7 @@ class PlaylistSelectionViewHolder(
                 .placeholder(R.drawable.ic_placeholder_312)
                 .error(R.drawable.ic_placeholder_312)
                 .centerCrop()
-                .transform(RoundedCorners(8)) // как в AlbumViewHolder
+                .transform(RoundedCorners(8))
                 .into(playlistCover)
         } else {
             playlistCover.setImageResource(R.drawable.ic_placeholder_312)
