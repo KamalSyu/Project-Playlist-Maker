@@ -16,8 +16,8 @@
         <!-- Цвет иконок в статус‑баре: false = белые иконки на тёмном фоне -->
         <item name="android:windowLightStatusBar">false</item>
 
-        <item name="playlistItemTextColor">#FFFFFF</item>
-        <item name="playlistCoverBackground">#1A1B22</item>
+        <item name="playlistItemTextColor">@color/white</item>
+        <item name="playlistCoverBackground">@color/yp_black</item>
 
         <item name="playlistItemTextColorToast">#1A1B22</item>
 

@@ -16,8 +16,8 @@
         <item name="android:windowLightStatusBar">false</item>
 
         <!-- НОВЫЕ СТРОКИ: цвета для плейлистов -->
-        <item name="playlistItemTextColor">#1A1B22</item>
-        <item name="playlistCoverBackground">#FFFFFF</item>
+        <item name="playlistCoverBackground">@color/white</item>
+        <item name="playlistItemTextColor">@color/yp_black</item>
 
         <item name="playlistItemTextColorToast">#FFFFFF</item>
         <item name="toastBackgroundColor">#1A1B22</item>

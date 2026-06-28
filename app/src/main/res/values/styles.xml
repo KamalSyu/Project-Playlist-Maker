@@ -553,7 +553,7 @@
     <style name="EmptyStateImage2">
         <item name="android:layout_width">120dp</item>
         <item name="android:layout_height">120dp</item>
-        <item name="android:layout_marginTop">46dp</item>
+        <item name="android:layout_marginTop">0dp</item>
         <item name="android:layout_marginBottom">16dp</item>
         <item name="android:background">@drawable/ic_no_results_120</item>
         <item name="android:layout_gravity">center_horizontal</item>

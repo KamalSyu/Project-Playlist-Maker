@@ -182,7 +182,8 @@ val appModule = module {
     single<PlaylistInteractor> {
         PlaylistInteractorImpl(
             addTrackToPlaylistUseCase = get(),
-            playlistDao = get() // DAO уже объявлен в dataModule как single
+            playlistDao = get(),
+            playlistsRepositoryMedia = get()
         )
     }
 

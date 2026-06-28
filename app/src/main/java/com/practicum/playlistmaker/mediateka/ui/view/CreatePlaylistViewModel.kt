@@ -7,12 +7,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.practicum.playlistmaker.R
+import com.practicum.playlistmaker.mediateka.domain.interactor.PlaylistInteractor
 import com.practicum.playlistmaker.mediateka.domain.usecase.CreatePlaylistUseCase
 import com.practicum.playlistmaker.mediateka.ui.CreatePlaylistUiState
 import kotlinx.coroutines.launch
 
 class CreatePlaylistViewModel(
-    private val createPlaylistUseCase: CreatePlaylistUseCase
+    private val playlistInteractor: PlaylistInteractor
 ) : ViewModel() {
     private val _uiState = MutableLiveData<CreatePlaylistUiState>(
         CreatePlaylistUiState()
@@ -30,34 +31,29 @@ class CreatePlaylistViewModel(
     fun createPlaylist(context: Context) = viewModelScope.launch {
         val currentState = _uiState.value ?: return@launch
         val name = currentState.playlistName.trim()
-        val description = currentState.playlistDescription
+
         if (name.isEmpty()) {
             _uiState.value = currentState.copy(error = context.getString(R.string.playlist_name_required))
             return@launch
         }
+
         _uiState.value = currentState.copy(isLoading = true, error = null)
+
         try {
-            val result = createPlaylistUseCase(name, description, currentState.selectedCoverUri, context)
-            result.fold(
-                onSuccess = { playlistId ->
-                    _uiState.value = CreatePlaylistUiState(
-                        isCreated = true,
-                        playlistId = playlistId,
-                        successMessage = context.getString(R.string.playlist_created, name)
-                    )
-                },
-                onFailure = { error ->
-                    _uiState.value = currentState.copy(
-                        isLoading = false,
-                        error = error.message ?: context.getString(R.string.error_creating_playlist)
-                    )
-                }
+            playlistInteractor.createPlaylist(
+                name = name,
+                coverPath = currentState.selectedCoverUri?.toString()
+            )
+
+            _uiState.value = CreatePlaylistUiState(
+                isCreated = true,
+                successMessage = context.getString(R.string.playlist_created, name)
             )
         } catch (e: Exception) {
             e.printStackTrace()
             _uiState.value = currentState.copy(
                 isLoading = false,
-                error = context.getString(R.string.error_creating_playlist)
+                error = e.message ?: context.getString(R.string.error_creating_playlist)
             )
         }
     }
