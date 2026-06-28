@@ -14,13 +14,11 @@ class FirstItemTopMarginDecoration(private val topMarginPx: Int) : RecyclerView.
         val position = parent.getChildAdapterPosition(view)
         if (position == RecyclerView.NO_POSITION) return
 
-        // Отступ только у первого элемента
         if (position == 0) {
             outRect.top = topMarginPx
         } else {
             outRect.top = 0
         }
-        // Между элементами отступов нет
         outRect.bottom = 0
         outRect.left = 0
         outRect.right = 0

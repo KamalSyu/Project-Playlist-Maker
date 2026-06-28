@@ -44,12 +44,12 @@ class PlaylistInteractorImpl(
 
     override suspend fun createPlaylist(name: String, coverPath: String?) {
         val newPlaylist = PlaylistEntity(
-            id = 0L,                 // Room сам подставит реальный ID
+            id = 0L,
             name = name,
-            description = null,      // описание при создании можно оставить пустым
-            coverPath = coverPath,  // может быть null, если обложки нет
-            trackCount = 0,          // новый плейлист пустой
-            createdAt = System.currentTimeMillis() // текущее время
+            description = null,
+            coverPath = coverPath,
+            trackCount = 0,
+            createdAt = System.currentTimeMillis()
         )
         playlistDao.insertPlaylist(newPlaylist)
     }

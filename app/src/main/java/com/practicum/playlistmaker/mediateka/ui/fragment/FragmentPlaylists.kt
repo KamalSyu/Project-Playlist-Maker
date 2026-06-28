@@ -31,7 +31,6 @@ class FragmentPlaylists : Fragment() {
     private lateinit var emptyStateImage: ImageView
     private lateinit var emptyStateText: TextView
 
-    // Создаём адаптер один раз и храним в поле
     private lateinit var playlistsAdapter: PlaylistsAdapter
 
     override fun onCreateView(
@@ -50,7 +49,6 @@ class FragmentPlaylists : Fragment() {
             findNavController().navigate(R.id.action_mediatekaFragment_to_createPlaylistFragment)
         }
 
-        // Настраиваем LayoutManager и Decoration один раз
         val spanCount = 2
         val edgeSpacing = resources.getDimensionPixelSize(R.dimen.spacing_16)
         val columnSpacing = resources.getDimensionPixelSize(R.dimen.spacing_8)
@@ -60,7 +58,6 @@ class FragmentPlaylists : Fragment() {
             GridSpacingItemDecoration(spanCount, edgeSpacing, columnSpacing)
         )
 
-        // Инициализируем адаптер пустым списком
         playlistsAdapter = PlaylistsAdapter(emptyList()) { playlist, action ->
             when (action) {
                 PlaylistsAdapter.Action.RENAME -> showRenameDialog(playlist)
@@ -73,7 +70,6 @@ class FragmentPlaylists : Fragment() {
             when (state) {
                 PlaylistsUiState.Loading -> showLoading()
                 is PlaylistsUiState.Success -> {
-                    // Обновляем список через submitList — без пересоздания адаптера
                     playlistsAdapter.submitList(state.playlists)
                     showPlaylistsList()
                 }
@@ -94,13 +90,11 @@ class FragmentPlaylists : Fragment() {
 
     }
 
-
     private fun showPlaylistsList() {
         emptyPlaylistsLayout.visibility = View.GONE
         emptyStateImage.visibility = View.GONE
         emptyStateText.visibility = View.GONE
         playlistsRecyclerView.visibility = View.VISIBLE
-        // LayoutManager и ItemDecoration уже настроены в onCreateView
     }
 
     private fun showLoading() {
@@ -149,7 +143,6 @@ class FragmentPlaylists : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        // Гарантируем, что при возврате список перечитается из базы
         viewModel.loadPlaylists()
     }
 

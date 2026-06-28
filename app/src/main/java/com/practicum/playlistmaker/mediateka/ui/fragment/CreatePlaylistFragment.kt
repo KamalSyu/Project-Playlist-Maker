@@ -249,13 +249,11 @@ class CreatePlaylistFragment : Fragment() {
         }
     }
 
-    // ИСПРАВЛЕНО: убрали popBackStack() отсюда
     private fun createPlaylist() {
         nameField.error = null
         val state = viewModel.uiState.value ?: return
         if (state.isCreateButtonEnabled) {
             viewModel.createPlaylist(requireContext())
-            // НЕ делаем popBackStack здесь — возврат только при успехе в наблюдателе
         } else {
             nameField.postDelayed({
                 nameField.error = getString(R.string.playlist_name_required)
@@ -274,19 +272,16 @@ class CreatePlaylistFragment : Fragment() {
                 val textView = view.findViewById<TextView>(R.id.toast_text)
                 textView.text = message
 
-                // Считаем ширину: экран − 7 dp − 8 dp
                 val metrics = requireContext().resources.displayMetrics
                 val density = metrics.density
                 val screenWidthPx = metrics.widthPixels
                 val marginPx = ((7f + 8f) * density).toInt() // 15 dp в пикселях
                 val toastWidthPx = screenWidthPx - marginPx
 
-                // Применяем ширину к корню макета
                 view.layoutParams = ViewGroup.LayoutParams(toastWidthPx, ViewGroup.LayoutParams.WRAP_CONTENT)
 
                 val toast = Toast(requireContext()).apply {
                     setView(view)
-                    // Позиционируем: снизу, по центру; yOffset = 16 dp — отступ снизу экрана
                     setGravity(
                         android.view.Gravity.CENTER_HORIZONTAL or android.view.Gravity.BOTTOM,
                         0,
@@ -299,7 +294,6 @@ class CreatePlaylistFragment : Fragment() {
                 findNavController().popBackStack()
                 viewModel.clearSuccess()
             }
-
 
             state.error?.let { errorMessage ->
                 nameField.error = errorMessage

@@ -17,7 +17,6 @@ class PlaylistsAdapter(
         DELETE
     }
 
-    // Минимальный метод для обновления списка
     fun submitList(newPlaylists: List<Playlist>) {
         playlists = newPlaylists
         notifyDataSetChanged()
