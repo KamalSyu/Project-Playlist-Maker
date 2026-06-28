@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="playlistItemTextColor" format="color" />
+    <attr name="playlistCoverBackground" format="color" />
+    <attr name="toastBackgroundColor" format="color" />
+    <attr name="playlistItemTextColorToast" format="color" />
+
+    <attr name="playlist_name_text_color" format="color" />
+    <attr name="playlist_track_count_text_color" format="color" />
+    <attr name="playlist_item_background" format="color" />
+    <attr name="bottom_sheet_background" format="color" />
+
+    <attr name="bottom_sheet_separator_color" format="color" />
+
+</resources>

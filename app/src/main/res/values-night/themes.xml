@@ -15,7 +15,22 @@
 
         <!-- Цвет иконок в статус‑баре: false = белые иконки на тёмном фоне -->
         <item name="android:windowLightStatusBar">false</item>
+
+        <item name="playlistItemTextColor">#FFFFFF</item>
+        <item name="playlistCoverBackground">#1A1B22</item>
+
+        <item name="playlistItemTextColorToast">#1A1B22</item>
+
+        <item name="toastBackgroundColor">#FFFFFF</item>
+
+        <item name="playlist_name_text_color">#FFFFFF</item>
+        <item name="playlist_track_count_text_color">#FFFFFF</item>
+        <item name="playlist_item_background">#1A1B22</item>
+        <item name="bottom_sheet_background">#1A1B22</item>
+        <item name="bottom_sheet_separator_color">#FFFFFF</item>
+
     </style>
+
 
     <style name="Theme.PlaylistMaker" parent="Base.Theme.PlaylistMaker" />
 </resources>

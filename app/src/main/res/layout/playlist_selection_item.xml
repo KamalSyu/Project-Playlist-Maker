@@ -36,7 +36,7 @@
             android:maxLines="1"
             android:ellipsize="end"
             android:fontFamily="@font/ys_display_regular"
-            android:textColor="@color/black" />
+            android:textColor="?attr/playlist_name_text_color"  />
 
         <!-- Количество треков в плейлисте -->
         <TextView
@@ -47,6 +47,6 @@
             android:layout_marginBottom="14dp"
             android:textSize="11sp"
             android:fontFamily="@font/ys_display_regular"
-            android:textColor="@color/gray" />
+            android:textColor="?attr/playlist_track_count_text_color" />
     </LinearLayout>
 </LinearLayout>

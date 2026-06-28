@@ -269,10 +269,37 @@ class CreatePlaylistFragment : Fragment() {
             createButton.isEnabled = state.isCreateButtonEnabled
 
             state.successMessage?.let { message ->
-                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
-                findNavController().popBackStack()      // <-- единственный возврат при успехе
+                val inflater = LayoutInflater.from(requireContext())
+                val view = inflater.inflate(R.layout.toast_playlist_created, null)
+                val textView = view.findViewById<TextView>(R.id.toast_text)
+                textView.text = message
+
+                // Считаем ширину: экран − 7 dp − 8 dp
+                val metrics = requireContext().resources.displayMetrics
+                val density = metrics.density
+                val screenWidthPx = metrics.widthPixels
+                val marginPx = ((7f + 8f) * density).toInt() // 15 dp в пикселях
+                val toastWidthPx = screenWidthPx - marginPx
+
+                // Применяем ширину к корню макета
+                view.layoutParams = ViewGroup.LayoutParams(toastWidthPx, ViewGroup.LayoutParams.WRAP_CONTENT)
+
+                val toast = Toast(requireContext()).apply {
+                    setView(view)
+                    // Позиционируем: снизу, по центру; yOffset = 16 dp — отступ снизу экрана
+                    setGravity(
+                        android.view.Gravity.CENTER_HORIZONTAL or android.view.Gravity.BOTTOM,
+                        0,
+                        16
+                    )
+                    duration = Toast.LENGTH_SHORT
+                }
+                toast.show()
+
+                findNavController().popBackStack()
                 viewModel.clearSuccess()
             }
+
 
             state.error?.let { errorMessage ->
                 nameField.error = errorMessage

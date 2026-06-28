@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="160dp"
         android:scaleType="fitCenter"
-        android:background="#FFFFFF"
+        android:background="?attr/playlistCoverBackground"
         android:contentDescription="@string/playlist_cover"
         android:translationZ="2dp" />
 
@@ -22,7 +22,7 @@
         android:layout_height="wrap_content"
         android:textSize="12sp"
         android:lineHeight="16sp"
-        android:textColor="#1A1B22"
+        android:textColor="?attr/playlistItemTextColor"
         android:textStyle="normal"
         android:fontWeight="400"
         android:gravity="start"
@@ -39,7 +39,7 @@
         android:layout_height="wrap_content"
         android:textSize="12sp"
         android:lineHeight="16sp"
-        android:textColor="#1A1B22"
+        android:textColor="?attr/playlistItemTextColor"
         android:textStyle="normal"
         android:fontWeight="400"
         android:gravity="start"

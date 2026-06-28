@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="505dp"
     android:orientation="vertical"
-    android:background="@color/white">
+    android:background="?attr/bottom_sheet_background">
 
     <!-- Чёрточка -->
     <ImageView
@@ -12,7 +12,10 @@
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="12dp"
-        android:background="@drawable/rounded_line_50_4" />
+        android:background="@drawable/rounded_line_50_4"
+        android:backgroundTint="?attr/bottom_sheet_separator_color" />
+
+
 
     <!-- Блок с текстом: высота 52, текст строго по центру (и по горизонтали, и по вертикали) -->
     <LinearLayout
