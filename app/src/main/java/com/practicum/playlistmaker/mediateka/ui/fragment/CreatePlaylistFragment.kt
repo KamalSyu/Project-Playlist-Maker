@@ -17,6 +17,7 @@ import android.content.pm.PackageManager
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.provider.Settings
 import android.widget.Button
 import android.widget.ImageView
@@ -27,6 +28,7 @@ import androidx.activity.OnBackPressedCallback
 import android.os.Build
 import android.util.Log
 import android.view.inputmethod.InputMethodManager
+import android.widget.FrameLayout
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -44,7 +46,6 @@ class CreatePlaylistFragment : Fragment() {
     private lateinit var descriptionField: TextInputLayout
     private lateinit var coverImage: ImageView
     private lateinit var backButton: TextView
-    private lateinit var borderImage: ImageView
     private lateinit var playlistCenterIcon: ImageView
 
     override fun onCreateView(
@@ -108,7 +109,16 @@ class CreatePlaylistFragment : Fragment() {
             }
         }
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
-        borderImage.setImageDrawable(DashedRoundedBorderDrawable())
+        val container = view.findViewById<FrameLayout>(R.id.playlistCoverContainer)
+        val drawable = DashedRoundedBorderDrawable(
+            context = requireContext(),
+            strokeWidth = 1f,
+            dashLength = 30f,
+            dashGap = 30f,
+            color = Color.parseColor("#AEAFB4"),
+            cornerRadiusDp = 8f
+        )
+        container.background = drawable
     }
 
     private val pickImage = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
@@ -139,7 +149,6 @@ class CreatePlaylistFragment : Fragment() {
         descriptionField = view.findViewById(R.id.playlistDescriptionField)
         coverImage = view.findViewById(R.id.playlistCoverImage)
         backButton = view.findViewById(R.id.back)
-        borderImage = view.findViewById(R.id.playlistBorderImage)
         playlistCenterIcon = view.findViewById(R.id.playlistCenterIcon)
 
         val currentState = viewModel.uiState.value

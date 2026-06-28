@@ -37,21 +37,22 @@
                 app:layout_constraintDimensionRatio="1:1"
                 >
                 <!-- Фон: рамка с пунктиром и скруглёнными углами (нижний слой) -->
-                <ImageView
-                    android:id="@+id/playlistBorderImage"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:scaleType="fitCenter"
-                    android:contentDescription="@string/playlist_cover" />
+<!--                <ImageView-->
+<!--                    android:id="@+id/playlistBorderImage"-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="match_parent"-->
+<!--                    android:scaleType="fitCenter"-->
+<!--                    android:contentDescription="@string/playlist_cover" />-->
 
                 <!-- Пользовательское изображение (поверх рамки) -->
-                <ImageView
+                <com.google.android.material.imageview.ShapeableImageView
                     android:id="@+id/playlistCoverImage"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:scaleType="centerCrop"
+                    app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.MyApp.Rounded8dp"
                     android:adjustViewBounds="true"
-                    />
+                    android:contentDescription="@string/playlist_cover" />
             </FrameLayout>
 
             <!-- Иконка, центрированная относительно FrameLayout -->

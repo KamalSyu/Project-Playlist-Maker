@@ -559,6 +559,10 @@
         <item name="android:layout_gravity">center_horizontal</item>
     </style>
 
+    <style name="ShapeAppearanceOverlay.MyApp.Rounded8dp" parent="">
+        <item name="cornerSize">8dp</item>
+    </style>
+
     <style name="Playlist">
 <!--        <item name="android:layout_marginTop">-54dp</item>-->
     </style>
