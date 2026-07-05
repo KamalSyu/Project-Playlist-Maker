@@ -133,44 +133,44 @@ val appModule = module {
     single { FileStorageService(get<Context>()) }
 
     // 5. Репозитории
-    single<PlayerRepository> { PlayerRepositoryImpl() }
-    single<SettingsRepository> {
+    factory<PlayerRepository> { PlayerRepositoryImpl() }
+    factory<SettingsRepository> {
         SettingsRepositoryImpl(
             sharedPreferences = get(),
             gson = get(),
             dtoMapper = get()
         )
     }
-    single<HistoryRepository> {
+    factory<HistoryRepository> {
         HistoryRepositoryImpl(
             sharedPreferences = get(),
             gson = get(),
         )
     }
-    single<ItunesRepository> {
+    factory<ItunesRepository> {
         ItunesRepositoryImpl(
             api = get(),
             searchResponseMapper = get()
         )
     }
-    single<SupportEmailDataProvider> { SupportEmailDataProviderImpl(get()) }
-    single<ShareTextProvider> { ShareTextProviderImpl(get()) }
+    factory<SupportEmailDataProvider> { SupportEmailDataProviderImpl(get()) }
+    factory<ShareTextProvider> { ShareTextProviderImpl(get()) }
 
-    single<FavoriteTracksRepository> {
+    factory<FavoriteTracksRepository> {
         FavoriteTracksRepositoryImpl(
             dao = get(),
             trackFactory = get()
         )
     }
 
-    single<PlaylistsRepositoryMedia> {
+    factory<PlaylistsRepositoryMedia> {
         PlaylistsRepositoryImplMedia(
             dao = get(),
             context = get()
         )
     }
 
-    single<PlaylistRepository> {
+    factory<PlaylistRepository> {
         PlaylistRepositoryImpl(
             playlistDao = get(),
             context = get()
@@ -179,7 +179,7 @@ val appModule = module {
 
     single { TrackParcelableMapper() }
 
-    single<PlaylistInteractor> {
+    factory<PlaylistInteractor> {
         PlaylistInteractorImpl(
             addTrackToPlaylistUseCase = get(),
             playlistDao = get(),
@@ -188,14 +188,12 @@ val appModule = module {
     }
 
     // 6. UseCases
-    // UseCases поиска
     factory<SearchTracksUseCase> { SearchTracksUseCaseImpl(get()) }
     factory<AddTrackToHistoryUseCase> { AddTrackToHistoryUseCaseImpl(get()) }
     factory<ClearSearchHistoryUseCase> { ClearSearchHistoryUseCaseImpl(get()) }
     factory<GetSearchHistoryUseCase> { GetSearchHistoryUseCaseImpl(get()) }
     factory<FilterTracksUseCase> { FilterTracksUseCaseImpl() }
 
-    // UseCases плеера
     factory<PreparePlaybackUseCase> { PreparePlaybackUseCaseImpl(get()) }
     factory<TogglePlaybackUseCase> { TogglePlaybackUseCaseImpl(get()) }
     factory<StopPlaybackUseCase> { StopPlaybackUseCaseImpl(get()) }
@@ -204,21 +202,17 @@ val appModule = module {
     factory<DelayedTrackActionUseCase> { DelayedTrackActionUseCaseImpl(get()) }
     factory<ResetPlaybackUseCase> { ResetPlaybackUseCaseImpl(get()) }
 
-    // UseCases настроек
     factory<GetThemeStateUseCase> { GetThemeStateUseCaseImpl(get()) }
     factory<SwitchThemeUseCase> { SwitchThemeUseCaseImpl(get()) }
 
-    // UseCases шаринга
     factory<ShareAppUseCase> { ShareAppUseCaseImpl(get()) }
     factory<SendSupportEmailUseCase> { SendSupportEmailUseCaseImpl(get()) }
 
-    // UseCases избранного
     factory<AddToFavoritesUseCase> { AddToFavoritesUseCaseImpl(get()) }
     factory<RemoveFromFavoritesUseCase> { RemoveFromFavoritesUseCaseImpl(get()) }
     factory<GetFavoriteTracksUseCase> { GetFavoriteTracksUseCaseImpl(get()) }
     factory<IsTrackFavoriteUseCase> { IsTrackFavoriteUseCaseImpl(get()) }
 
-    // UseCases медиатеки
     factory<CreatePlaylistUseCase> { CreatePlaylistUseCase(get()) }
     factory<LoadPlaylistsUseCase> { LoadPlaylistsUseCase(get()) }
     factory<GetPlaylistsUseCase> { GetPlaylistsUseCaseImpl(get()) }
@@ -285,8 +279,3 @@ val dataModule = module {
     single { get<AppDatabase>().favoriteTracksDao() }
     single { get<AppDatabase>().playlistsDao() }
 }
-
-
-
-
-

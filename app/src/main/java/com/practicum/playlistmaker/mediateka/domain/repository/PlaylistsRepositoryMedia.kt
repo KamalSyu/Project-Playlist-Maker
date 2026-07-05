@@ -1,5 +1,6 @@
 package com.practicum.playlistmaker.mediateka.domain.repository
 
+import android.net.Uri
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.core.models.domain.Playlist
 import kotlinx.coroutines.flow.Flow
@@ -11,4 +12,6 @@ interface PlaylistsRepositoryMedia {
     suspend fun updatePlaylist(playlist: Playlist)
     suspend fun addTrackToPlaylist(playlistId: Long, track: Track)
     suspend fun safeCopyToPrivateStorage(sourcePath: String): String?
+    suspend fun safeCopyToPrivateStorageFromUri(uri: Uri): String?
+
 }

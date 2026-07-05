@@ -591,6 +591,11 @@
         <item name="android:minHeight">61dp</item>
 
     </style>
+
+    <style name="ShapeAppearanceOverlay.App.Corner2dp" parent="">
+        <item name="cornerSize">2dp</item>
+    </style>
+
 </resources>
 
 

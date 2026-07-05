@@ -39,14 +39,23 @@ import com.practicum.playlistmaker.mediateka.ui.view.CreatePlaylistViewModel
 import org.koin.android.ext.android.inject
 import java.io.File
 
+// ВАЖНО: Добавлен импорт ShapeableImageView
+import com.google.android.material.imageview.ShapeableImageView
+
 class CreatePlaylistFragment : Fragment() {
     private val viewModel: CreatePlaylistViewModel by inject()
     private lateinit var createButton: Button
     private lateinit var nameField: TextInputLayout
     private lateinit var descriptionField: TextInputLayout
-    private lateinit var coverImage: ImageView
+
+    // ИЗМЕНЕНИЕ: Тип теперь ShapeableImageView, чтобы корректно работать с XML-макетом
+    private lateinit var coverImage: ShapeableImageView
+
     private lateinit var backButton: TextView
     private lateinit var playlistCenterIcon: ImageView
+
+    // ДОБАВЛЕНО: Поле для рамки (ImageView из макета)
+    private lateinit var borderImage: ImageView
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -98,6 +107,7 @@ class CreatePlaylistFragment : Fragment() {
             view.updatePadding(top = statusBar.top)
             insets
         }
+
         val callback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (hasUnsavedChanges()) {
@@ -109,7 +119,12 @@ class CreatePlaylistFragment : Fragment() {
             }
         }
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
-        val container = view.findViewById<FrameLayout>(R.id.playlistCoverContainer)
+
+        // --- ИСПРАВЛЕНИЕ ЗДЕСЬ ---
+        // 1. Получаем ImageView для рамки (НЕ контейнер!)
+        borderImage = view.findViewById(R.id.playlistBorderImage)
+
+        // 2. Создаем drawable
         val drawable = DashedRoundedBorderDrawable(
             context = requireContext(),
             strokeWidth = 1f,
@@ -118,7 +133,11 @@ class CreatePlaylistFragment : Fragment() {
             color = Color.parseColor("#AEAFB4"),
             cornerRadiusDp = 8f
         )
-        container.background = drawable
+
+        // 3. Ставим drawable НА РАМКУ (ImageView), а не на фон контейнера.
+        // Именно это возвращает картинку на место.
+        borderImage.setImageDrawable(drawable)
+        // --------------------------
     }
 
     private val pickImage = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
@@ -147,9 +166,17 @@ class CreatePlaylistFragment : Fragment() {
         createButton = view.findViewById(R.id.createPlaylistButton)
         nameField = view.findViewById(R.id.playlistNameField)
         descriptionField = view.findViewById(R.id.playlistDescriptionField)
+
+        // ИЗМЕНЕНИЕ: Приводим к правильному типу
         coverImage = view.findViewById(R.id.playlistCoverImage)
+
         backButton = view.findViewById(R.id.back)
         playlistCenterIcon = view.findViewById(R.id.playlistCenterIcon)
+
+        // ДОБАВЛЕНО: Инициализируем borderImage здесь тоже, на всякий случай,
+        // хотя в onViewCreated мы его тоже находим.
+        // Но лучше пусть инициализация drawable будет строго в onViewCreated,
+        // а тут просто убедимся, что поле существует.
 
         val currentState = viewModel.uiState.value
         updateCoverImage(currentState?.selectedCoverUri)
@@ -198,6 +225,7 @@ class CreatePlaylistFragment : Fragment() {
                         .into(coverImage)
                     playlistCenterIcon.visibility = View.GONE
                 } else {
+                    // Если файл не найден, грузим сразу по URI (Glide умеет работать с content://)
                     Glide.with(this)
                         .load(sourceUri)
                         .placeholder(R.drawable.ic_placeholder_312)
@@ -284,7 +312,7 @@ class CreatePlaylistFragment : Fragment() {
                 val metrics = requireContext().resources.displayMetrics
                 val density = metrics.density
                 val screenWidthPx = metrics.widthPixels
-                val marginPx = ((7f + 8f) * density).toInt() // 15 dp в пикселях
+                val marginPx = ((7f + 8f) * density).toInt()
                 val toastWidthPx = screenWidthPx - marginPx
 
                 view.layoutParams = ViewGroup.LayoutParams(toastWidthPx, ViewGroup.LayoutParams.WRAP_CONTENT)

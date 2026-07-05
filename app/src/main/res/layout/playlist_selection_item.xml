@@ -2,13 +2,14 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="61dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="horizontal"
     android:clickable="true"
     android:focusable="true"
     android:background="?attr/selectableItemBackground">
 
     <!-- Область для обложки плейлиста -->
-    <ImageView
+    <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/playlistCover"
         android:layout_width="45dp"
         android:layout_height="45dp"
@@ -16,7 +17,9 @@
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
         android:scaleType="centerCrop"
-        android:contentDescription="@string/playlist_cover" />
+        android:contentDescription="@string/playlist_cover"
+        app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.Corner2dp" />
+
 
     <!-- Контейнер для текстовой информации -->
     <LinearLayout

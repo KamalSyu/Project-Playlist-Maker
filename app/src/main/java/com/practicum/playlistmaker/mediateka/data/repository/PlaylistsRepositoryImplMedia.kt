@@ -1,6 +1,7 @@
 package com.practicum.playlistmaker.mediateka.data.repository
 
 import android.content.Context
+import android.net.Uri
 import android.util.Log
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.core.models.domain.Playlist
@@ -19,8 +20,9 @@ import java.util.UUID
 
 class PlaylistsRepositoryImplMedia(
     private val dao: PlaylistsDao,
-    context: Context
+    private val context: Context  // <-- ВАЖНО: сохраняем context как приватное поле
 ) : PlaylistsRepositoryMedia {
+
     private val fileStorageService = FileStorageService(context)
 
     override suspend fun safeCopyToPrivateStorage(sourcePath: String): String? {
@@ -43,6 +45,37 @@ class PlaylistsRepositoryImplMedia(
             result
         } catch (e: Exception) {
             Log.w("PlaylistsRepositoryImplMedia", "Не удалось скопировать обложку: $sourcePath", e)
+            null
+        }
+    }
+
+    // НОВЫЙ МЕТОД: принимает Uri и сам копирует в filesDir
+    override suspend fun safeCopyToPrivateStorageFromUri(uri: Uri): String? {
+        return try {
+            // Получаем имя файла из URI или генерируем
+            val fileName = uri.lastPathSegment ?: "cover_${System.currentTimeMillis()}"
+            // Копируем сразу в filesDir (надёжно, не удалится при очистке кэша)
+            val destFile = File(context.filesDir, fileName)
+
+            context.contentResolver.openInputStream(uri)?.use { input ->
+                destFile.outputStream().use { output ->
+                    input.copyTo(output)
+                }
+            }
+
+            Log.d(
+                "RepoCheck",
+                "Копия создана: ${destFile.absolutePath}, exists=${destFile.exists()}, size=${destFile.length()}"
+            )
+
+            if (destFile.exists() && destFile.length() > 0) {
+                destFile.absolutePath
+            } else {
+                Log.w("RepoCheck", "Файл не создан или пустой")
+                null
+            }
+        } catch (e: Exception) {
+            Log.e("RepoCheck", "Ошибка копирования из Uri", e)
             null
         }
     }

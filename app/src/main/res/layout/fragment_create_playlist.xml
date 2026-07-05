@@ -34,15 +34,15 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintDimensionRatio="1:1"
-                >
-                <!-- Фон: рамка с пунктиром и скруглёнными углами (нижний слой) -->
-<!--                <ImageView-->
-<!--                    android:id="@+id/playlistBorderImage"-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="match_parent"-->
-<!--                    android:scaleType="fitCenter"-->
-<!--                    android:contentDescription="@string/playlist_cover" />-->
+                app:layout_constraintDimensionRatio="1:1">
+
+                <!-- Рамка (нижний слой) -->
+                <ImageView
+                    android:id="@+id/playlistBorderImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="fitXY"
+                    android:contentDescription="@null" />
 
                 <!-- Пользовательское изображение (поверх рамки) -->
                 <com.google.android.material.imageview.ShapeableImageView
@@ -51,19 +51,17 @@
                     android:layout_height="match_parent"
                     android:scaleType="centerCrop"
                     app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.MyApp.Rounded8dp"
-                    android:adjustViewBounds="true"
                     android:contentDescription="@string/playlist_cover" />
+
+                <!-- Иконка (поверх всего) -->
+                <ImageView
+                    android:id="@+id/playlistCenterIcon"
+                    style="@style/PlaylistCenterIconStyle"
+                    android:src="@drawable/vector1"
+                    android:layout_gravity="center"
+                    android:contentDescription="@null" />
             </FrameLayout>
 
-            <!-- Иконка, центрированная относительно FrameLayout -->
-            <ImageView
-                android:id="@+id/playlistCenterIcon"
-                style="@style/PlaylistCenterIconStyle"
-                android:src="@drawable/vector1"
-                app:layout_constraintStart_toStartOf="@+id/playlistCoverContainer"
-                app:layout_constraintEnd_toEndOf="@+id/playlistCoverContainer"
-                app:layout_constraintTop_toTopOf="@+id/playlistCoverContainer"
-                app:layout_constraintBottom_toBottomOf="@+id/playlistCoverContainer" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <!-- Поле названия: подсказка чёрная в покое, серая наверху при фокусе/вводе -->
@@ -82,7 +80,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 style="@style/TextInputEditText" />
-
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Поле описания: подсказка всегда серая -->
@@ -101,7 +98,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 style="@style/TextInputEditText" />
-
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Заполнитель: занимает всё свободное пространство и выталкивает кнопку вниз -->
@@ -109,14 +105,12 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1" />
-        <!-- Кнопка «Создать» -->
 
+        <!-- Кнопка «Создать» -->
         <Button
             android:id="@+id/createPlaylistButton"
             style="@style/ButtonCreatePlaylist"
             android:background="@drawable/button_create_playlist_background"
-            android:text="@string/create_playlist"
-            />
+            android:text="@string/create_playlist" />
     </LinearLayout>
-
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

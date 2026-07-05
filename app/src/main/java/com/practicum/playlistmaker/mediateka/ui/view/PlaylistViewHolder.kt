@@ -1,5 +1,6 @@
 package com.practicum.playlistmaker.mediateka.ui.view
 
+import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
@@ -29,22 +30,20 @@ class PlaylistViewHolder(
             2, 3, 4 -> "${playlist.trackCount} трека"
             else -> "${playlist.trackCount} треков"
         }
+
         val cornerRadiusPx = (8 * itemView.resources.displayMetrics.density).toInt()
+
         if (!playlist.coverPath.isNullOrEmpty()) {
-            val file = File(playlist.coverPath)
-            if (file.exists()) {
-                Glide.with(coverImage)
-                    .load(file)
-                    .placeholder(R.drawable.ic_placeholder_312)
-                    .error(R.drawable.ic_placeholder_312)
-                    .transform(RoundedCorners(cornerRadiusPx))
-                    .into(coverImage)
-            } else {
-                coverImage.setImageResource(R.drawable.ic_placeholder_312)
-            }
+
+            Glide.with(coverImage)
+                .load(playlist.coverPath)
+                .placeholder(R.drawable.ic_placeholder_312)
+                .error(R.drawable.ic_placeholder_312)
+                .into(coverImage)
         } else {
             coverImage.setImageResource(R.drawable.ic_placeholder_312)
         }
+
         itemView.setOnClickListener {
             showPlaylistActionsDialog(playlist)
         }

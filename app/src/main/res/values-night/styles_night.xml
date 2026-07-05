@@ -533,5 +533,9 @@
     <item name="android:textColorHint">@color/white</item>
     </style>
 
+    <style name="ShapeAppearanceOverlay.App.Corner2dp" parent="">
+        <item name="cornerSize">2dp</item>
+    </style>
+
 </resources>
 
