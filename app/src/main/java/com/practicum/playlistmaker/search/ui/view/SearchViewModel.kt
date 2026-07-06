@@ -3,6 +3,7 @@ package com.practicum.playlistmaker.search.ui.view
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.flow.first
 import androidx.lifecycle.viewModelScope
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.core.utils.FormatTrackDurationUseCase
@@ -120,13 +121,41 @@ class SearchViewModel(
                 delayMillis = 500L,
                 onDelayedAction = { delayedTrack ->
                     viewModelScope.launch {
+                        // 1. Сохраняем трек в историю
                         addTrackToHistoryUseCase(delayedTrack)
+
+                        // 2. Явно запрашиваем свежую историю из источника (не из текущего ScreenState!)
+                        val freshHistory = getSearchHistoryUseCase()
+                            .first()  // Блокирует до получения первого значения из Flow (это быстро, т.к. это уже из БД)
+
+                        val newHistoryState = if (freshHistory.isEmpty()) {
+                            HistoryState.Empty
+                        } else {
+                            HistoryState.HistoryLoaded(freshHistory)
+                        }
+
+                        // 3. Обновляем ScreenState с новой историей
                         _screenState.value = _screenState.value?.let { current ->
                             when (current) {
-                                is ScreenState.Results -> current.copy(trackToOpen = delayedTrack)
-                                is ScreenState.Error -> current.copy(trackToOpen = delayedTrack)
-                                is ScreenState.Idle -> current.copy(trackToOpen = delayedTrack)
-                                null -> ScreenState.Initial
+                                is ScreenState.Results -> current.copy(
+                                    historyState = newHistoryState,
+                                    trackToOpen = delayedTrack
+                                )
+                                is ScreenState.Error -> current.copy(
+                                    historyState = newHistoryState,
+                                    trackToOpen = delayedTrack
+                                )
+                                is ScreenState.Idle -> current.copy(
+                                    historyState = newHistoryState,
+                                    trackToOpen = delayedTrack
+                                )
+                                ScreenState.Initial, ScreenState.Loading -> {
+                                    ScreenState.Idle(
+                                        searchState = SearchState.Idle,
+                                        historyState = newHistoryState,
+                                        trackToOpen = delayedTrack
+                                    )
+                                }
                                 else -> current
                             }
                         } ?: ScreenState.Initial
@@ -134,6 +163,17 @@ class SearchViewModel(
                 }
             )
         }
+    }
+
+    fun getCurrentHistoryState(): HistoryState {
+        return _screenState.value?.let { state ->
+            when (state) {
+                is ScreenState.Results -> state.historyState
+                is ScreenState.Error -> state.historyState
+                is ScreenState.Idle -> state.historyState
+                else -> HistoryState.Empty
+            }
+        } ?: HistoryState.Empty
     }
 
     fun resetTrackToOpen() {
@@ -184,6 +224,11 @@ class SearchViewModel(
             else -> null
         }
     }
+    // В SearchViewModel.kt
+    suspend fun getFreshHistoryList(): List<Track> {
+        return getSearchHistoryUseCase().first()
+    }
+
 }
 
 sealed class ScreenState {

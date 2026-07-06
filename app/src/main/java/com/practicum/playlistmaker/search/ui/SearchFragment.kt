@@ -4,6 +4,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -123,10 +124,14 @@ class SearchFragment : Fragment() {
         backTextView.setOnClickListener { requireActivity().onBackPressed() }
         resetButton.setOnClickListener {
             searchEditText.setText("")
-            updateTracksList(emptyList())
+            searchEditText.requestFocus()
+            searchEditText.post {
+                updateHistoryVisibility()
+            }
             hideKeyboard()
             showNoResults(false)
         }
+
         updateButton.setOnClickListener {
             if (viewModel.isLastSearchFailed && viewModel.lastSearchQuery != null) {
                 viewModel.performSearch(viewModel.lastSearchQuery!!)
@@ -278,24 +283,33 @@ class SearchFragment : Fragment() {
         imm.hideSoftInputFromWindow(searchEditText.windowToken, 0)
     }
 
-    private fun updateHistoryVisibility() {
-        val isEmptyQuery = searchEditText.text.isEmpty()
-        val hasFocus = searchEditText.hasFocus()
-        val hasHistory = historyAdapter.itemCount > 0
+    // В SearchFragment.kt
+    private fun updateHistoryVisibility() = lifecycleScope.launch {
+        val isEmptyQuery = searchEditText.text.isNullOrBlank()
+        val hasFocus = searchEditText.hasWindowFocus() && searchEditText.isFocused
+
+        // ГЛАВНОЕ ИЗМЕНЕНИЕ: просим ViewModel дать нам свежий список,
+        // она сама вызовет UseCase и сделает .first()
+        val history = viewModel.getFreshHistoryList()
+
+        val hasHistory = history.isNotEmpty()
+
+        Log.d(
+            "SearchDebug",
+            "isEmpty=$isEmptyQuery, hasFocus=$hasFocus, " +
+                    "hasHistory=$hasHistory, historySize=${history.size}"
+        )
+
         val shouldShowHistory = isEmptyQuery && hasFocus && hasHistory
 
-        historyRecyclerViewKit.visibility = if (shouldShowHistory) {
-            View.VISIBLE
-        } else {
-            View.GONE
-        }
-
-        historyTitle.visibility = if (shouldShowHistory) {
-            View.VISIBLE
-        } else {
-            View.GONE
-        }
+        historyRecyclerViewKit.visibility = if (shouldShowHistory) View.VISIBLE else View.GONE
+        historyTitle.visibility = if (shouldShowHistory) View.VISIBLE else View.GONE
     }
+
+
+
+
+
 
     private fun updateHistoryState(historyState: HistoryState) {
         when (historyState) {
@@ -325,6 +339,7 @@ class SearchFragment : Fragment() {
         super.onResume()
         updateHistoryVisibility()
     }
+
 
     private fun updateUIWithCurrentState() {
         val currentState = viewModel.screenState.value ?: return
