@@ -41,10 +41,8 @@ class SearchViewModel(
 
     init {
         viewModelScope.launch {
-            getSearchHistoryUseCase()
-                .collect { history ->
-                    updateHistoryOnly(history)
-                }
+            val history = getSearchHistoryUseCase().first()
+            updateHistoryOnly(history)
         }
     }
 
@@ -101,6 +99,8 @@ class SearchViewModel(
     fun clearHistory() {
         viewModelScope.launch {
             clearSearchHistoryUseCase()
+            val freshHistory = getSearchHistoryUseCase().first()
+            updateHistoryOnly(freshHistory)
         }
     }
 
@@ -265,5 +265,4 @@ sealed class HistoryState {
     object Loading : HistoryState()
     object Empty : HistoryState()
     data class HistoryLoaded(val history: List<Track>) : HistoryState()
-    object HistoryCleared : HistoryState()
 }

@@ -123,24 +123,41 @@ class SearchFragment : Fragment() {
     private fun setupClickListeners() {
         backTextView.setOnClickListener { requireActivity().onBackPressed() }
         resetButton.setOnClickListener {
+            // 1) Очищаем поисковый запрос
             searchEditText.setText("")
-            searchEditText.requestFocus()
-            searchEditText.post {
-                updateHistoryVisibility()
-            }
-            hideKeyboard()
-            showNoResults(false)
-        }
 
-        updateButton.setOnClickListener {
-            if (viewModel.isLastSearchFailed && viewModel.lastSearchQuery != null) {
-                viewModel.performSearch(viewModel.lastSearchQuery!!)
-            }
-        }
-        clearHistoryButton.setOnClickListener {
-            viewModel.clearHistory()
+            // Сразу убираем фокус, чтобы гарантированно скрыть клавиатуру
+            searchEditText.clearFocus()
+
+            // 2) Прячем клавиатуру
+            hideKeyboard()
+
+            // 3) Прячем кнопку (x)
+            resetButton.visibility = View.GONE
+
+            // 4) Прячем список треков (чтобы не было «старых» результатов)
+            recyclerView.visibility = View.GONE
+
+            // Сбрасываем список в адаптере (опционально, но надёжно)
+            tracksAdapter.updateList(emptyList())
+
+            // Важно: показываем историю, если она должна быть при пустом запросе
             updateHistoryVisibility()
         }
+
+
+        updateButton.setOnClickListener {
+            viewModel.retryLastSearch()
+        }
+
+        clearHistoryButton.setOnClickListener {
+            viewModel.clearHistory()
+
+            // Мгновенно скрываем контейнер истории (включая кнопку, заголовок и RecyclerView)
+            historyRecyclerViewKit.visibility = View.GONE
+            historyTitle.visibility = View.GONE
+        }
+
     }
 
     private fun setupTextWatchers() {
@@ -163,8 +180,11 @@ class SearchFragment : Fragment() {
             }
         }
         searchEditText.setOnFocusChangeListener { _, hasFocus ->
-            updateHistoryVisibility()
+            if (hasFocus || !searchEditText.text.isBlank()) {
+                updateHistoryVisibility()
+            }
         }
+
     }
 
     private fun restoreState(savedInstanceState: Bundle?) {
@@ -236,11 +256,25 @@ class SearchFragment : Fragment() {
         }
     }
 
+//    private fun updateTracksList(tracks: List<Track>) {
+//        tracksAdapter.updateList(tracks)
+//        recyclerView.visibility = if (tracks.isNotEmpty()) View.VISIBLE else View.GONE
+//        showNoResults(tracks.isEmpty() && searchQuery.isNotEmpty())
+//    }
+
     private fun updateTracksList(tracks: List<Track>) {
         tracksAdapter.updateList(tracks)
+
+        // Требование 1: если есть хотя бы одна песня — показываем список
         recyclerView.visibility = if (tracks.isNotEmpty()) View.VISIBLE else View.GONE
-        showNoResults(tracks.isEmpty() && searchQuery.isNotEmpty())
+
+        // Показываем «Ничего не нашлось» только если:
+        // - список пустой, И
+        // - пользователь ввёл запрос (не пустая строка)
+        val shouldShowNoResults = tracks.isEmpty() && !searchEditText.text.isNullOrBlank()
+        noResultsLayout.visibility = if (shouldShowNoResults) View.VISIBLE else View.GONE
     }
+
 
     private fun openAudioPlayer(track: Track) {
         val bundle = Bundle().apply {
@@ -284,36 +318,90 @@ class SearchFragment : Fragment() {
     }
 
     // В SearchFragment.kt
-    private fun updateHistoryVisibility() = lifecycleScope.launch {
-        val isEmptyQuery = searchEditText.text.isNullOrBlank()
-        val hasFocus = searchEditText.hasWindowFocus() && searchEditText.isFocused
+    private fun updateHistoryVisibility() {
+        val currentState = viewModel.screenState.value
+        Log.d("SearchDebug", "=== updateHistoryVisibility START ===")
+        Log.d("SearchDebug", "currentState = ${currentState?.javaClass?.simpleName}")
 
-        // ГЛАВНОЕ ИЗМЕНЕНИЕ: просим ViewModel дать нам свежий список,
-        // она сама вызовет UseCase и сделает .first()
-        val history = viewModel.getFreshHistoryList()
+        if (currentState == null) {
+            Log.d("SearchDebug", "currentState is null -> exit")
+            return
+        }
 
-        val hasHistory = history.isNotEmpty()
+        val historyState = when (currentState) {
+            is ScreenState.Results -> {
+                Log.d("SearchDebug", "ScreenState.Results: historyState = ${currentState.historyState}")
+                currentState.historyState
+            }
+            is ScreenState.Error -> {
+                Log.d("SearchDebug", "ScreenState.Error: historyState = ${currentState.historyState}")
+                currentState.historyState
+            }
+            is ScreenState.Idle -> {
+                Log.d("SearchDebug", "ScreenState.Idle: historyState = ${currentState.historyState}")
+                currentState.historyState
+            }
+            else -> {
+                Log.d("SearchDebug", "Other state: historyState = HistoryState.Empty")
+                HistoryState.Empty
+            }
+        }
+
+        Log.d("SearchDebug", "final historyState = $historyState")
+
+        // ГЛАВНАЯ ПРОВЕРКА: если истории нет — сразу скрываем
+        if (historyState == HistoryState.Empty) {
+            Log.d("SearchDebug", "historyState == Empty -> hide history")
+            historyRecyclerViewKit.visibility = View.GONE
+            historyTitle.visibility = View.GONE
+            return
+        } else {
+            Log.d("SearchDebug", "historyState != Empty -> continue checks")
+        }
+
+        val queryText = searchEditText.text.toString().trim()
+        val isEmptyQuery = queryText.isBlank()
+        val hasFocus = searchEditText.hasFocus() && searchEditText.windowToken != null
 
         Log.d(
             "SearchDebug",
-            "isEmpty=$isEmptyQuery, hasFocus=$hasFocus, " +
-                    "hasHistory=$hasHistory, historySize=${history.size}"
+            "queryText='$queryText', isEmpty=$isEmptyQuery, hasFocus=$hasFocus"
         )
 
-        val shouldShowHistory = isEmptyQuery && hasFocus && hasHistory
+        val shouldShowHistory = when (historyState) {
+            HistoryState.Loading -> {
+                Log.d("SearchDebug", "HistoryState.Loading -> shouldShow=false")
+                false
+            }
+            is HistoryState.HistoryLoaded -> {
+                val result = isEmptyQuery && hasFocus && historyState.history.isNotEmpty()
+                Log.d(
+                    "SearchDebug",
+                    "HistoryLoaded: isEmpty=$isEmptyQuery, hasFocus=$hasFocus, history.size=${historyState.history.size}, shouldShow=$result"
+                )
+                result
+            }
+            else -> {
+                Log.d("SearchDebug", "Other historyState -> shouldShow=false")
+                false
+            }
+        }
 
         historyRecyclerViewKit.visibility = if (shouldShowHistory) View.VISIBLE else View.GONE
         historyTitle.visibility = if (shouldShowHistory) View.VISIBLE else View.GONE
+
+        Log.d("SearchDebug", "FINAL: historyRecyclerViewKit.visibility=${historyRecyclerViewKit.visibility}, historyTitle.visibility=${historyTitle.visibility}")
+        Log.d("SearchDebug", "=== updateHistoryVisibility END ===")
     }
-
-
 
 
 
 
     private fun updateHistoryState(historyState: HistoryState) {
         when (historyState) {
-            HistoryState.Loading -> {}
+            HistoryState.Loading -> {
+                // Ничего не делаем: видимость управляет updateHistoryVisibility() по данным
+            }
             HistoryState.Empty -> {
                 historyAdapter.updateList(emptyList())
                 updateHistoryVisibility()
@@ -322,12 +410,11 @@ class SearchFragment : Fragment() {
                 historyAdapter.updateList(historyState.history)
                 updateHistoryVisibility()
             }
-            HistoryState.HistoryCleared -> {
-                historyRecyclerViewKit.visibility = View.GONE
-                updateHistoryVisibility()
-            }
+            // Убрали HistoryState.HistoryCleared: он больше не нужен,
+            // потому что после clearHistory() приходит HistoryState.Empty
         }
     }
+
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
