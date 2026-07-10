@@ -122,6 +122,7 @@ class SearchFragment : Fragment() {
 
     private fun setupClickListeners() {
         backTextView.setOnClickListener { requireActivity().onBackPressed() }
+
         resetButton.setOnClickListener {
             // 1) Очищаем поисковый запрос
             searchEditText.setText("")
@@ -140,11 +141,11 @@ class SearchFragment : Fragment() {
 
             // Сбрасываем список в адаптере (опционально, но надёжно)
             tracksAdapter.updateList(emptyList())
+            viewModel.refreshHistory()
 
-            // Важно: показываем историю, если она должна быть при пустом запросе
             updateHistoryVisibility()
-        }
 
+        }
 
         updateButton.setOnClickListener {
             viewModel.retryLastSearch()
@@ -157,8 +158,8 @@ class SearchFragment : Fragment() {
             historyRecyclerViewKit.visibility = View.GONE
             historyTitle.visibility = View.GONE
         }
-
     }
+
 
     private fun setupTextWatchers() {
         var searchJob: Job? = null
@@ -410,8 +411,6 @@ class SearchFragment : Fragment() {
                 historyAdapter.updateList(historyState.history)
                 updateHistoryVisibility()
             }
-            // Убрали HistoryState.HistoryCleared: он больше не нужен,
-            // потому что после clearHistory() приходит HistoryState.Empty
         }
     }
 

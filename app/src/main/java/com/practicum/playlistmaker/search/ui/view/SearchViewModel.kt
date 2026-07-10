@@ -114,6 +114,13 @@ class SearchViewModel(
         )
     }
 
+    fun refreshHistory() {
+        viewModelScope.launch {
+            val freshHistory = getSearchHistoryUseCase().first()
+            updateHistoryOnly(freshHistory)
+        }
+    }
+
     fun onTrackClicked(track: Track) {
         viewModelScope.launch {
             delayedTrackActionUseCase(
