@@ -48,7 +48,10 @@ class SearchTrackAdapter(
             } else {
                 viewHolder.hidePlayingState()
             }
-            itemView.setOnClickListener { onTrackClick(track) }
+            itemView.setOnClickListener {
+                onTrackClick(track)
+
+            }
         }
     }
 }
