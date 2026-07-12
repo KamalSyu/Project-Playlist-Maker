@@ -5,6 +5,7 @@ import android.net.Uri
 import android.util.Log
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.core.models.domain.Playlist
+import com.practicum.playlistmaker.mediateka.data.db.PlaylistEntity
 import com.practicum.playlistmaker.mediateka.data.db.PlaylistTrackEntity
 import com.practicum.playlistmaker.mediateka.data.db.PlaylistsDao
 import com.practicum.playlistmaker.mediateka.data.mapper.toDomain
@@ -14,6 +15,7 @@ import com.practicum.playlistmaker.player.data.storage.FileStorageService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.UUID
@@ -125,4 +127,24 @@ class PlaylistsRepositoryImplMedia(
         dao.insertTrackToPlaylist(playlistTrackEntity)
         dao.incrementTrackCount(playlistId)
     }
+    override suspend fun getPlaylistById(playlistId: Long): PlaylistEntity? =
+        dao.getPlaylistById(playlistId)
+
+    override suspend fun getTrackDurationsSeconds(playlistId: Long): List<Int> =
+        dao.getTrackDurationsByPlaylistId(playlistId)
+
+    override suspend fun getPlaylistTracks(playlistId: Long): List<PlaylistTrackEntity> =
+        dao.getTracksByPlaylistId(playlistId)
+
+    override suspend fun removeTrackFromPlaylist(playlistId: Long, trackId: String) {
+        dao.removeTrackFromPlaylist(playlistId, trackId)
+    }
+
+    override suspend fun deleteTrackIfUnused(trackId: String) {
+        val count = dao.countPlaylistsWithTrack(trackId)
+        if (count == 0) {
+        }
+    }
+
+
 }

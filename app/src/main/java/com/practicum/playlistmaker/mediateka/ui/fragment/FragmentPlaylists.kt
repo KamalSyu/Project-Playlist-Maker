@@ -58,12 +58,25 @@ class FragmentPlaylists : Fragment() {
             GridSpacingItemDecoration(spanCount, edgeSpacing, columnSpacing)
         )
 
-        playlistsAdapter = PlaylistsAdapter(emptyList()) { playlist, action ->
-            when (action) {
-                PlaylistsAdapter.Action.RENAME -> showRenameDialog(playlist)
-                PlaylistsAdapter.Action.DELETE -> showDeleteDialog(playlist)
+        playlistsAdapter = PlaylistsAdapter(
+            playlists = emptyList(),
+            onPlaylistAction = { playlist, action ->
+                when (action) {
+                    PlaylistsAdapter.Action.RENAME -> showRenameDialog(playlist)
+                    PlaylistsAdapter.Action.DELETE -> showDeleteDialog(playlist)
+                }
+            },
+            onPlaylistClick = { playlist ->
+                val bundle = Bundle().apply {
+                    putString("playlistId", playlist.id)
+                }
+                findNavController().navigate(
+                    R.id.action_fragmentPlaylists_to_playlistDetailFragment,
+                    bundle
+                )
             }
-        }
+
+        )
         playlistsRecyclerView.adapter = playlistsAdapter
 
         viewModel.uiState.observe(viewLifecycleOwner) { state ->

@@ -21,12 +21,8 @@ class CreatePlaylistUseCase(
             Log.e("CreatePlaylistUseCase", "Название плейлиста пустое")
             return Result.failure(IllegalArgumentException("Название плейлиста не может быть пустым"))
         }
-
-        Log.d("CreatePlaylistUseCase", "Начинаем обработку обложки, coverUri: $coverUri")
-
         val coverPathResult = if (coverUri != null) {
             try {
-                // Отдаём Uri напрямую в репозиторий — он сам скопирует в надёжное место (filesDir)
                 playlistsRepositoryMedia.safeCopyToPrivateStorageFromUri(coverUri)
                     .also { path ->
                         if (!path.isNullOrEmpty()) {
@@ -39,22 +35,17 @@ class CreatePlaylistUseCase(
                         }
                     }
             } catch (e: Exception) {
-                Log.e("CreatePlaylistUseCase", "Ошибка при обработке обложки", e)
                 null
             }
         } else {
             null
         }
-
-        // Если была обложка, но не удалось сохранить — возвращаем ошибку
         if (coverUri != null && coverPathResult == null) {
             return Result.failure(
                 IllegalStateException("Не удалось скопировать обложку в приватное хранилище")
             )
         }
-
         val coverPath = coverPathResult
-
         return try {
             val newPlaylist = Playlist(
                 id = "0",
@@ -64,14 +55,9 @@ class CreatePlaylistUseCase(
                 trackCount = 0,
                 createdAt = System.currentTimeMillis()
             )
-            Log.d("CreatePlaylistUseCase", "Создаём плейлист: $newPlaylist")
-
             val resultId = playlistsRepositoryMedia.addPlaylist(newPlaylist)
-            Log.d("CreatePlaylistUseCase", "Плейлист создан, ID: $resultId")
-
             Result.success(resultId.toString())
         } catch (e: Exception) {
-            Log.e("CreatePlaylistUseCase", "Ошибка при добавлении плейлиста в репозиторий", e)
             Result.failure(e)
         }
     }

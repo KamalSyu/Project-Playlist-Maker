@@ -6,5 +6,6 @@ data class Playlist(
     val description: String?,
     val coverPath: String?,
     val trackCount: Int,
-    val createdAt: Long
+    val createdAt: Long,
+    val durationFormatted: String = "00:00"
 )

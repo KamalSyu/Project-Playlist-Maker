@@ -48,13 +48,11 @@ class CreatePlaylistFragment : Fragment() {
     private lateinit var nameField: TextInputLayout
     private lateinit var descriptionField: TextInputLayout
 
-    // ИЗМЕНЕНИЕ: Тип теперь ShapeableImageView, чтобы корректно работать с XML-макетом
     private lateinit var coverImage: ShapeableImageView
 
     private lateinit var backButton: TextView
     private lateinit var playlistCenterIcon: ImageView
 
-    // ДОБАВЛЕНО: Поле для рамки (ImageView из макета)
     private lateinit var borderImage: ImageView
 
     override fun onCreateView(
@@ -120,11 +118,8 @@ class CreatePlaylistFragment : Fragment() {
         }
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
 
-        // --- ИСПРАВЛЕНИЕ ЗДЕСЬ ---
-        // 1. Получаем ImageView для рамки (НЕ контейнер!)
         borderImage = view.findViewById(R.id.playlistBorderImage)
 
-        // 2. Создаем drawable
         val drawable = DashedRoundedBorderDrawable(
             context = requireContext(),
             strokeWidth = 1f,
@@ -134,10 +129,7 @@ class CreatePlaylistFragment : Fragment() {
             cornerRadiusDp = 8f
         )
 
-        // 3. Ставим drawable НА РАМКУ (ImageView), а не на фон контейнера.
-        // Именно это возвращает картинку на место.
         borderImage.setImageDrawable(drawable)
-        // --------------------------
     }
 
     private val pickImage = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
@@ -167,16 +159,10 @@ class CreatePlaylistFragment : Fragment() {
         nameField = view.findViewById(R.id.playlistNameField)
         descriptionField = view.findViewById(R.id.playlistDescriptionField)
 
-        // ИЗМЕНЕНИЕ: Приводим к правильному типу
         coverImage = view.findViewById(R.id.playlistCoverImage)
 
         backButton = view.findViewById(R.id.back)
         playlistCenterIcon = view.findViewById(R.id.playlistCenterIcon)
-
-        // ДОБАВЛЕНО: Инициализируем borderImage здесь тоже, на всякий случай,
-        // хотя в onViewCreated мы его тоже находим.
-        // Но лучше пусть инициализация drawable будет строго в onViewCreated,
-        // а тут просто убедимся, что поле существует.
 
         val currentState = viewModel.uiState.value
         updateCoverImage(currentState?.selectedCoverUri)

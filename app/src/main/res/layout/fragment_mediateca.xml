@@ -7,22 +7,16 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:fitsSystemWindows="true">
-
-
     <TextView
         android:id="@+id/back"
         style="@style/TextStyleTopScreen"
         android:text="@string/mediateka"
         android:layout_marginBottom="0dp"/>
-
-    <!-- TabLayout -->
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabLayout"
         style="@style/TabLayoutStyle"
         app:tabTextAppearance="@style/TabTextAppearance"
         />
-
-    <!-- ViewPager -->
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPager"
         android:layout_width="match_parent"
