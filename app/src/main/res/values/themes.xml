@@ -13,13 +13,23 @@
 
         <!-- Цвет статус‑бара -->
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
-
-        <!-- Цвет иконок в статус‑баре:
-             false = белые иконки (на тёмном фоне)
-             true = тёмные иконки (на светлом фоне) -->
         <item name="android:windowLightStatusBar">false</item>
+
+        <!-- НОВЫЕ СТРОКИ: цвета для плейлистов -->
+        <item name="playlistCoverBackground">@color/white</item>
+        <item name="playlistItemTextColor">@color/yp_black</item>
+
+        <item name="playlistItemTextColorToast">#FFFFFF</item>
+        <item name="toastBackgroundColor">#1A1B22</item>
+
+        <item name="playlist_name_text_color">#000000</item>
+        <item name="playlist_track_count_text_color">#AEAFB4</item>
+        <item name="playlist_item_background">#FFFFFF</item>
+        <item name="bottom_sheet_background">#FFFFFF</item>
+
+        <item name="bottom_sheet_separator_color">#E6E8EB</item>
+
     </style>
 
-    <!-- Производная тема (можно использовать для модификаций) -->
     <style name="Theme.PlaylistMaker" parent="Base.Theme.PlaylistMaker" />
 </resources>

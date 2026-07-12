@@ -36,10 +36,10 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class SearchFragment : Fragment() {
 
-    companion object {
-        private const val SEARCH_QUERY_KEY = "search_query"
-    }
 
+companion object {
+    private const val SEARCH_QUERY_KEY = "search_query"
+}
     private val viewModel: SearchViewModel by viewModel()
 
     private lateinit var backTextView: TextView
@@ -53,8 +53,6 @@ class SearchFragment : Fragment() {
     private lateinit var clearHistoryButton: Button
     private lateinit var historyRecyclerViewKit: LinearLayout
     private lateinit var progressBar: ProgressBar
-    private lateinit var historyTitle: TextView
-
 
     private lateinit var tracksAdapter: SearchTrackAdapter
     private lateinit var historyAdapter: SearchTrackAdapter
@@ -86,6 +84,8 @@ class SearchFragment : Fragment() {
         setupTextWatchers()
         restoreState(savedInstanceState)
         observeViewModel()
+        searchEditText.clearFocus()
+
     }
 
     private fun initViews(view: View) {
@@ -100,8 +100,6 @@ class SearchFragment : Fragment() {
         clearHistoryButton = view.findViewById(R.id.clear_history_button)
         historyRecyclerViewKit = view.findViewById(R.id.search_history_layout)
         progressBar = view.findViewById(R.id.progressBar)
-        historyTitle = view.findViewById(R.id.history_title)
-
 
         tracksAdapter = SearchTrackAdapter(
             tracks = emptyList(),
@@ -123,6 +121,7 @@ class SearchFragment : Fragment() {
         backTextView.setOnClickListener { requireActivity().onBackPressed() }
         resetButton.setOnClickListener {
             searchEditText.setText("")
+            searchEditText.clearFocus()
             updateTracksList(emptyList())
             hideKeyboard()
             showNoResults(false)
@@ -134,7 +133,7 @@ class SearchFragment : Fragment() {
         }
         clearHistoryButton.setOnClickListener {
             viewModel.clearHistory()
-            updateHistoryVisibility()
+            historyRecyclerViewKit.visibility = View.GONE
         }
     }
 
@@ -166,6 +165,7 @@ class SearchFragment : Fragment() {
         if (savedInstanceState != null) {
             searchQuery = savedInstanceState.getString(SEARCH_QUERY_KEY, "")
             searchEditText.setText(searchQuery)
+            // Восстанавливаем видимость ProgressBar
             if (savedInstanceState.getBoolean("isLoading", false)) {
                 showLoading()
             }
@@ -184,15 +184,10 @@ class SearchFragment : Fragment() {
                     updateHistoryVisibility()
                 }
                 ScreenState.Loading -> {
-                    if (searchQuery.isNotEmpty() && searchEditText.hasFocus()) {
-                        showLoading()
-                        hideError()
-                        showNoResults(false)
-                    } else {
-                        hideLoading()
-                    }
+                    showLoading()
+                    hideError()
+                    showNoResults(false)
                 }
-
                 is ScreenState.Idle -> {
                     hideLoading()
                     updateTracksList(emptyList())
@@ -263,6 +258,7 @@ class SearchFragment : Fragment() {
         errorLayout.visibility = View.VISIBLE
         noResultsLayout.visibility = View.GONE
         recyclerView.visibility = View.GONE
+        historyRecyclerViewKit.visibility = View.GONE
     }
 
     private fun showNoResults(show: Boolean) {
@@ -281,27 +277,34 @@ class SearchFragment : Fragment() {
     private fun updateHistoryVisibility() {
         val isEmptyQuery = searchEditText.text.isEmpty()
         val hasFocus = searchEditText.hasFocus()
-        val hasHistory = historyAdapter.itemCount > 0
-        val shouldShowHistory = isEmptyQuery && hasFocus && hasHistory
 
-        historyRecyclerViewKit.visibility = if (shouldShowHistory) {
-            View.VISIBLE
-        } else {
-            View.GONE
+        // Проверяем текущее состояние экрана
+        val currentState = viewModel.screenState.value
+
+        // Определяем, загружена ли история, проверяя тип состояния и его поле historyState
+        val hasHistory = when (currentState) {
+            is ScreenState.Results -> currentState.historyState is HistoryState.HistoryLoaded
+            is ScreenState.Error -> currentState.historyState is HistoryState.HistoryLoaded
+            is ScreenState.Idle -> currentState.historyState is HistoryState.HistoryLoaded
+            ScreenState.Initial, ScreenState.Loading -> false
+            null -> false
         }
 
-        historyTitle.visibility = if (shouldShowHistory) {
+        historyRecyclerViewKit.visibility = if (isEmptyQuery && hasFocus && hasHistory) {
             View.VISIBLE
         } else {
             View.GONE
         }
     }
 
+
+
+
     private fun updateHistoryState(historyState: HistoryState) {
         when (historyState) {
             HistoryState.Loading -> {}
             HistoryState.Empty -> {
-                historyAdapter.updateList(emptyList())
+//                historyAdapter.updateList(emptyList())
                 updateHistoryVisibility()
             }
             is HistoryState.HistoryLoaded -> {
@@ -310,7 +313,7 @@ class SearchFragment : Fragment() {
             }
             HistoryState.HistoryCleared -> {
                 historyRecyclerViewKit.visibility = View.GONE
-                updateHistoryVisibility()
+                historyAdapter.updateList(emptyList())
             }
         }
     }
@@ -323,7 +326,7 @@ class SearchFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        updateHistoryVisibility()
+        updateUIWithCurrentState()
     }
 
     private fun updateUIWithCurrentState() {
@@ -337,15 +340,10 @@ class SearchFragment : Fragment() {
                 updateHistoryVisibility()
             }
             ScreenState.Loading -> {
-                if (searchQuery.isNotEmpty() && searchEditText.hasFocus()) {
-                    showLoading()
-                    hideError()
-                    showNoResults(false)
-                } else {
-                    hideLoading()
-                }
+                showLoading()
+                hideError()
+                showNoResults(false)
             }
-
             is ScreenState.Idle -> {
                 hideLoading()
                 updateTracksList(emptyList())

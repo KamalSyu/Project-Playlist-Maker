@@ -11,20 +11,16 @@ import kotlinx.coroutines.launch
 class FavoriteTracksViewModel(
     private val getFavoriteTracksUseCase: GetFavoriteTracksUseCase
 ) : ViewModel() {
-
     sealed class State {
         object Empty : State()
         data class WithTracks(val tracks: List<Track>) : State()
         data class Error(val message: String) : State()
     }
-
     private val _state = MutableLiveData<State>(State.Empty)
     val state: LiveData<State> = _state
-
     init {
         loadFavoriteTracks()
     }
-
     private fun loadFavoriteTracks() = viewModelScope.launch {
         try {
             getFavoriteTracksUseCase().collect { tracks ->

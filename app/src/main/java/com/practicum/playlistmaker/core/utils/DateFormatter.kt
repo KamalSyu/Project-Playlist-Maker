@@ -11,11 +11,9 @@ class DateFormatter {
             timeZone = TimeZone.getTimeZone("UTC")
         }
     }
-
     private val outputFormat: SimpleDateFormat by lazy {
         SimpleDateFormat("yyyy", Locale.US)
     }
-
     fun formatReleaseDate(releaseDateString: String?): String {
         if (releaseDateString == null) return "-"
         return try {

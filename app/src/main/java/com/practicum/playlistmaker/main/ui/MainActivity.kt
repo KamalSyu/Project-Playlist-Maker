@@ -15,12 +15,10 @@ import com.practicum.playlistmaker.R
 import androidx.activity.enableEdgeToEdge
 
 class MainActivity : AppCompatActivity() {
-
     private lateinit var navController: NavController
     private lateinit var bottomNavigationView: BottomNavigationView
     private lateinit var toolbar: Toolbar
     private lateinit var appBarConfiguration: AppBarConfiguration
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -52,7 +50,6 @@ class MainActivity : AppCompatActivity() {
             ).show()
         }
     }
-
     private fun updateToolbarAndBottomNavVisibility(destinationId: Int?) {
         when (destinationId) {
             R.id.audioPlayerFragment -> {
@@ -67,17 +64,14 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-
     private fun setupNavigationVisibility() {
         navController.addOnDestinationChangedListener { _, destination, _ ->
             updateToolbarAndBottomNavVisibility(destination.id)
         }
     }
-
     override fun onSupportNavigateUp(): Boolean {
         return navController.navigateUp() || super.onSupportNavigateUp()
     }
-
     override fun onBackPressed() {
         val currentDestinationId = navController.currentDestination?.id
         if (currentDestinationId == R.id.mediatekaFragment) {

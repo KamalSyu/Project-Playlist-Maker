@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        style="@style/BackgroundAudioplayer">
+
+        <TextView
+            android:id="@+id/back"
+            style="@style/TextStyleTopScreen"
+            app:drawableStartCompat="@drawable/ic_back_arrow_48"
+            android:layout_marginBottom="26dp"
+            android:text="@string/new_playlist" />
+
+        <!-- Контейнер с ConstraintLayout для корректной работы ограничений -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <!-- Контейнер с рамкой и пользовательским изображением -->
+            <FrameLayout
+                android:id="@+id/playlistCoverContainer"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp"
+                android:layout_marginTop="2dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintDimensionRatio="1:1">
+
+                <!-- Рамка (нижний слой) -->
+                <ImageView
+                    android:id="@+id/playlistBorderImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="fitXY"
+                    android:contentDescription="@null" />
+
+                <!-- Пользовательское изображение (поверх рамки) -->
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/playlistCoverImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.MyApp.Rounded8dp"
+                    android:contentDescription="@string/playlist_cover" />
+
+                <!-- Иконка (поверх всего) -->
+                <ImageView
+                    android:id="@+id/playlistCenterIcon"
+                    style="@style/PlaylistCenterIconStyle"
+                    android:src="@drawable/vector1"
+                    android:layout_gravity="center"
+                    android:contentDescription="@null" />
+            </FrameLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Поле названия: подсказка чёрная в покое, серая наверху при фокусе/вводе -->
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/TextInputLayoutPrimaryHint"
+            android:id="@+id/playlistNameField"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:hint="@string/playlist_name_hint"
+            app:expandedHintEnabled="true">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/TextInputEditText" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Поле описания: подсказка всегда серая -->
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/TextInputLayoutPrimaryHint"
+            android:id="@+id/playlistDescriptionField"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:hint="@string/playlist_description_hint"
+            app:expandedHintEnabled="true">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/TextInputEditText" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Заполнитель: занимает всё свободное пространство и выталкивает кнопку вниз -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <!-- Кнопка «Создать» -->
+        <Button
+            android:id="@+id/createPlaylistButton"
+            style="@style/ButtonCreatePlaylist"
+            android:background="@drawable/button_create_playlist_background"
+            android:text="@string/create_playlist" />
+    </LinearLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

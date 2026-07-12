@@ -11,9 +11,18 @@ import com.practicum.playlistmaker.core.utils.DelayProvider
 import com.practicum.playlistmaker.core.utils.FormatTrackDurationUseCase
 import com.practicum.playlistmaker.core.utils.FormatTrackDurationUseCaseImpl
 import com.practicum.playlistmaker.creator.domain.TrackFactory
+import com.practicum.playlistmaker.mediateka.data.repository.PlaylistsRepositoryImplMedia
+import com.practicum.playlistmaker.mediateka.domain.interactor.PlaylistInteractor
+import com.practicum.playlistmaker.mediateka.domain.interactor.PlaylistInteractorImpl
+import com.practicum.playlistmaker.mediateka.domain.repository.PlaylistsRepositoryMedia
+import com.practicum.playlistmaker.mediateka.domain.usecase.AddTrackToPlaylistUseCase
+import com.practicum.playlistmaker.mediateka.domain.usecase.CreatePlaylistUseCase
+import com.practicum.playlistmaker.mediateka.domain.usecase.LoadPlaylistsUseCase
+import com.practicum.playlistmaker.mediateka.ui.view.CreatePlaylistViewModel
 import com.practicum.playlistmaker.mediateka.ui.view.FavoriteTracksViewModel
-import com.practicum.playlistmaker.mediateka.ui.view.FragmentPlaylistsViewModel
+import com.practicum.playlistmaker.mediateka.ui.view.PlaylistsViewModel
 import com.practicum.playlistmaker.player.data.db.AppDatabase
+import com.practicum.playlistmaker.player.data.mapper.TrackParcelableMapper
 import com.practicum.playlistmaker.player.ui.view.AudioPlayerViewModel
 import com.practicum.playlistmaker.search.data.network.ItunesApi
 import com.practicum.playlistmaker.search.data.repository.HistoryRepositoryImpl
@@ -23,10 +32,12 @@ import com.practicum.playlistmaker.settings.data.mapper.ThemeSettingsMapper
 import com.practicum.playlistmaker.settings.data.repository.SettingsRepositoryImpl
 import com.practicum.playlistmaker.sharing.data.provider.SupportEmailDataProviderImpl
 import com.practicum.playlistmaker.sharing.data.provider.ShareTextProviderImpl
-import com.practicum.playlistmaker.player.data.mapper.TrackParcelableMapper
 import com.practicum.playlistmaker.player.data.repository.FavoriteTracksRepositoryImpl
+import com.practicum.playlistmaker.player.data.repository.PlaylistRepositoryImpl
+import com.practicum.playlistmaker.player.data.storage.FileStorageService
 import com.practicum.playlistmaker.player.domain.repository.FavoriteTracksRepository
 import com.practicum.playlistmaker.player.domain.repository.PlayerRepository
+import com.practicum.playlistmaker.player.domain.repository.PlaylistRepository
 import com.practicum.playlistmaker.player.domain.usecase.favorite.AddToFavoritesUseCase
 import com.practicum.playlistmaker.player.domain.usecase.favorite.AddToFavoritesUseCaseImpl
 import com.practicum.playlistmaker.player.domain.usecase.favorite.GetFavoriteTracksUseCase
@@ -48,6 +59,8 @@ import com.practicum.playlistmaker.player.domain.usecase.playback.StopPlaybackUs
 import com.practicum.playlistmaker.player.domain.usecase.playback.StopPlaybackUseCaseImpl
 import com.practicum.playlistmaker.player.domain.usecase.playback.TogglePlaybackUseCase
 import com.practicum.playlistmaker.player.domain.usecase.playback.TogglePlaybackUseCaseImpl
+import com.practicum.playlistmaker.player.domain.usecase.playlist.GetPlaylistsUseCase
+import com.practicum.playlistmaker.player.domain.usecase.playlist.GetPlaylistsUseCaseImpl
 import com.practicum.playlistmaker.player.domain.usecase.utils.DelayedTrackActionUseCase
 import com.practicum.playlistmaker.search.data.mapper.SearchHistoryMapper
 import com.practicum.playlistmaker.search.data.mapper.SearchResponseMapper
@@ -95,16 +108,13 @@ val appModule = module {
             Context.MODE_PRIVATE
         )
     }
-
     single { Gson() }
-
     single {
         Retrofit.Builder()
             .baseUrl("https://itunes.apple.com/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
-
     single<ItunesApi> { get<Retrofit>().create(ItunesApi::class.java) }
 
     // 2. Утилиты
@@ -115,57 +125,75 @@ val appModule = module {
     // 3. Фабрики и базовые мапперы
     single { TrackFactory() }
     single { ThemeSettingsMapper() }
-    single { TrackParcelableMapper() }
 
     // 4. Мапперы с зависимостями
     single { TrackMapper(get()) }
     single { SearchResponseMapper(get()) }
     single { SearchHistoryMapper(get()) }
+    single { FileStorageService(get<Context>()) }
 
     // 5. Репозитории
-    single<PlayerRepository> { PlayerRepositoryImpl() }
-
-    single<SettingsRepository> {
+    factory<PlayerRepository> { PlayerRepositoryImpl() }
+    factory<SettingsRepository> {
         SettingsRepositoryImpl(
             sharedPreferences = get(),
             gson = get(),
             dtoMapper = get()
         )
     }
-
-    single<HistoryRepository> {
+    factory<HistoryRepository> {
         HistoryRepositoryImpl(
             sharedPreferences = get(),
             gson = get(),
         )
     }
-
-    single<ItunesRepository> {
+    factory<ItunesRepository> {
         ItunesRepositoryImpl(
             api = get(),
             searchResponseMapper = get()
         )
     }
+    factory<SupportEmailDataProvider> { SupportEmailDataProviderImpl(get()) }
+    factory<ShareTextProvider> { ShareTextProviderImpl(get()) }
 
-    single<SupportEmailDataProvider> { SupportEmailDataProviderImpl(get()) }
-    single<ShareTextProvider> { ShareTextProviderImpl(get()) }
-
-    single<FavoriteTracksRepository> {
+    factory<FavoriteTracksRepository> {
         FavoriteTracksRepositoryImpl(
             dao = get(),
             trackFactory = get()
         )
     }
 
+    factory<PlaylistsRepositoryMedia> {
+        PlaylistsRepositoryImplMedia(
+            dao = get(),
+            context = get()
+        )
+    }
+
+    factory<PlaylistRepository> {
+        PlaylistRepositoryImpl(
+            playlistDao = get(),
+            context = get()
+        )
+    }
+
+    single { TrackParcelableMapper() }
+
+    factory<PlaylistInteractor> {
+        PlaylistInteractorImpl(
+            addTrackToPlaylistUseCase = get(),
+            playlistDao = get(),
+            playlistsRepositoryMedia = get()
+        )
+    }
+
     // 6. UseCases
-    // UseCases поиска
     factory<SearchTracksUseCase> { SearchTracksUseCaseImpl(get()) }
     factory<AddTrackToHistoryUseCase> { AddTrackToHistoryUseCaseImpl(get()) }
     factory<ClearSearchHistoryUseCase> { ClearSearchHistoryUseCaseImpl(get()) }
     factory<GetSearchHistoryUseCase> { GetSearchHistoryUseCaseImpl(get()) }
     factory<FilterTracksUseCase> { FilterTracksUseCaseImpl() }
 
-    // UseCases плеера
     factory<PreparePlaybackUseCase> { PreparePlaybackUseCaseImpl(get()) }
     factory<TogglePlaybackUseCase> { TogglePlaybackUseCaseImpl(get()) }
     factory<StopPlaybackUseCase> { StopPlaybackUseCaseImpl(get()) }
@@ -174,19 +202,24 @@ val appModule = module {
     factory<DelayedTrackActionUseCase> { DelayedTrackActionUseCaseImpl(get()) }
     factory<ResetPlaybackUseCase> { ResetPlaybackUseCaseImpl(get()) }
 
-    // UseCases настроек
     factory<GetThemeStateUseCase> { GetThemeStateUseCaseImpl(get()) }
     factory<SwitchThemeUseCase> { SwitchThemeUseCaseImpl(get()) }
 
-    // UseCases шаринга
     factory<ShareAppUseCase> { ShareAppUseCaseImpl(get()) }
     factory<SendSupportEmailUseCase> { SendSupportEmailUseCaseImpl(get()) }
 
-    // UseCases избранного
     factory<AddToFavoritesUseCase> { AddToFavoritesUseCaseImpl(get()) }
     factory<RemoveFromFavoritesUseCase> { RemoveFromFavoritesUseCaseImpl(get()) }
     factory<GetFavoriteTracksUseCase> { GetFavoriteTracksUseCaseImpl(get()) }
     factory<IsTrackFavoriteUseCase> { IsTrackFavoriteUseCaseImpl(get()) }
+
+    factory<CreatePlaylistUseCase> { CreatePlaylistUseCase(get()) }
+    factory<LoadPlaylistsUseCase> { LoadPlaylistsUseCase(get()) }
+    factory<GetPlaylistsUseCase> { GetPlaylistsUseCaseImpl(get()) }
+
+    factory<AddTrackToPlaylistUseCase> {
+        AddTrackToPlaylistUseCase(get())
+    }
 
     // 7. ViewModel
     viewModel { SearchViewModel(
@@ -210,7 +243,8 @@ val appModule = module {
         trackParcelableMapper = get(),
         addToFavoritesUseCase = get(),
         removeFromFavoritesUseCase = get(),
-        isTrackFavoriteUseCase= get()
+        isTrackFavoriteUseCase = get(),
+        playlistRepository = get()
     ) }
 
     viewModel { SettingsViewModel(
@@ -220,7 +254,11 @@ val appModule = module {
         sendSupportEmailUseCase = get()
     ) }
 
-    viewModel { FragmentPlaylistsViewModel() }
+    viewModel<CreatePlaylistViewModel> {
+        CreatePlaylistViewModel(get())
+    }
+
+    viewModel { PlaylistsViewModel(get(), get()) }
 
     viewModel { FavoriteTracksViewModel(
         getFavoriteTracksUseCase = get()
@@ -233,9 +271,11 @@ val dataModule = module {
             androidContext(),
             AppDatabase::class.java,
             "app_database.db"
-        ).build()
+        )
+            .fallbackToDestructiveMigration()
+            .build()
     }
 
     single { get<AppDatabase>().favoriteTracksDao() }
+    single { get<AppDatabase>().playlistsDao() }
 }
-

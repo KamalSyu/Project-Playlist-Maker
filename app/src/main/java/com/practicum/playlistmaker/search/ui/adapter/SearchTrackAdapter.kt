@@ -42,12 +42,16 @@ class SearchTrackAdapter(
 
         fun bind(track: Track, position: Int) {
             viewHolder.bind(track)
+
             if (position == currentPosition) {
                 viewHolder.showPlayingState(isPlaying, currentTimeMillis, formattedTime)
             } else {
                 viewHolder.hidePlayingState()
             }
-            itemView.setOnClickListener { onTrackClick(track) }
+            itemView.setOnClickListener {
+                onTrackClick(track)
+
+            }
         }
     }
 }

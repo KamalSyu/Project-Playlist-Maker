@@ -12,14 +12,11 @@ import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.mediateka.ui.adapter.MediatekaViewPagerAdapter
 
 class MediatekaFragment : Fragment() {
-
     companion object {
         private const val SAVED_VIEWPAGER_POSITION = "saved_viewpager_position"
     }
-
     private lateinit var viewPager: ViewPager2
     private var currentPosition: Int = 0
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -27,7 +24,6 @@ class MediatekaFragment : Fragment() {
     ): View? {
         return inflater.inflate(R.layout.fragment_mediateca, container, false)
     }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         if (savedInstanceState != null) {
@@ -36,12 +32,10 @@ class MediatekaFragment : Fragment() {
         setupViewPager(view)
         viewPager.setCurrentItem(currentPosition, false)
     }
-
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putInt(SAVED_VIEWPAGER_POSITION, currentPosition)
     }
-
     private fun setupViewPager(view: View) {
         viewPager = view.findViewById(R.id.viewPager)
         val tabLayout = view.findViewById<TabLayout>(R.id.tabLayout)

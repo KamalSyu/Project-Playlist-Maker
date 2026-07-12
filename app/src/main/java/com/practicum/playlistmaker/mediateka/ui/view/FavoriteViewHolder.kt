@@ -14,26 +14,20 @@ class FavoriteViewHolder(
     itemView: View,
     private val formatDurationUseCase: FormatTrackDurationUseCase
 ) : RecyclerView.ViewHolder(itemView) {
-
     private val artworkImageView: ImageView = itemView.findViewById(R.id.artwork_image)
     private val trackNameTextView: TextView = itemView.findViewById(R.id.track_name)
     private val artistNameTextView: TextView = itemView.findViewById(R.id.artist_name)
     private val trackTimeTextView: TextView = itemView.findViewById(R.id.track_time)
-
     private var track: Track? = null
-
     fun bind(track: Track) {
         this.track = track
-
         trackNameTextView.text = track.trackName
         artistNameTextView.text = track.artistName
-
         track.trackTimeMillis?.let { timeMillis ->
             trackTimeTextView.text = formatDurationUseCase.invoke(timeMillis)
         } ?: run {
             trackTimeTextView.text = ""
         }
-
         Glide.with(itemView.context)
             .load(track.artworkUrl100)
             .placeholder(R.drawable.ic_placeholder_45)

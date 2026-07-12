@@ -8,7 +8,7 @@
     android:minHeight="61dp"
     android:background="@drawable/item_selector">
 
-    <ImageView
+    <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/artwork_image"
         android:layout_width="45dp"
         android:layout_height="45dp"
@@ -17,7 +17,9 @@
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
-        android:layout_marginStart="13dp" />
+        android:layout_marginStart="13dp"
+        app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.Corner2dp" />
+
 
     <TextView
         android:id="@+id/track_name"

@@ -6,7 +6,6 @@ import com.practicum.playlistmaker.core.utils.DelayProvider
 class DelayedTrackActionUseCaseImpl (
     private val delayProvider: DelayProvider
 ) : DelayedTrackActionUseCase {
-
     override suspend operator fun invoke(
         track: Track,
         delayMillis: Long,

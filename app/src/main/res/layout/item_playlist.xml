@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:background="?attr/selectableItemBackground"
+    android:clipChildren="false">
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/playlistCover"
+        android:layout_width="match_parent"
+        android:layout_height="160dp"
+        android:scaleType="centerCrop"
+        app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.MyApp.Rounded8dp"
+        android:contentDescription="@string/playlist_cover" />
+
+
+    <TextView
+        android:id="@+id/playlistName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:lineHeight="16sp"
+        android:textColor="?attr/playlistItemTextColor"
+        android:textStyle="normal"
+        android:fontWeight="400"
+        android:gravity="start"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:layout_marginTop="4dp"
+        android:paddingStart="0dp"
+        android:paddingEnd="0dp"/>
+
+    <TextView
+        android:id="@+id/playlistTrackCount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:lineHeight="16sp"
+        android:textColor="?attr/playlistItemTextColor"
+        android:textStyle="normal"
+        android:fontWeight="400"
+        android:gravity="start"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:paddingStart="0dp"
+        android:paddingEnd="0dp"  />
+</LinearLayout>
