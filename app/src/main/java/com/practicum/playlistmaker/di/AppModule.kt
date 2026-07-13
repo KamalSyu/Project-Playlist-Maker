@@ -17,8 +17,10 @@ import com.practicum.playlistmaker.mediateka.domain.interactor.PlaylistInteracto
 import com.practicum.playlistmaker.mediateka.domain.repository.PlaylistsRepositoryMedia
 import com.practicum.playlistmaker.mediateka.domain.usecase.AddTrackToPlaylistUseCase
 import com.practicum.playlistmaker.mediateka.domain.usecase.CreatePlaylistUseCase
+import com.practicum.playlistmaker.mediateka.domain.usecase.DeletePlaylistUseCase
 import com.practicum.playlistmaker.mediateka.domain.usecase.LoadPlaylistsUseCase
 import com.practicum.playlistmaker.mediateka.domain.usecase.RemoveTrackFromPlaylistUseCase
+import com.practicum.playlistmaker.mediateka.domain.usecase.SharePlaylistUseCase
 import com.practicum.playlistmaker.mediateka.ui.view.CreatePlaylistViewModel
 import com.practicum.playlistmaker.mediateka.ui.view.FavoriteTracksViewModel
 import com.practicum.playlistmaker.mediateka.ui.view.PlaylistDetailViewModel
@@ -226,6 +228,10 @@ val appModule = module {
     factory<AddTrackToPlaylistUseCase> {
         AddTrackToPlaylistUseCase(get())
     }
+    // Новые UseCase для плейлиста
+    factory<SharePlaylistUseCase> { SharePlaylistUseCase() }
+    factory<DeletePlaylistUseCase> { DeletePlaylistUseCase(get()) }
+
 
     // 7. ViewModel
     viewModel { SearchViewModel(
@@ -265,7 +271,14 @@ val appModule = module {
     }
 
     viewModel { PlaylistsViewModel(get(), get()) }
-    viewModel { PlaylistDetailViewModel(get(), get()) }
+    viewModel {
+        PlaylistDetailViewModel(
+            loadPlaylistByIdUseCase = get(),
+            removeTrackFromPlaylistUseCase = get(),
+            sharePlaylistUseCase = get(),
+            deletePlaylistUseCase = get()
+        )
+    }
     viewModel { FavoriteTracksViewModel(
         getFavoriteTracksUseCase = get()
     ) }

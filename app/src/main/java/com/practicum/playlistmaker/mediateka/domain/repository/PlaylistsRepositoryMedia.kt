@@ -20,4 +20,6 @@ interface PlaylistsRepositoryMedia {
     suspend fun getPlaylistTracks(playlistId: Long): List<PlaylistTrackEntity>
     suspend fun removeTrackFromPlaylist(playlistId: Long, trackId: String)
     suspend fun deleteTrackIfUnused(trackId: String)
+    suspend fun deletePlaylistAndCleanup(playlistId: Long)
+
 }

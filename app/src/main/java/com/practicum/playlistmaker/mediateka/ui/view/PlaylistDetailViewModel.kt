@@ -3,40 +3,38 @@ package com.practicum.playlistmaker.mediateka.ui.view
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.practicum.playlistmaker.core.models.domain.Playlist
+import com.practicum.playlistmaker.mediateka.data.db.PlaylistTrackEntity
+import com.practicum.playlistmaker.mediateka.domain.usecase.DeletePlaylistUseCase
 import com.practicum.playlistmaker.mediateka.domain.usecase.LoadPlaylistByIdUseCase
 import com.practicum.playlistmaker.mediateka.domain.usecase.RemoveTrackFromPlaylistUseCase
+import com.practicum.playlistmaker.mediateka.domain.usecase.SharePlaylistUseCase
 import com.practicum.playlistmaker.mediateka.ui.PlaylistDetailUiState
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+
 class PlaylistDetailViewModel(
     private val loadPlaylistByIdUseCase: LoadPlaylistByIdUseCase,
-    private val removeTrackFromPlaylistUseCase: RemoveTrackFromPlaylistUseCase
+    private val removeTrackFromPlaylistUseCase: RemoveTrackFromPlaylistUseCase,
+    private val sharePlaylistUseCase: SharePlaylistUseCase,
+    private val deletePlaylistUseCase: DeletePlaylistUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableLiveData<PlaylistDetailUiState>()
     val uiState: LiveData<PlaylistDetailUiState> = _uiState
 
-    private var currentPlaylistId: Long? = null
-
     fun loadPlaylist(playlistIdString: String) {
-        _uiState.value = PlaylistDetailUiState.Loading
-
-        val playlistId = playlistIdString.toLongOrNull()
-        if (playlistId == null) {
+        val playlistId = playlistIdString.toLongOrNull() ?: run {
             _uiState.value = PlaylistDetailUiState.Error(IllegalArgumentException("Некорректный ID плейлиста"))
             return
         }
-
-        currentPlaylistId = playlistId
-
         viewModelScope.launch {
             try {
-                // LoadPlaylistByIdUseCase возвращает Flow<PlaylistDetailUiState>.
-                // Нам нужно собрать первый элемент, потому что внутри уже есть Loading/Success/Error.
-                loadPlaylistByIdUseCase(playlistId).collect { state ->
-                    _uiState.value = state
-                }
+                // Собираем первый элемент из Flow — это и есть загрузка экрана
+                val state = loadPlaylistByIdUseCase(playlistId).first()
+                _uiState.value = state
             } catch (e: Exception) {
                 _uiState.value = PlaylistDetailUiState.Error(e)
             }
@@ -46,10 +44,28 @@ class PlaylistDetailViewModel(
     fun removeTrack(playlistId: Long, trackId: String) {
         viewModelScope.launch {
             removeTrackFromPlaylistUseCase(playlistId, trackId)
-            currentPlaylistId?.let { id ->
-                loadPlaylist(id.toString())
-            } ?: run {
-                _uiState.value = PlaylistDetailUiState.Error(IllegalStateException("ID плейлиста потерян"))
+            loadPlaylist(playlistId.toString())
+        }
+    }
+
+    fun sharePlaylist(playlist: Playlist, tracks: List<PlaylistTrackEntity>) {
+        viewModelScope.launch {
+            try {
+                val text = sharePlaylistUseCase(playlist, tracks)
+                _uiState.value = PlaylistDetailUiState.ShareReady(text)
+            } catch (e: Exception) {
+                _uiState.value = PlaylistDetailUiState.Error(e)
+            }
+        }
+    }
+
+    fun deletePlaylist(playlistId: Long) {
+        viewModelScope.launch {
+            try {
+                deletePlaylistUseCase(playlistId)
+                _uiState.value = PlaylistDetailUiState.Deleted
+            } catch (e: Exception) {
+                _uiState.value = PlaylistDetailUiState.Error(e)
             }
         }
     }

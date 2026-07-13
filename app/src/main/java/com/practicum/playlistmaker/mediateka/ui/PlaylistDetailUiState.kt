@@ -10,4 +10,7 @@ sealed class PlaylistDetailUiState {
         val tracks: List<PlaylistTrackEntity>
     ) : PlaylistDetailUiState()
     data class Error(val error: Throwable) : PlaylistDetailUiState()
+
+    data class ShareReady(val shareText: String) : PlaylistDetailUiState()
+    object Deleted : PlaylistDetailUiState()
 }

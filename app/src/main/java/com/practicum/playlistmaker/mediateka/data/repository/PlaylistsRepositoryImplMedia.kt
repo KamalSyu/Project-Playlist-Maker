@@ -145,5 +145,8 @@ class PlaylistsRepositoryImplMedia(
 //        if (count == 0) {
 //        }
     }
-
+    override suspend fun deletePlaylistAndCleanup(playlistId: Long) = withContext(Dispatchers.IO) {
+        dao.deletePlaylistById(playlistId)
+        dao.deleteUnusedTracks()
+    }
 }
