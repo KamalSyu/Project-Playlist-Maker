@@ -88,5 +88,9 @@
             android:name="playlistId"
             app:argType="string"
             app:nullable="false"/>
+
+        <action
+            android:id="@+id/action_playlistDetailFragment_to_audioPlayerFragment"
+            app:destination="@id/audioPlayerFragment"/>
     </fragment>
 </navigation>

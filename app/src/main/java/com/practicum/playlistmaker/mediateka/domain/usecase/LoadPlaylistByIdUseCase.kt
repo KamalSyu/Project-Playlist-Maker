@@ -1,12 +1,13 @@
 package com.practicum.playlistmaker.mediateka.domain.usecase
 
 import com.practicum.playlistmaker.core.models.domain.Playlist
-import com.practicum.playlistmaker.core.utils.FormatTrackDurationUseCase
 import com.practicum.playlistmaker.mediateka.domain.repository.PlaylistsRepositoryMedia
 import com.practicum.playlistmaker.mediateka.ui.PlaylistDetailUiState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
+import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Locale
 
 class LoadPlaylistByIdUseCase(
@@ -25,10 +26,11 @@ class LoadPlaylistByIdUseCase(
 
         // Считаем общую длительность в миллисекундах
         val totalMillis = tracks.sumOf { (it.duration * 1_000).toLong() }
+        val totalSeconds = totalMillis / 1_000
+        val minutes = totalSeconds / 60
 
-        // Формат «mm» (только минуты) — точечно, без SimpleDateFormat
-        val minutes = totalMillis / 60_000
-        val durationFormatted = String.format(Locale.US, "%d", minutes)
+        // Формат «mm» (только минуты) — без лишних усложнений
+        val durationFormatted = String.format("%d", minutes)
 
         val playlist = Playlist(
             id = entity.id.toString(),
@@ -40,7 +42,7 @@ class LoadPlaylistByIdUseCase(
             durationFormatted = durationFormatted
         )
 
-        emit(PlaylistDetailUiState.Success(playlist))
+        emit(PlaylistDetailUiState.Success(playlist, tracks))
     }.catch { error ->
         emit(PlaylistDetailUiState.Error(error))
     }

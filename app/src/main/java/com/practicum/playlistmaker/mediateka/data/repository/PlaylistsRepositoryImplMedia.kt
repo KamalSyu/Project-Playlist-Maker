@@ -142,9 +142,8 @@ class PlaylistsRepositoryImplMedia(
 
     override suspend fun deleteTrackIfUnused(trackId: String) {
         val count = dao.countPlaylistsWithTrack(trackId)
-        if (count == 0) {
-        }
+//        if (count == 0) {
+//        }
     }
-
 
 }
