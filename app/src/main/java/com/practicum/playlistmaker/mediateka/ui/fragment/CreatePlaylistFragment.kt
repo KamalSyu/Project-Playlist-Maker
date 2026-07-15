@@ -47,14 +47,10 @@ class CreatePlaylistFragment : Fragment() {
     private lateinit var createButton: Button
     private lateinit var nameField: TextInputLayout
     private lateinit var descriptionField: TextInputLayout
-
     private lateinit var coverImage: ShapeableImageView
-
     private lateinit var backButton: TextView
     private lateinit var playlistCenterIcon: ImageView
-
     private lateinit var borderImage: ImageView
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -65,7 +61,6 @@ class CreatePlaylistFragment : Fragment() {
         setupViews(view)
         return view
     }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         savedInstanceState?.let { bundle ->
             val playlistName = bundle.getString("playlistName", "")
@@ -92,7 +87,6 @@ class CreatePlaylistFragment : Fragment() {
         }
         setupTextWatchers()
         setupErrorClearingOnInput()
-
         setupClickListeners()
         setupObservers()
         if (savedInstanceState == null) {
@@ -105,7 +99,6 @@ class CreatePlaylistFragment : Fragment() {
             view.updatePadding(top = statusBar.top)
             insets
         }
-
         val callback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (hasUnsavedChanges()) {
@@ -117,9 +110,7 @@ class CreatePlaylistFragment : Fragment() {
             }
         }
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
-
         borderImage = view.findViewById(R.id.playlistBorderImage)
-
         val drawable = DashedRoundedBorderDrawable(
             context = requireContext(),
             strokeWidth = 1f,
@@ -128,10 +119,8 @@ class CreatePlaylistFragment : Fragment() {
             color = Color.parseColor("#AEAFB4"),
             cornerRadiusDp = 8f
         )
-
         borderImage.setImageDrawable(drawable)
     }
-
     private val pickImage = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) {
             viewModel.updateSelectedCoverUri(uri)
@@ -139,7 +128,6 @@ class CreatePlaylistFragment : Fragment() {
             viewModel.updateSelectedCoverUri(null)
         }
     }
-
     private val requestPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -153,21 +141,16 @@ class CreatePlaylistFragment : Fragment() {
             }
         }
     }
-
     private fun setupViews(view: View) {
         createButton = view.findViewById(R.id.createPlaylistButton)
         nameField = view.findViewById(R.id.playlistNameField)
         descriptionField = view.findViewById(R.id.playlistDescriptionField)
-
         coverImage = view.findViewById(R.id.playlistCoverImage)
-
         backButton = view.findViewById(R.id.back)
         playlistCenterIcon = view.findViewById(R.id.playlistCenterIcon)
-
         val currentState = viewModel.uiState.value
         updateCoverImage(currentState?.selectedCoverUri)
     }
-
     private fun updateCoverImage(uri: Uri?) {
         val state = viewModel.uiState.value
         if (state?.isCreated == true && uri == null) {
@@ -202,7 +185,6 @@ class CreatePlaylistFragment : Fragment() {
                     Log.w("CoverImage", "Не удалось превратить URI в File: ${e.message}")
                     null
                 }
-
                 if (file != null && file.exists()) {
                     Glide.with(this)
                         .load(file)
@@ -211,7 +193,6 @@ class CreatePlaylistFragment : Fragment() {
                         .into(coverImage)
                     playlistCenterIcon.visibility = View.GONE
                 } else {
-                    // Если файл не найден, грузим сразу по URI (Glide умеет работать с content://)
                     Glide.with(this)
                         .load(sourceUri)
                         .placeholder(R.drawable.ic_placeholder_312)
@@ -225,7 +206,6 @@ class CreatePlaylistFragment : Fragment() {
             }
         }
     }
-
     private fun setupTextWatchers() {
         val nameTextWatcher = object : TextWatcher {
             private var isUpdating = false
@@ -238,7 +218,6 @@ class CreatePlaylistFragment : Fragment() {
             override fun afterTextChanged(s: Editable?) {}
         }
         nameField.editText?.addTextChangedListener(nameTextWatcher)
-
         val descriptionTextWatcher = object : TextWatcher {
             private var isUpdating = false
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
@@ -251,7 +230,6 @@ class CreatePlaylistFragment : Fragment() {
         }
         descriptionField.editText?.addTextChangedListener(descriptionTextWatcher)
     }
-
     private fun setupClickListeners() {
         coverImage.setOnClickListener {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -271,7 +249,6 @@ class CreatePlaylistFragment : Fragment() {
             createPlaylist()
         }
     }
-
     private fun createPlaylist() {
         nameField.error = null
         val state = viewModel.uiState.value ?: return
@@ -283,26 +260,21 @@ class CreatePlaylistFragment : Fragment() {
             }, 100)
         }
     }
-
     private fun setupObservers() {
         viewModel.uiState.observe(viewLifecycleOwner) { state ->
             updateCoverImage(state.selectedCoverUri)
             createButton.isEnabled = state.isCreateButtonEnabled
-
             state.successMessage?.let { message ->
                 val inflater = LayoutInflater.from(requireContext())
                 val view = inflater.inflate(R.layout.toast_playlist_created, null)
                 val textView = view.findViewById<TextView>(R.id.toast_text)
                 textView.text = message
-
                 val metrics = requireContext().resources.displayMetrics
                 val density = metrics.density
                 val screenWidthPx = metrics.widthPixels
                 val marginPx = ((7f + 8f) * density).toInt()
                 val toastWidthPx = screenWidthPx - marginPx
-
                 view.layoutParams = ViewGroup.LayoutParams(toastWidthPx, ViewGroup.LayoutParams.WRAP_CONTENT)
-
                 val toast = Toast(requireContext()).apply {
                     setView(view)
                     setGravity(
@@ -313,18 +285,15 @@ class CreatePlaylistFragment : Fragment() {
                     duration = Toast.LENGTH_SHORT
                 }
                 toast.show()
-
                 findNavController().popBackStack()
                 viewModel.clearSuccess()
             }
-
             state.error?.let { errorMessage ->
                 nameField.error = errorMessage
                 viewModel.clearError()
             }
         }
     }
-
     private fun requestReadStoragePermission() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -340,7 +309,6 @@ class CreatePlaylistFragment : Fragment() {
             pickImage.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
         }
     }
-
     private fun showGoToSettingsDialog() {
         AlertDialog.Builder(requireContext())
             .setTitle(getString(R.string.permission_rationale_title))
@@ -355,7 +323,6 @@ class CreatePlaylistFragment : Fragment() {
             }
             .show()
     }
-
     private fun showPermissionRationale() {
         AlertDialog.Builder(requireContext())
             .setTitle(getString(R.string.permission_rationale_title))
@@ -368,13 +335,11 @@ class CreatePlaylistFragment : Fragment() {
             }
             .show()
     }
-
     private fun hasUnsavedChanges(): Boolean {
         val state = viewModel.uiState.value ?: return false
         val name = state.playlistName.trim()
         return name.isNotBlank()
     }
-
     private fun showDiscardChangesDialog() {
         AlertDialog.Builder(requireContext())
             .setTitle(getString(R.string.discard_changes_title))
@@ -392,7 +357,6 @@ class CreatePlaylistFragment : Fragment() {
             .create()
             .show()
     }
-
     private fun clearFormState() {
         viewModel.clearForm()
         nameField.error = null
@@ -400,12 +364,10 @@ class CreatePlaylistFragment : Fragment() {
         descriptionField.editText?.setText("")
         updateCoverImage(null)
     }
-
     override fun onDestroyView() {
         super.onDestroyView()
         requireActivity().findViewById<View>(R.id.bottom_navigation)?.visibility = View.VISIBLE
     }
-
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         val state = viewModel.uiState.value ?: return
@@ -417,7 +379,6 @@ class CreatePlaylistFragment : Fragment() {
         outState.putBoolean("nameFieldHasError", nameField.error != null)
         outState.putBoolean("isCreateButtonEnabled", state.isCreateButtonEnabled)
     }
-
     private fun setupErrorClearingOnInput() {
         val nameTextWatcher = object : TextWatcher {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {

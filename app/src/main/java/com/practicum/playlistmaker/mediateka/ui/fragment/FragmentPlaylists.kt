@@ -44,20 +44,16 @@ class FragmentPlaylists : Fragment() {
         emptyPlaylistsLayout = view.findViewById(R.id.emptyPlaylistsLayout)
         emptyStateImage = view.findViewById(R.id.emptyStateImage)
         emptyStateText = view.findViewById(R.id.emptyStateText)
-
         newPlaylistButton.setOnClickListener {
             findNavController().navigate(R.id.action_mediatekaFragment_to_createPlaylistFragment)
         }
-
         val spanCount = 2
         val edgeSpacing = resources.getDimensionPixelSize(R.dimen.spacing_16)
         val columnSpacing = resources.getDimensionPixelSize(R.dimen.spacing_8)
-
         playlistsRecyclerView.layoutManager = GridLayoutManager(requireContext(), spanCount)
         playlistsRecyclerView.addItemDecoration(
             GridSpacingItemDecoration(spanCount, edgeSpacing, columnSpacing)
         )
-
         playlistsAdapter = PlaylistsAdapter(
             playlists = emptyList(),
             onPlaylistAction = { playlist, action ->
@@ -75,7 +71,6 @@ class FragmentPlaylists : Fragment() {
                     bundle
                 )
             }
-
         )
         playlistsRecyclerView.adapter = playlistsAdapter
 
@@ -90,11 +85,9 @@ class FragmentPlaylists : Fragment() {
                 PlaylistsUiState.Empty -> showEmptyState()
             }
         }
-
         viewModel.loadPlaylists()
         return view
     }
-
     private fun showEmptyState() {
         playlistsRecyclerView.visibility = View.GONE
         emptyPlaylistsLayout.visibility = View.VISIBLE
@@ -102,26 +95,22 @@ class FragmentPlaylists : Fragment() {
         emptyStateText.visibility = View.VISIBLE
 
     }
-
     private fun showPlaylistsList() {
         emptyPlaylistsLayout.visibility = View.GONE
         emptyStateImage.visibility = View.GONE
         emptyStateText.visibility = View.GONE
         playlistsRecyclerView.visibility = View.VISIBLE
     }
-
     private fun showLoading() {
         playlistsRecyclerView.visibility = View.GONE
         emptyPlaylistsLayout.visibility = View.VISIBLE
         emptyStateImage.visibility = View.GONE
         emptyStateText.visibility = View.GONE
     }
-
     private fun showError(error: Throwable) {
         Toast.makeText(requireContext(), "Ошибка загрузки: ${error.message}", Toast.LENGTH_LONG).show()
         showEmptyState()
     }
-
     private fun showRenameDialog(playlist: Playlist) {
         val input = EditText(requireContext()).apply {
             setText(playlist.name)
@@ -142,7 +131,6 @@ class FragmentPlaylists : Fragment() {
             .setNegativeButton("Отмена", null)
             .show()
     }
-
     private fun showDeleteDialog(playlist: Playlist) {
         AlertDialog.Builder(requireContext())
             .setTitle("Удалить плейлист")
@@ -153,12 +141,10 @@ class FragmentPlaylists : Fragment() {
             .setNegativeButton("Отмена", null)
             .show()
     }
-
     override fun onResume() {
         super.onResume()
         viewModel.loadPlaylists()
     }
-
     companion object {
         fun newInstance(): Fragment = FragmentPlaylists()
     }

@@ -54,4 +54,8 @@ interface PlaylistsDao {
 
     @Query("DELETE FROM playlist_tracks WHERE trackId NOT IN (SELECT DISTINCT trackId FROM playlist_tracks)")
     suspend fun deleteUnusedTracks()
+
+    @Query("UPDATE playlists SET trackCount = trackCount - 1 WHERE id = :playlistId")
+    suspend fun decrementTrackCount(playlistId: Long)
+
 }

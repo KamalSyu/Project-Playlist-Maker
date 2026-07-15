@@ -275,7 +275,8 @@ val appModule = module {
     viewModel { PlaylistsViewModel(get(), get()) }
     viewModel {
         PlaylistDetailViewModel(
-            loadPlaylistByIdUseCase = get()
+            loadPlaylistByIdUseCase = get(),
+            removeTrackFromPlaylistUseCase = get()
         )
     }
     viewModel { FavoriteTracksViewModel(

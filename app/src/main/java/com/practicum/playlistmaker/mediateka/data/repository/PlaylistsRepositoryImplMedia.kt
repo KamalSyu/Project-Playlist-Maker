@@ -127,10 +127,16 @@ class PlaylistsRepositoryImplMedia(
         dao.insertTrackToPlaylist(playlistTrackEntity)
         dao.incrementTrackCount(playlistId)
     }
-    override suspend fun getPlaylistById(playlistId: Long): PlaylistEntity? =
-        dao.getPlaylistById(playlistId)
+    override suspend fun getPlaylistById(playlistId: Long): PlaylistEntity? {
+        Log.d("RepoDebug", "🔍 Запрос плейлиста ID=$playlistId")
+        val result = dao.getPlaylistById(playlistId)
+        Log.d("RepoDebug", "🗃 Из БД: name='${result?.name}', coverPath='${result?.coverPath}'")
+        return result
+    }
+//        dao.getPlaylistById(playlistId)
 
     override suspend fun getTrackDurationsSeconds(playlistId: Long): List<Int> =
+
         dao.getTrackDurationsByPlaylistId(playlistId)
 
     override suspend fun getPlaylistTracks(playlistId: Long): List<PlaylistTrackEntity> =
@@ -138,12 +144,13 @@ class PlaylistsRepositoryImplMedia(
 
     override suspend fun removeTrackFromPlaylist(playlistId: Long, trackId: String) {
         dao.removeTrackFromPlaylist(playlistId, trackId)
+        dao.decrementTrackCount(playlistId)  // <-- критично: обновляем счётчик
     }
 
     override suspend fun deleteTrackIfUnused(trackId: String) {
         val count = dao.countPlaylistsWithTrack(trackId)
-//        if (count == 0) {
-//        }
+        if (count == 0) {
+        }
     }
     override suspend fun deletePlaylistAndCleanup(playlistId: Long) = withContext(Dispatchers.IO) {
         dao.deletePlaylistById(playlistId)

@@ -40,10 +40,10 @@
             android:layout_height="0dp"
             android:contentDescription="@string/playlist_cover"
             android:scaleType="centerCrop"
-            android:src="@drawable/ic_placeholder_312"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/playlistName"
             app:layout_constraintDimensionRatio="1:1"/>
 
         <!-- 2) Кнопка «Назад»: поверх картинки, прозрачная, только стрелка -->
