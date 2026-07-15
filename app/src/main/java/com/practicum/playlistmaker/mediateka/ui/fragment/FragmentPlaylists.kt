@@ -71,7 +71,7 @@ class FragmentPlaylists : Fragment() {
                     putString("playlistId", playlist.id)
                 }
                 findNavController().navigate(
-                    R.id.action_fragmentPlaylists_to_playlistDetailFragment,
+                    R.id.action_mediatekaFragment_to_playlistDetailFragment,
                     bundle
                 )
             }

@@ -9,6 +9,7 @@
         android:name="com.practicum.playlistmaker.mediateka.MediatekaFragment"
         android:label="@string/mediateca">
 
+        <!-- Старые переходы оставляем -->
         <action
             android:id="@+id/action_mediatekaFragment_to_audioPlayerFragment"
             app:destination="@id/audioPlayerFragment" />
@@ -16,7 +17,13 @@
         <action
             android:id="@+id/action_mediatekaFragment_to_createPlaylistFragment"
             app:destination="@id/createPlaylistFragment" />
+
+        <!-- НОВЫЙ ПЕРЕХОД: из медиатеки в экран деталей плейлиста -->
+        <action
+            android:id="@+id/action_mediatekaFragment_to_playlistDetailFragment"
+            app:destination="@id/playlistDetailFragment"/>
     </fragment>
+
     <!-- Экран создания плейлиста -->
     <fragment
         android:id="@+id/createPlaylistFragment"
@@ -72,12 +79,9 @@
         android:id="@+id/fragmentPlaylists"
         android:name="com.practicum.playlistmaker.mediateka.ui.fragment.FragmentPlaylists"
         android:label="@string/playlists">
-
-        <!-- Action должен быть ВНУТРИ этого фрагмента -->
-        <action
-            android:id="@+id/action_fragmentPlaylists_to_playlistDetailFragment"
-            app:destination="@id/playlistDetailFragment"/>
+        <!-- action отсюда УДАЛЯЕМ: он больше не нужен, переход теперь из mediatekaFragment -->
     </fragment>
+
     <!-- Экран просмотра плейлиста -->
     <fragment
         android:id="@+id/playlistDetailFragment"

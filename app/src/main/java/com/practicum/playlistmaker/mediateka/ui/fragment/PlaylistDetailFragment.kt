@@ -1,12 +1,10 @@
 package com.practicum.playlistmaker.mediateka.ui.fragment
 
-import android.content.DialogInterface
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AlertDialog
+import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -23,7 +21,6 @@ import com.practicum.playlistmaker.mediateka.data.db.PlaylistTrackEntity
 import com.practicum.playlistmaker.mediateka.ui.PlaylistDetailUiState
 import com.practicum.playlistmaker.mediateka.ui.adapter.PlaylistTracksAdapter
 import com.practicum.playlistmaker.mediateka.ui.view.PlaylistDetailViewModel
-import com.practicum.playlistmaker.search.ui.parcel.ParcelableTrack
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -39,8 +36,8 @@ class PlaylistDetailFragment : Fragment() {
     private lateinit var playlistTrackCount: TextView
     private lateinit var coverImageView: com.google.android.material.imageview.ShapeableImageView
 
-    private lateinit var shareButton: android.widget.Button
-    private lateinit var menuButton: android.widget.Button
+    private lateinit var shareButton: Button
+    private lateinit var menuButton: Button
 
     private lateinit var menuBottomSheetFrame: View
     private lateinit var menuBehavior: BottomSheetBehavior<View>
@@ -66,18 +63,11 @@ class PlaylistDetailFragment : Fragment() {
         shareButton = view.findViewById(R.id.shareButton)
         menuButton = view.findViewById(R.id.menuButton)
 
+        // Настройка BottomSheet для меню (будет использоваться в будущем)
         menuBottomSheetFrame = view.findViewById(R.id.menuBottomSheetFrame)
         menuBehavior = BottomSheetBehavior.from(menuBottomSheetFrame)
         menuBehavior.isHideable = true
         menuBehavior.skipCollapsed = false
-
-        shareButton.setOnClickListener { handleShareClick() }
-        menuButton.setOnClickListener { openMenuBottomSheet() }
-
-        val btnShareInMenu = view.findViewById<android.widget.Button>(R.id.btnShareInMenu)
-        val btnDeleteInMenu = view.findViewById<android.widget.Button>(R.id.btnDeleteInMenu)
-        btnShareInMenu.setOnClickListener { handleShareClick() }
-        btnDeleteInMenu.setOnClickListener { showDeletePlaylistDialog() }
 
         playlistName = view.findViewById(R.id.playlistName)
         playlistDescription = view.findViewById(R.id.playlistDescription)
@@ -88,7 +78,7 @@ class PlaylistDetailFragment : Fragment() {
         tracksRecyclerView = view.findViewById(R.id.tracksRecyclerView)
         tracksRecyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        // BottomSheet: список треков (нельзя скрыть)
+        // Настройка BottomSheet для списка треков (по ТЗ: не отображается и не скроллится)
         val bottomSheetFrame = view.findViewById<View>(R.id.bottomSheetFrame)
         val behavior = BottomSheetBehavior.from(bottomSheetFrame)
         behavior.isHideable = false
@@ -97,8 +87,11 @@ class PlaylistDetailFragment : Fragment() {
             currentPlaylistId = idString.toLongOrNull()
         }
 
+        // Адаптер оставляем (чтобы не ломать верстку), но список будет пустым по ТЗ
         adapter = PlaylistTracksAdapter(
             onItemClick = { track ->
+                // Эта логика останется, но по ТЗ спринта список треков не показывается —
+                // поэтому сюда код никогда не попадёт при текущем поведении.
                 val bundle = Bundle().apply {
                     putParcelable("trackParcelable", track.toParcelable())
                 }
@@ -107,10 +100,9 @@ class PlaylistDetailFragment : Fragment() {
                     bundle
                 )
             },
-            onItemLongClick = { _, track ->
-                currentPlaylistId?.let { pid ->
-                    showDeleteTrackDialog(pid, track)
-                }
+            onItemLongClick = { _, _ ->
+                // По ТЗ: список треков не отображается, поэтому этот блок не нужен.
+                // Оставляем сигнатуру, чтобы компилировалось, но тело пустое.
             },
             formatDurationUseCase = formatDurationUseCase
         )
@@ -130,64 +122,39 @@ class PlaylistDetailFragment : Fragment() {
                     playlistName.text = playlist.name
                     playlistDescription.text = playlist.description ?: ""
 
-                    Glide.with(this)
-                        .load(playlist.coverPath)
-                        .placeholder(R.drawable.ic_placeholder_312)
-                        .error(R.drawable.ic_placeholder_312)
-                        .centerCrop()
-                        .into(coverImageView)
+                    if (playlist.coverPath.isNullOrBlank()) {
+                        coverImageView.setImageResource(R.drawable.ic_placeholder_312)
+                    } else {
+                        Glide.with(this)
+                            .load(playlist.coverPath)
+                            .placeholder(R.drawable.ic_placeholder_312)
+                            .error(R.drawable.ic_placeholder_312)
+                            .centerCrop()
+                            .into(coverImageView)
+                    }
 
                     playlistDuration.text = playlist.durationFormatted
                     playlistTrackCount.text = "${playlist.trackCount} треков"
 
-                    val tracksForUi = state.tracks.map { entity ->
-                        Track(
-                            trackId = entity.trackId,
-                            trackName = entity.title,
-                            artistName = entity.artist,
-                            trackTimeMillis = (entity.duration * 1000).toLong(),
-                            artworkUrl100 = null,
-                            releaseDate = null,
-                            collectionName = null,
-                            primaryGenreName = null,
-                            country = null,
-                            previewUrl = null,
-                            addedDate = 0L,
-                            isFavorite = false
-                        )
-                    }
+                    // ТЗ: список треков НЕ отображается и НЕ скроллится.
+                    adapter?.submitList(emptyList())
+                    behavior.state = BottomSheetBehavior.STATE_COLLAPSED
 
-                    adapter?.submitList(tracksForUi)
-
-                    if (tracksForUi.isNotEmpty()) {
-                        behavior.state = BottomSheetBehavior.STATE_EXPANDED
-                    } else {
-                        behavior.state = BottomSheetBehavior.STATE_COLLAPSED
-                    }
+                    // Если меню было открыто — закрываем его
                     if (menuBehavior.state == BottomSheetBehavior.STATE_EXPANDED) {
-                        closeMenuBottomSheet()
+                        menuBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+                        overlayDim.visibility = View.GONE
+                        overlayDim.alpha = 0f
                     }
-                }
-
-                is PlaylistDetailUiState.ShareReady -> {
-                    closeMenuBottomSheet()
-                    val sendIntent = Intent().apply {
-                        action = Intent.ACTION_SEND
-                        type = "text/plain"
-                        putExtra(Intent.EXTRA_TEXT, state.shareText)
-                    }
-                    startActivity(Intent.createChooser(sendIntent, "Поделиться"))
-                }
-
-                is PlaylistDetailUiState.Deleted -> {
-                    closeMenuBottomSheet()
-                    findNavController().popBackStack()
                 }
 
                 is PlaylistDetailUiState.Error -> {
                     val errorMessage = state.error.message ?: "Не удалось загрузить плейлист"
                     Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
                 }
+
+                // Остальные состояния (ShareReady, Deleted) по ТЗ этого спринта не нужны.
+                else -> {}
             }
         }
 
@@ -196,59 +163,5 @@ class PlaylistDetailFragment : Fragment() {
         }
 
         return view
-    }
-
-    private fun showDeleteTrackDialog(playlistId: Long, track: Track) {
-        AlertDialog.Builder(requireContext())
-            .setTitle("Хотите удалить трек?")
-            .setMessage("Трек «${track.trackName}» будет удалён из плейлиста.")
-            .setPositiveButton("ДА") { dialog, which ->
-                viewModel.removeTrack(playlistId, track.trackId)
-            }
-            .setNegativeButton("НЕТ", null)
-            .show()
-    }
-
-    private fun openMenuBottomSheet() {
-        menuBehavior.state = BottomSheetBehavior.STATE_EXPANDED
-        setOverlayDim(true)
-    }
-
-    private fun closeMenuBottomSheet() {
-        menuBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
-        setOverlayDim(false)
-    }
-
-    // ИСПРАВЛЕНО: управляем именно overlayDim, а не android.R.id.content
-    private fun setOverlayDim(dim: Boolean) {
-        overlayDim.visibility = if (dim) View.VISIBLE else View.GONE
-        overlayDim.alpha = if (dim) 1f else 0f
-    }
-
-    private fun handleShareClick() {
-        (viewModel.uiState.value as? PlaylistDetailUiState.Success)?.let { state ->
-            if (state.tracks.isEmpty()) {
-                Toast.makeText(
-                    requireContext(),
-                    "В этом плейлисте нет списка треков, которым можно поделиться",
-                    Toast.LENGTH_SHORT
-                ).show()
-                return
-            }
-            viewModel.sharePlaylist(state.playlist, state.tracks)
-        } ?: Toast.makeText(requireContext(), "Данные плейлиста ещё не загружены", Toast.LENGTH_SHORT).show()
-    }
-
-    private fun showDeletePlaylistDialog() {
-        AlertDialog.Builder(requireContext())
-            .setTitle("Удалить плейлист")
-            .setMessage("Хотите удалить плейлист?")
-            .setPositiveButton("Да") { _, _ ->
-                (viewModel.uiState.value as? PlaylistDetailUiState.Success)?.let { state ->
-                    viewModel.deletePlaylist(state.playlist.id.toLong())
-                }
-            }
-            .setNegativeButton("Нет", null)
-            .show()
     }
 }
