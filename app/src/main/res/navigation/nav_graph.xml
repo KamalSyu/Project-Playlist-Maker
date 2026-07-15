@@ -4,6 +4,7 @@
     app:startDestination="@id/mediatekaFragment">
 
     <!-- Основной экран медиатеки (ViewPager с вкладками) -->
+    <!-- Основной экран медиатеки (ViewPager с вкладками) -->
     <fragment
         android:id="@+id/mediatekaFragment"
         android:name="com.practicum.playlistmaker.mediateka.MediatekaFragment"
@@ -21,8 +22,15 @@
         <!-- НОВЫЙ ПЕРЕХОД: из медиатеки в экран деталей плейлиста -->
         <action
             android:id="@+id/action_mediatekaFragment_to_playlistDetailFragment"
-            app:destination="@id/playlistDetailFragment"/>
+            app:destination="@id/playlistDetailFragment">
+            <!-- ✅ Обязательно: передаём playlistId в destination -->
+            <argument
+                android:name="playlistId"
+                app:argType="string"
+                app:nullable="false"/>
+        </action>
     </fragment>
+
 
     <!-- Экран создания плейлиста -->
     <fragment

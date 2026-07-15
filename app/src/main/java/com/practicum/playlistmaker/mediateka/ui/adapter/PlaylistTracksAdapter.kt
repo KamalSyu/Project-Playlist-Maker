@@ -12,7 +12,7 @@ import com.practicum.playlistmaker.core.utils.FormatTrackDurationUseCase
 class PlaylistTracksAdapter(
     private val onItemClick: (Track) -> Unit,
     private val onItemLongClick: (Long, Track) -> Unit,
-    private val formatDurationUseCase: FormatTrackDurationUseCase // <-- Передаём сюда
+    private val formatDurationUseCase: FormatTrackDurationUseCase
 ) : ListAdapter<Track, PlaylistTracksViewHolder>(DiffCallback) {
 
     companion object {
@@ -28,7 +28,6 @@ class PlaylistTracksAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PlaylistTracksViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_track, parent, false)
-        // Теперь мы легально передаём UseCase в ViewHolder
         return PlaylistTracksViewHolder(view, formatDurationUseCase)
     }
 
@@ -38,7 +37,9 @@ class PlaylistTracksAdapter(
 
         holder.itemView.setOnClickListener { onItemClick(track) }
         holder.itemView.setOnLongClickListener {
-            onItemLongClick(0L, track) // playlistId подставится из фрагмента
+            // playlistId=0L — заглушка, чтобы соответствовать сигнатуре.
+            // В фрагменте ты можешь передать реальный ID, если логика удаления требует.
+            onItemLongClick(0L, track)
             true
         }
     }

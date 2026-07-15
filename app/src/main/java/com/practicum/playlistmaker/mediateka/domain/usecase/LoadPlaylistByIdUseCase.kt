@@ -1,13 +1,12 @@
 package com.practicum.playlistmaker.mediateka.domain.usecase
 
 import com.practicum.playlistmaker.core.models.domain.Playlist
+import com.practicum.playlistmaker.mediateka.data.db.toTrack
 import com.practicum.playlistmaker.mediateka.domain.repository.PlaylistsRepositoryMedia
 import com.practicum.playlistmaker.mediateka.ui.PlaylistDetailUiState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
-
-
 class LoadPlaylistByIdUseCase(
     private val playlistsRepositoryMedia: PlaylistsRepositoryMedia,
 ) {
@@ -20,16 +19,18 @@ class LoadPlaylistByIdUseCase(
             return@flow
         }
 
-        val tracks = playlistsRepositoryMedia.getPlaylistTracks(playlistId)
+        val tracksEntities = playlistsRepositoryMedia.getPlaylistTracks(playlistId)
 
-        val totalMillis = tracks.sumOf { (it.duration * 1_000).toLong() }
+        // Маппинг Entity -> Domain
+        val tracks = tracksEntities.map { it.toTrack() }
+
+        val totalMillis = tracks.sumOf { it.trackTimeMillis ?: 0L }
         val totalSeconds = totalMillis / 1_000
 
         val secondsTotal = totalSeconds.toInt()
         val minutes = secondsTotal / 60
         val seconds = secondsTotal % 60
         val durationFormatted = String.format("%02d:%02d", minutes, seconds)
-        // -----------------------
 
         val playlist = Playlist(
             id = entity.id.toString(),
@@ -46,6 +47,3 @@ class LoadPlaylistByIdUseCase(
         emit(PlaylistDetailUiState.Error(error))
     }
 }
-
-
-
