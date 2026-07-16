@@ -167,10 +167,19 @@ class PlaylistsRepositoryImplMedia(
     override suspend fun deleteTrackIfUnused(trackId: String) {
         val count = dao.countPlaylistsWithTrack(trackId)
         if (count == 0) {
+            dao.deleteTrackByTrackId(trackId)
         }
     }
+
     override suspend fun deletePlaylistAndCleanup(playlistId: Long) = withContext(Dispatchers.IO) {
+        // Сначала удаляем сам плейлист
         dao.deletePlaylistById(playlistId)
-        dao.deleteUnusedTracks()
+
+        // Теперь можно безопасно проверить и удалить треки, которые могли стать неиспользуемыми
+        // (в твоём текущем DAO нет массового удаления, поэтому делаем точечно по каждому треку плейлиста)
+        val tracks = dao.getTracksByPlaylistId(playlistId)
+        for (track in tracks) {
+            deleteTrackIfUnused(track.trackId)
+        }
     }
 }

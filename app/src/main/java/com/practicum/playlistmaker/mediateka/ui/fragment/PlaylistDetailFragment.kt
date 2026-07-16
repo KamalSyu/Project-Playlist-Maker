@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -72,6 +73,7 @@ class PlaylistDetailFragment : Fragment() {
         } ?: Log.e("PlaylistDebug", "❌ Аргумент playlistId НЕ найден в arguments!")
 
         adapter = PlaylistTracksAdapter(
+            currentPlaylistId = currentPlaylistId!!,  // <-- передаём реальный ID (он уже распарсен выше)
             onItemClick = { track ->
                 val bundle = Bundle().apply {
                     putParcelable("trackParcelable", track.toParcelable())
@@ -81,8 +83,14 @@ class PlaylistDetailFragment : Fragment() {
                     bundle
                 )
             },
-            onItemLongClick = { _, track ->
-                Toast.makeText(requireContext(), "Long click: ${track.trackName}", Toast.LENGTH_SHORT).show()
+            onItemLongClick = { playlistId, track ->
+                AlertDialog.Builder(requireContext())
+                    .setTitle("Хотите удалить трек?")
+                    .setPositiveButton("ДА") { _, _ ->
+                        viewModel.removeTrack(playlistId, track.trackId)
+                    }
+                    .setNegativeButton("НЕТ", null)
+                    .show()
             },
             formatDurationUseCase = formatDurationUseCase
         )
