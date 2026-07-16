@@ -90,7 +90,15 @@ class PlaylistsRepositoryImplMedia(
 
     override suspend fun addPlaylist(playlist: Playlist): Long = withContext(Dispatchers.IO) {
         require(playlist.name.isNotBlank()) { "Название плейлиста не может быть пустым" }
-        val entity = playlist.toEntity()
+
+        // Обрабатываем coverPath ДО конвертации в Entity
+        var coverPath = playlist.coverPath
+        if (!coverPath.isNullOrBlank() && (coverPath.startsWith("content://") || coverPath.startsWith("media_picker"))) {
+            val uri = Uri.parse(coverPath)
+            coverPath = safeCopyToPrivateStorageFromUri(uri)
+        }
+
+        val entity = playlist.copy(coverPath = coverPath).toEntity()
 
         Log.d("RepoCheck", "Готов к вставке в БД entity.coverPath: ${entity.coverPath?.take(60)}")
         if (entity.coverPath.isNullOrEmpty()) {
@@ -100,11 +108,20 @@ class PlaylistsRepositoryImplMedia(
         dao.insertPlaylist(entity)
     }
 
+
     override suspend fun updatePlaylist(playlist: Playlist) = withContext(Dispatchers.IO) {
-        val entity = playlist.toEntity()
+        // То же самое для обновления
+        var coverPath = playlist.coverPath
+        if (!coverPath.isNullOrBlank() && (coverPath.startsWith("content://") || coverPath.startsWith("media_picker"))) {
+            val uri = Uri.parse(coverPath)
+            coverPath = safeCopyToPrivateStorageFromUri(uri)
+        }
+
+        val entity = playlist.copy(coverPath = coverPath).toEntity()
         Log.d("RepoCheck", "Обновление плейлиста, entity.coverPath: ${entity.coverPath?.take(60)}")
         dao.updatePlaylist(entity)
     }
+
 
     override suspend fun deletePlaylist(playlistId: Long) = withContext(Dispatchers.IO) {
         dao.deletePlaylistById(playlistId)

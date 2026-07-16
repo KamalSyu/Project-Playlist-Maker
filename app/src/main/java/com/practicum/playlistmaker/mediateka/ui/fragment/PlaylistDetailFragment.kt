@@ -104,6 +104,7 @@ class PlaylistDetailFragment : Fragment() {
 
                 is PlaylistDetailUiState.Success -> {
                     val playlist = state.playlist
+                    Log.d("PlaylistDebug", "UI: playlist.coverPath = '${playlist.coverPath}'")
 
                     playlistName.text = playlist.name
                     playlistYear.text = "2026"
