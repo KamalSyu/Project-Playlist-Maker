@@ -31,12 +31,19 @@ class PlaylistTracksViewHolder(
             trackTimeTextView.text = ""
         }
 
-        Glide.with(itemView.context)
-            .load(track.artworkUrl100) // Если null, покажет placeholder
-            .placeholder(R.drawable.ic_placeholder_45)
-            .error(R.drawable.ic_placeholder_45)
-            .centerCrop()
-            .transform(RoundedCorners(2))
-            .into(artworkImageView)
+        // --- ТРЕБОВАНИЕ 3: явный плейсхолдер при отсутствии обложки ---
+        if (track.artworkUrl100.isNullOrBlank()) {
+            artworkImageView.setImageResource(R.drawable.ic_placeholder_312)
+        } else {
+            Glide.with(itemView.context)
+                .load(track.artworkUrl100)
+                .placeholder(R.drawable.ic_placeholder_312)
+                .error(R.drawable.ic_placeholder_312)
+                .centerCrop()
+                .transform(RoundedCorners(2))
+                .into(artworkImageView)
+        }
+        // -----------------------------------------------------------------
     }
+
 }

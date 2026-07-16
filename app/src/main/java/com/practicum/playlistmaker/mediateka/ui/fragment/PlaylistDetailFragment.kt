@@ -100,6 +100,7 @@ class PlaylistDetailFragment : Fragment() {
         viewModel.uiState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 PlaylistDetailUiState.Loading -> {
+                    // При необходимости можно показать индикатор загрузки
                 }
 
                 is PlaylistDetailUiState.Success -> {
@@ -125,6 +126,8 @@ class PlaylistDetailFragment : Fragment() {
 
                     adapter?.submitList(state.tracks)
 
+                    // Требования 1 и 2: список виден при наличии треков, скрыть нельзя
+                    behavior.isHideable = false
                     if (state.tracks.isEmpty()) {
                         behavior.state = BottomSheetBehavior.STATE_COLLAPSED
                     } else {
@@ -140,6 +143,7 @@ class PlaylistDetailFragment : Fragment() {
                 else -> {}
             }
         }
+
         currentPlaylistId?.let {
             viewModel.loadPlaylist(it.toString())
         }
