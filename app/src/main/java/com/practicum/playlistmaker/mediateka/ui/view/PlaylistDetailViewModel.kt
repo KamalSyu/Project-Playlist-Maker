@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.practicum.playlistmaker.core.models.domain.Playlist
 import com.practicum.playlistmaker.mediateka.data.db.PlaylistTrackEntity
+import com.practicum.playlistmaker.mediateka.domain.usecase.DeletePlaylistUseCase
 import com.practicum.playlistmaker.mediateka.domain.usecase.LoadPlaylistByIdUseCase
 import com.practicum.playlistmaker.mediateka.domain.usecase.RemoveTrackFromPlaylistUseCase
 import com.practicum.playlistmaker.mediateka.ui.PlaylistDetailUiState
@@ -17,7 +18,8 @@ import kotlinx.coroutines.launch
 
 class PlaylistDetailViewModel(
     private val loadPlaylistByIdUseCase: LoadPlaylistByIdUseCase,
-    private val removeTrackFromPlaylistUseCase: RemoveTrackFromPlaylistUseCase
+    private val removeTrackFromPlaylistUseCase: RemoveTrackFromPlaylistUseCase,
+    private val deletePlaylistUseCase: DeletePlaylistUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableLiveData<PlaylistDetailUiState>()
@@ -52,4 +54,16 @@ class PlaylistDetailViewModel(
             }
         }
     }
+    fun deletePlaylist(playlistId: Long) {
+        viewModelScope.launch {
+            try {
+                deletePlaylistUseCase.invoke(playlistId)
+                _uiState.value = PlaylistDetailUiState.Deleted
+            } catch (e: Exception) {
+                _uiState.value = PlaylistDetailUiState.Error(e)
+            }
+        }
+    }
+
+
 }
