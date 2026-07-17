@@ -198,11 +198,6 @@
                 android:id="@+id/selectedPlaylistItem"
                 layout="@layout/playlist_selection_item"/>
 
-<!--            <View-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="1dp"-->
-<!--                android:background="?android:attr/listDivider"/>-->
-
             <!-- Пункт «Поделиться» -->
             <TextView
                 android:id="@+id/menuShareItem"

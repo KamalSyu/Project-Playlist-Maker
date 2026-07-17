@@ -19,8 +19,10 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.imageview.ShapeableImageView
 import com.practicum.playlistmaker.R
+import com.practicum.playlistmaker.core.models.domain.Playlist
 import com.practicum.playlistmaker.core.models.toParcelable
 import com.practicum.playlistmaker.core.utils.FormatTrackDurationUseCase
+import com.practicum.playlistmaker.core.utils.toTracksText
 import com.practicum.playlistmaker.mediateka.ui.PlaylistDetailUiState
 import com.practicum.playlistmaker.mediateka.ui.adapter.PlaylistTracksAdapter
 import com.practicum.playlistmaker.mediateka.ui.view.PlaylistDetailViewModel
@@ -139,7 +141,7 @@ class PlaylistDetailFragment : Fragment() {
                 currentPlaylistId = id,
                 onItemClick = { track ->
                     val bundle = Bundle().apply {
-                        putParcelable("trackParcelable", track.toParcelable())
+                        putParcelable("track", track.toParcelable())
                     }
                     findNavController().navigate(
                         R.id.action_playlistDetailFragment_to_audioPlayerFragment,
@@ -179,30 +181,10 @@ class PlaylistDetailFragment : Fragment() {
                 Toast.makeText(requireContext(), "Данные ещё загружаются", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-
             val playlist = state.playlist
-
             menuPlaylistName.text = playlist.name
 
-            menuPlaylistTrackCount.text =
-                when (playlist.trackCount) {
-                    0 -> "Нет треков"
-                    1 -> "1 трек"
-                    in 2..4 -> "${playlist.trackCount} трека"
-                    else -> "${playlist.trackCount} треков"
-                }
-
-
-            if (playlist.coverPath.isNullOrBlank()) {
-                menuPlaylistCover.setImageResource(R.drawable.ic_placeholder_312)
-            } else {
-                Glide.with(this)
-                    .load(playlist.coverPath)
-                    .placeholder(R.drawable.ic_placeholder_312)
-                    .error(R.drawable.ic_placeholder_312)
-                    .centerCrop()
-                    .into(menuPlaylistCover)
-            }
+            updateMenuPlaylistInfo(playlist)
 
             if (menuBehavior != null) {
                 menuBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
@@ -260,7 +242,6 @@ class PlaylistDetailFragment : Fragment() {
                 )
             }
         }
-
         menuDeleteItem.setOnClickListener {
             AlertDialog.Builder(requireContext())
                 .setTitle("Удалить плейлист")
@@ -273,30 +254,13 @@ class PlaylistDetailFragment : Fragment() {
                 .setNegativeButton("Нет", null)
                 .show()
         }
-
         viewModel.uiState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 PlaylistDetailUiState.Loading -> {}
 
                 is PlaylistDetailUiState.Success -> {
-                    val playlist = state.playlist
 
-                    playlistName.text = playlist.name
-                    playlistDescription.text = playlist.description ?: ""
-
-                    if (playlist.coverPath.isNullOrBlank()) {
-                        coverImageView.setImageResource(R.drawable.ic_placeholder_312)
-                    } else {
-                        Glide.with(this@PlaylistDetailFragment)
-                            .load(playlist.coverPath)
-                            .placeholder(R.drawable.ic_placeholder_312)
-                            .error(R.drawable.ic_placeholder_312)
-                            .centerCrop()
-                            .into(coverImageView)
-                    }
-
-                    playlistDuration.text = playlist.durationFormatted
-                    playlistTrackCount.text = "${playlist.trackCount} треков"
+                    updatePlaylistInfo(state.playlist)
 
                     adapter?.submitList(state.tracks)
 
@@ -317,13 +281,57 @@ class PlaylistDetailFragment : Fragment() {
                 else -> {}
             }
         }
-
         currentPlaylistId?.let {
             viewModel.loadPlaylist(it.toString())
         }
 
+    }
+
+    private fun updateMenuPlaylistInfo(playlist: Playlist) {
+
+        menuPlaylistName.text = playlist.name
+        menuPlaylistTrackCount.text = playlist.trackCount.toTracksText()
+
+        loadCover(
+            imageView = menuPlaylistCover,
+            coverPath = playlist.coverPath
+        )
+    }
 
 
+    private fun updatePlaylistInfo(playlist: Playlist) {
+
+        playlistName.text = playlist.name
+        playlistDescription.text = playlist.description.orEmpty()
+        playlistDuration.text = playlist.durationFormatted
+        playlistTrackCount.text = playlist.trackCount.toTracksText()
+
+        loadCover(
+            imageView = coverImageView,
+            coverPath = playlist.coverPath
+        )
+    }
+
+    private fun loadCover(
+        imageView: ImageView,
+        coverPath: String?
+    ) {
+
+        if (coverPath.isNullOrBlank()) {
+
+            imageView.setImageResource(
+                R.drawable.ic_placeholder_312
+            )
+
+        } else {
+
+            Glide.with(this)
+                .load(coverPath)
+                .placeholder(R.drawable.ic_placeholder_312)
+                .error(R.drawable.ic_placeholder_312)
+                .centerCrop()
+                .into(imageView)
+        }
     }
 
     private fun closeMenuWithAnimation() {
@@ -331,12 +339,5 @@ class PlaylistDetailFragment : Fragment() {
             overlayDim.visibility = View.GONE
         }.start()
         menuBehavior?.state = BottomSheetBehavior.STATE_HIDDEN
-    }
-
-    private fun Int.toTracksText(): String = when {
-        this == 0 -> "Нет треков"
-        this == 1 -> "$this трек"
-        this in 2..4 -> "$this трека"
-        else -> "$this треков"
     }
 }

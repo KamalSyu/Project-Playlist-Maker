@@ -7,6 +7,8 @@ import com.practicum.playlistmaker.mediateka.ui.PlaylistDetailUiState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class LoadPlaylistByIdUseCase(
     private val playlistsRepositoryMedia: PlaylistsRepositoryMedia,
@@ -18,18 +20,26 @@ class LoadPlaylistByIdUseCase(
             val entity = playlistsRepositoryMedia.getPlaylistById(playlistId)
 
             if (entity == null) {
-                emit(PlaylistDetailUiState.Error(IllegalStateException("Плейлист не найден")))
+                emit(
+                    PlaylistDetailUiState.Error(
+                        IllegalStateException("Плейлист не найден")
+                    )
+                )
                 return@flow
             }
 
             val tracksEntities = playlistsRepositoryMedia.getPlaylistTracks(playlistId)
+
             val tracks = tracksEntities.map { it.toTrack() }
 
-            val totalMillis = tracks.sumOf { it.trackTimeMillis ?: 0L }
-            val secondsTotal = (totalMillis / 1_000).toInt()
-            val minutes = secondsTotal / 60
-            val seconds = secondsTotal % 60
-            val durationFormatted = String.format("%02d:%02d", minutes, seconds)
+            val durationSum = tracks.sumOf {
+                it.trackTimeMillis ?: 0L
+            }
+
+            val durationFormatted = SimpleDateFormat(
+                "mm",
+                Locale.getDefault()
+            ).format(durationSum)
 
             val playlist = Playlist(
                 id = entity.id.toString(),
@@ -41,10 +51,17 @@ class LoadPlaylistByIdUseCase(
                 durationFormatted = durationFormatted
             )
 
-            emit(PlaylistDetailUiState.Success(playlist, tracks))
+            emit(
+                PlaylistDetailUiState.Success(
+                    playlist,
+                    tracks
+                )
+            )
+
         } catch (e: Exception) {
             emit(PlaylistDetailUiState.Error(e))
         }
+
     }.catch { error ->
         emit(PlaylistDetailUiState.Error(error))
     }

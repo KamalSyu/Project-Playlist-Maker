@@ -83,8 +83,8 @@
         android:name="com.practicum.playlistmaker.player.ui.AudioPlayerFragment"
         android:label="@string/audio_player">
         <argument
-            android:name="trackParcelable"
-            app:argType="com.practicum.playlistmaker.search.ui.parcel.ParcelableTrack" />
+        android:name="track"
+        app:argType="com.practicum.playlistmaker.search.ui.parcel.ParcelableTrack" />
         <action
             android:id="@+id/action_audioPlayerFragment_to_createPlaylistFragment"
             app:destination="@id/createPlaylistFragment">
