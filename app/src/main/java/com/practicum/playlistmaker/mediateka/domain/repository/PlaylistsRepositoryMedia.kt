@@ -11,7 +11,6 @@ interface PlaylistsRepositoryMedia {
     fun getPlaylists(): Flow<List<Playlist>>
     suspend fun addPlaylist(playlist: Playlist): Long
     suspend fun deletePlaylist(playlistId: Long)
-    suspend fun updatePlaylist(playlist: Playlist)
     suspend fun addTrackToPlaylist(playlistId: Long, track: Track)
     suspend fun safeCopyToPrivateStorage(sourcePath: String): String?
     suspend fun safeCopyToPrivateStorageFromUri(uri: Uri): String?
@@ -21,5 +20,6 @@ interface PlaylistsRepositoryMedia {
     suspend fun removeTrackFromPlaylist(playlistId: Long, trackId: String)
     suspend fun deleteTrackIfUnused(trackId: String)
     suspend fun deletePlaylistAndCleanup(playlistId: Long)
-
+    suspend fun updatePlaylist(id: Long, name: String, description: String?, coverUri: Uri?): Result<Unit>
+    suspend fun updatePlaylistName(id: Long, newName: String)
 }

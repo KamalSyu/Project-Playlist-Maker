@@ -3,6 +3,7 @@ package com.practicum.playlistmaker.di
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.lifecycle.SavedStateHandle
 import androidx.room.Room
 import com.google.gson.Gson
 import com.practicum.playlistmaker.core.utils.CoroutineDelayProvider
@@ -23,6 +24,7 @@ import com.practicum.playlistmaker.mediateka.domain.usecase.LoadPlaylistsUseCase
 import com.practicum.playlistmaker.mediateka.domain.usecase.RemoveTrackFromPlaylistUseCase
 import com.practicum.playlistmaker.mediateka.domain.usecase.SharePlaylistUseCase
 import com.practicum.playlistmaker.mediateka.ui.view.CreatePlaylistViewModel
+import com.practicum.playlistmaker.mediateka.ui.view.EditPlaylistViewModel
 import com.practicum.playlistmaker.mediateka.ui.view.FavoriteTracksViewModel
 import com.practicum.playlistmaker.mediateka.ui.view.PlaylistDetailViewModel
 import com.practicum.playlistmaker.mediateka.ui.view.PlaylistsViewModel
@@ -187,7 +189,6 @@ val appModule = module {
     factory<PlaylistInteractor> {
         PlaylistInteractorImpl(
             addTrackToPlaylistUseCase = get(),
-            playlistDao = get(),
             playlistsRepositoryMedia = get()
         )
     }
@@ -268,8 +269,18 @@ val appModule = module {
         sendSupportEmailUseCase = get()
     ) }
 
-    viewModel<CreatePlaylistViewModel> {
-        CreatePlaylistViewModel(get())
+    viewModel {
+        CreatePlaylistViewModel(
+            savedStateHandle = get(),
+            playlistInteractor = get()
+        )
+    }
+
+    viewModel {
+        EditPlaylistViewModel(
+            savedStateHandle = get(),
+            playlistInteractor = get()
+        )
     }
 
     viewModel { PlaylistsViewModel(get(), get()) }

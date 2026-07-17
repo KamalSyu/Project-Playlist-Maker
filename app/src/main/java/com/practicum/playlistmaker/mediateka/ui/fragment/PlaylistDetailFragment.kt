@@ -2,7 +2,6 @@ package com.practicum.playlistmaker.mediateka.ui.fragment
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -26,13 +25,11 @@ import com.practicum.playlistmaker.mediateka.ui.view.PlaylistDetailViewModel
 import org.koin.android.ext.android.inject
 
 class PlaylistDetailFragment : Fragment() {
-
     private val viewModel: PlaylistDetailViewModel by inject()
     private val formatDurationUseCase: FormatTrackDurationUseCase by inject()
 
-    // View-элементы
     private lateinit var playlistName: TextView
-    private lateinit var playlistYear: TextView
+    private lateinit var playlistDescription: TextView
     private lateinit var playlistDuration: TextView
     private lateinit var playlistTrackCount: TextView
     private lateinit var coverImageView: ShapeableImageView
@@ -40,7 +37,6 @@ class PlaylistDetailFragment : Fragment() {
     private lateinit var menuIcon: ImageView
     private lateinit var tracksRecyclerView: RecyclerView
 
-    // Bottom Sheets
     private lateinit var bottomSheetFrame: View
     private var behavior: BottomSheetBehavior<View>? = null
 
@@ -63,20 +59,16 @@ class PlaylistDetailFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_playlist_detail, container, false)
 
-        // Инициализация всех View
         overlayDim = view.findViewById(R.id.overlayDim)
         overlayDim.setOnClickListener { closeMenuWithAnimation() }
 
         menuBottomSheetFrame = view.findViewById(R.id.menuBottomSheetFrame)
         menuBehavior = BottomSheetBehavior.from(menuBottomSheetFrame)
 
-        if (menuBehavior == null) {
-            Log.e("PlaylistDebug", "❌ menuBehavior == null! Проверь app:layout_behavior в XML у menuBottomSheetFrame")
-        } else {
+        if (menuBehavior != null) {
             menuBehavior?.isHideable = true
             menuBehavior?.skipCollapsed = false
             menuBehavior?.state = BottomSheetBehavior.STATE_HIDDEN
-
             menuBehavior?.peekHeight = 400
 
             menuBehavior?.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
@@ -110,7 +102,7 @@ class PlaylistDetailFragment : Fragment() {
         menuIcon = view.findViewById(R.id.menuIcon)
 
         playlistName = view.findViewById(R.id.playlistName)
-        playlistYear = view.findViewById(R.id.playlistYear)
+        playlistDescription = view.findViewById(R.id.playlistDescription)
         playlistDuration = view.findViewById(R.id.playlistDuration)
         playlistTrackCount = view.findViewById(R.id.playlistTrackCount)
         coverImageView = view.findViewById(R.id.playlistCover)
@@ -125,8 +117,7 @@ class PlaylistDetailFragment : Fragment() {
 
         arguments?.getString("playlistId")?.let { idString ->
             currentPlaylistId = idString.toLongOrNull()
-            Log.d("PlaylistDebug", "✅ ID получен: $idString")
-        } ?: Log.e("PlaylistDebug", "❌ Аргумент playlistId не найден!")
+        }
 
         currentPlaylistId?.let { id ->
             adapter = PlaylistTracksAdapter(
@@ -167,29 +158,22 @@ class PlaylistDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Клик по иконке меню
         menuIcon.setOnClickListener {
-            Log.d("PlaylistDebug", "✅ menuIcon кликнут!")
-
             val state = viewModel.uiState.value as? PlaylistDetailUiState.Success
             if (state == null) {
                 Toast.makeText(requireContext(), "Данные ещё загружаются", Toast.LENGTH_SHORT).show()
-                Log.w("PlaylistDebug", "⚠️ menuIcon: state == null")
                 return@setOnClickListener
             }
 
             menuPlaylistName.text = state.playlist.name
 
             if (menuBehavior != null) {
-                Log.d("PlaylistDebug", "🎯 menuBehavior найден, открываем меню в STATE_COLLAPSED")
                 menuBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
             } else {
-                Log.e("PlaylistDebug", "❌ menuBehavior всё ещё null — меню не откроется")
-                Toast.makeText(requireContext(), "Ошибка: меню недоступно (behavior null)", Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(), "Ошибка: меню недоступно", Toast.LENGTH_LONG).show()
             }
         }
 
-        // Клик «Поделиться»
         shareIcon.setOnClickListener {
             val state = viewModel.uiState.value as? PlaylistDetailUiState.Success ?: return@setOnClickListener
             val playlist = state.playlist
@@ -225,10 +209,21 @@ class PlaylistDetailFragment : Fragment() {
             startActivity(chooserIntent)
         }
 
-        // Пункт «Поделиться» в меню
         menuShareItem.setOnClickListener { shareIcon.performClick() }
 
-        // Пункт «Удалить плейлист» в меню
+        menuEditItem.setOnClickListener {
+            currentPlaylistId?.let { id ->
+                val bundle = Bundle().apply {
+                    putLong("playlistId", id)
+                }
+
+                findNavController().navigate(
+                    R.id.action_playlistDetailFragment_to_editPlaylistFragment,
+                    bundle
+                )
+            }
+        }
+
         menuDeleteItem.setOnClickListener {
             AlertDialog.Builder(requireContext())
                 .setTitle("Удалить плейлист")
@@ -236,7 +231,7 @@ class PlaylistDetailFragment : Fragment() {
                 .setPositiveButton("Да") { _, _ ->
                     currentPlaylistId?.let { id ->
                         viewModel.deletePlaylist(id)
-                    } ?: Log.e("PlaylistDebug", "currentPlaylistId is null")
+                    }
                 }
                 .setNegativeButton("Нет", null)
                 .show()
@@ -248,10 +243,9 @@ class PlaylistDetailFragment : Fragment() {
 
                 is PlaylistDetailUiState.Success -> {
                     val playlist = state.playlist
-                    Log.d("PlaylistDebug", "UI: playlist.coverPath = '${playlist.coverPath}'")
 
                     playlistName.text = playlist.name
-                    playlistYear.text = "2026"
+                    playlistDescription.text = playlist.description ?: ""
 
                     if (playlist.coverPath.isNullOrBlank()) {
                         coverImageView.setImageResource(R.drawable.ic_placeholder_312)

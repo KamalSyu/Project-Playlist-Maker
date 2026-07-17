@@ -28,11 +28,11 @@ import androidx.activity.OnBackPressedCallback
 import android.os.Build
 import android.util.Log
 import android.view.inputmethod.InputMethodManager
-import android.widget.FrameLayout
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
+import androidx.navigation.fragment.navArgs
 import com.bumptech.glide.Glide
 import com.practicum.playlistmaker.core.utils.DashedRoundedBorderDrawable
 import com.practicum.playlistmaker.mediateka.ui.view.CreatePlaylistViewModel
@@ -41,16 +41,25 @@ import java.io.File
 
 // ВАЖНО: Добавлен импорт ShapeableImageView
 import com.google.android.material.imageview.ShapeableImageView
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class CreatePlaylistFragment : Fragment() {
-    private val viewModel: CreatePlaylistViewModel by inject()
-    private lateinit var createButton: Button
-    private lateinit var nameField: TextInputLayout
-    private lateinit var descriptionField: TextInputLayout
-    private lateinit var coverImage: ShapeableImageView
-    private lateinit var backButton: TextView
-    private lateinit var playlistCenterIcon: ImageView
-    private lateinit var borderImage: ImageView
+open class CreatePlaylistFragment : Fragment() {
+
+    protected open val viewModel: CreatePlaylistViewModel by viewModel()
+    open lateinit var createButton: Button
+    open lateinit var nameField: TextInputLayout
+    open lateinit var descriptionField: TextInputLayout
+    open lateinit var coverImage: ShapeableImageView
+    open lateinit var backButton: TextView
+    open lateinit var playlistCenterIcon: ImageView
+    open lateinit var borderImage: ImageView
+
+    private val playlistId: Long
+        get() = arguments?.getLong("playlistId", -1L) ?: -1L
+
+    protected val isEditMode: Boolean
+        get() = playlistId != -1L
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -61,12 +70,15 @@ class CreatePlaylistFragment : Fragment() {
         setupViews(view)
         return view
     }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        // 1. Восстановление состояния из savedInstanceState (если был поворот экрана)
         savedInstanceState?.let { bundle ->
             val playlistName = bundle.getString("playlistName", "")
             val playlistDescription = bundle.getString("playlistDescription", "")
             val coverUri = bundle.getParcelable("selectedCoverUri", Uri::class.java)
             val nameFieldHasError = bundle.getBoolean("nameFieldHasError", false)
+
             if (playlistName.isNotBlank()) {
                 nameField.editText?.setText(playlistName)
                 nameField.editText?.setSelection(playlistName.length)
@@ -85,31 +97,31 @@ class CreatePlaylistFragment : Fragment() {
                 }
             }
         }
+
+        // 2. Настройка UI под режим (создание/редактирование) — вынесено в отдельный метод
+        configureScreenUi(view)
+
         setupTextWatchers()
         setupErrorClearingOnInput()
         setupClickListeners()
         setupObservers()
+
         if (savedInstanceState == null) {
             nameField.editText?.requestFocus()
             val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.showSoftInput(nameField.editText, InputMethodManager.SHOW_IMPLICIT)
         }
+
         ViewCompat.setOnApplyWindowInsetsListener(view) { view, insets ->
             val statusBar = insets.getInsets(WindowInsetsCompat.Type.statusBars())
             view.updatePadding(top = statusBar.top)
             insets
         }
-        val callback = object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                if (hasUnsavedChanges()) {
-                    showDiscardChangesDialog()
-                } else {
-                    this.remove()
-                    findNavController().popBackStack()
-                }
-            }
-        }
-        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
+
+        // 3. Логика кнопки «Назад» — вынесена в отдельный метод для переопределения
+        setupOnBackPressedCallback()
+        configureScreenUi(view)
+
         borderImage = view.findViewById(R.id.playlistBorderImage)
         val drawable = DashedRoundedBorderDrawable(
             context = requireContext(),
@@ -121,6 +133,51 @@ class CreatePlaylistFragment : Fragment() {
         )
         borderImage.setImageDrawable(drawable)
     }
+
+    /**
+     * Переопределяется в наследнике, если нужна другая логика заголовков/кнопки.
+     */
+    protected open fun configureScreenUi(view: View) {
+        val titleTextView = view.findViewById<TextView>(R.id.back)
+        if (isEditMode) {
+            titleTextView.text = getString(R.string.edit_playlist)
+            createButton.text = getString(R.string.save)
+        } else {
+            titleTextView.text = getString(R.string.new_playlist)
+            createButton.text = getString(R.string.create)
+        }
+    }
+
+    /**
+     * Настраивает OnBackPressedCallback. Переопределяется в наследнике при необходимости.
+     */
+//    protected open fun setupOnBackPressedCallback() {
+//        val callback = object : OnBackPressedCallback(true) {
+//            override fun handleOnBackPressed() {
+//                if (hasUnsavedChanges()) {
+//                    showDiscardChangesDialog()
+//                } else {
+//                    findNavController().popBackStack()
+//                }
+//            }
+//        }
+//        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
+//    }
+
+    protected open fun setupOnBackPressedCallback() {
+
+        requireActivity()
+            .onBackPressedDispatcher
+            .addCallback(viewLifecycleOwner,
+                object : OnBackPressedCallback(true) {
+
+                    override fun handleOnBackPressed() {
+                        findNavController().popBackStack()
+                    }
+                }
+            )
+    }
+
     private val pickImage = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) {
             viewModel.updateSelectedCoverUri(uri)
@@ -128,6 +185,7 @@ class CreatePlaylistFragment : Fragment() {
             viewModel.updateSelectedCoverUri(null)
         }
     }
+
     private val requestPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -141,17 +199,20 @@ class CreatePlaylistFragment : Fragment() {
             }
         }
     }
-    private fun setupViews(view: View) {
+
+    protected open fun setupViews(view: View) {
         createButton = view.findViewById(R.id.createPlaylistButton)
         nameField = view.findViewById(R.id.playlistNameField)
         descriptionField = view.findViewById(R.id.playlistDescriptionField)
         coverImage = view.findViewById(R.id.playlistCoverImage)
         backButton = view.findViewById(R.id.back)
         playlistCenterIcon = view.findViewById(R.id.playlistCenterIcon)
+
         val currentState = viewModel.uiState.value
         updateCoverImage(currentState?.selectedCoverUri)
     }
-    private fun updateCoverImage(uri: Uri?) {
+
+    protected fun updateCoverImage(uri: Uri?) {
         val state = viewModel.uiState.value
         if (state?.isCreated == true && uri == null) {
             coverImage.setImageResource(R.drawable.ic_placeholder_312)
@@ -185,6 +246,7 @@ class CreatePlaylistFragment : Fragment() {
                     Log.w("CoverImage", "Не удалось превратить URI в File: ${e.message}")
                     null
                 }
+
                 if (file != null && file.exists()) {
                     Glide.with(this)
                         .load(file)
@@ -206,6 +268,7 @@ class CreatePlaylistFragment : Fragment() {
             }
         }
     }
+
     private fun setupTextWatchers() {
         val nameTextWatcher = object : TextWatcher {
             private var isUpdating = false
@@ -218,6 +281,7 @@ class CreatePlaylistFragment : Fragment() {
             override fun afterTextChanged(s: Editable?) {}
         }
         nameField.editText?.addTextChangedListener(nameTextWatcher)
+
         val descriptionTextWatcher = object : TextWatcher {
             private var isUpdating = false
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
@@ -230,7 +294,8 @@ class CreatePlaylistFragment : Fragment() {
         }
         descriptionField.editText?.addTextChangedListener(descriptionTextWatcher)
     }
-    private fun setupClickListeners() {
+
+    protected open fun setupClickListeners() {
         coverImage.setOnClickListener {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 pickImage.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
@@ -238,43 +303,60 @@ class CreatePlaylistFragment : Fragment() {
                 requestReadStoragePermission()
             }
         }
+
         backButton.setOnClickListener {
+            // Логика по кнопке «Назад» на UI делегирована OnBackPressedCallback,
+            // но оставим эту заглушку, чтобы не ломать верстку, если она используется.
             if (hasUnsavedChanges()) {
                 showDiscardChangesDialog()
             } else {
                 findNavController().popBackStack()
             }
         }
+
         createButton.setOnClickListener {
             createPlaylist()
         }
     }
-    private fun createPlaylist() {
+
+    protected open fun createPlaylist() {
         nameField.error = null
         val state = viewModel.uiState.value ?: return
-        if (state.isCreateButtonEnabled) {
-            viewModel.createPlaylist(requireContext())
-        } else {
+
+        if (!state.isCreateButtonEnabled) {
             nameField.postDelayed({
                 nameField.error = getString(R.string.playlist_name_required)
             }, 100)
+            return
+        }
+
+        if (isEditMode) {
+            // Передаём данные в ViewModel, Context не нужен
+            viewModel.updatePlaylist() // внутри ViewModel уже знает playlistId из editPlaylistId
+        } else {
+            viewModel.createPlaylist() // без Context
         }
     }
-    private fun setupObservers() {
+
+    protected open fun setupObservers() {
         viewModel.uiState.observe(viewLifecycleOwner) { state ->
             updateCoverImage(state.selectedCoverUri)
             createButton.isEnabled = state.isCreateButtonEnabled
+
             state.successMessage?.let { message ->
                 val inflater = LayoutInflater.from(requireContext())
                 val view = inflater.inflate(R.layout.toast_playlist_created, null)
                 val textView = view.findViewById<TextView>(R.id.toast_text)
                 textView.text = message
+
                 val metrics = requireContext().resources.displayMetrics
                 val density = metrics.density
                 val screenWidthPx = metrics.widthPixels
                 val marginPx = ((7f + 8f) * density).toInt()
                 val toastWidthPx = screenWidthPx - marginPx
+
                 view.layoutParams = ViewGroup.LayoutParams(toastWidthPx, ViewGroup.LayoutParams.WRAP_CONTENT)
+
                 val toast = Toast(requireContext()).apply {
                     setView(view)
                     setGravity(
@@ -285,15 +367,18 @@ class CreatePlaylistFragment : Fragment() {
                     duration = Toast.LENGTH_SHORT
                 }
                 toast.show()
+
                 findNavController().popBackStack()
                 viewModel.clearSuccess()
             }
+
             state.error?.let { errorMessage ->
                 nameField.error = errorMessage
                 viewModel.clearError()
             }
         }
     }
+
     private fun requestReadStoragePermission() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -309,6 +394,7 @@ class CreatePlaylistFragment : Fragment() {
             pickImage.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
         }
     }
+
     private fun showGoToSettingsDialog() {
         AlertDialog.Builder(requireContext())
             .setTitle(getString(R.string.permission_rationale_title))
@@ -323,6 +409,7 @@ class CreatePlaylistFragment : Fragment() {
             }
             .show()
     }
+
     private fun showPermissionRationale() {
         AlertDialog.Builder(requireContext())
             .setTitle(getString(R.string.permission_rationale_title))
@@ -335,11 +422,13 @@ class CreatePlaylistFragment : Fragment() {
             }
             .show()
     }
+
     private fun hasUnsavedChanges(): Boolean {
         val state = viewModel.uiState.value ?: return false
         val name = state.playlistName.trim()
         return name.isNotBlank()
     }
+
     private fun showDiscardChangesDialog() {
         AlertDialog.Builder(requireContext())
             .setTitle(getString(R.string.discard_changes_title))
@@ -357,6 +446,7 @@ class CreatePlaylistFragment : Fragment() {
             .create()
             .show()
     }
+
     private fun clearFormState() {
         viewModel.clearForm()
         nameField.error = null
@@ -364,10 +454,12 @@ class CreatePlaylistFragment : Fragment() {
         descriptionField.editText?.setText("")
         updateCoverImage(null)
     }
+
     override fun onDestroyView() {
         super.onDestroyView()
         requireActivity().findViewById<View>(R.id.bottom_navigation)?.visibility = View.VISIBLE
     }
+
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         val state = viewModel.uiState.value ?: return
@@ -379,6 +471,7 @@ class CreatePlaylistFragment : Fragment() {
         outState.putBoolean("nameFieldHasError", nameField.error != null)
         outState.putBoolean("isCreateButtonEnabled", state.isCreateButtonEnabled)
     }
+
     private fun setupErrorClearingOnInput() {
         val nameTextWatcher = object : TextWatcher {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {

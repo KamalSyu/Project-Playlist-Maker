@@ -2,7 +2,6 @@ package com.practicum.playlistmaker.mediateka.data.repository
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.core.models.domain.Playlist
 import com.practicum.playlistmaker.mediateka.data.db.PlaylistEntity
@@ -15,14 +14,13 @@ import com.practicum.playlistmaker.player.data.storage.FileStorageService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.UUID
 
 class PlaylistsRepositoryImplMedia(
     private val dao: PlaylistsDao,
-    private val context: Context  // <-- ВАЖНО: сохраняем context как приватное поле
+    private val context: Context
 ) : PlaylistsRepositoryMedia {
 
     private val fileStorageService = FileStorageService(context)
@@ -30,33 +28,24 @@ class PlaylistsRepositoryImplMedia(
     override suspend fun safeCopyToPrivateStorage(sourcePath: String): String? {
         return try {
             val result = fileStorageService.copyToPrivateStorage(sourcePath)
-            Log.d("RepoCheck", "sourcePath (входной): $sourcePath")
-            Log.d("RepoCheck", "result from FileStorageService: $result")
             if (!result.isNullOrEmpty()) {
                 val file = File(result)
-                Log.d("RepoCheck", "file.exists(): ${file.exists()}, length: ${file.length()}")
-                if (!file.exists()) {
-                    Log.w("RepoCheck", "WARNING: FileStorageService вернул путь, но файла по нему нет!")
-                }
-                if (file.length() == 0L) {
-                    Log.w("RepoCheck", "WARNING: Файл существует, но он пустой (0 байт)!")
+                if (!file.exists() || file.length() == 0L) {
+                    null
+                } else {
+                    result
                 }
             } else {
-                Log.w("RepoCheck", "WARNING: FileStorageService вернул null или пустую строку")
+                null
             }
-            result
         } catch (e: Exception) {
-            Log.w("PlaylistsRepositoryImplMedia", "Не удалось скопировать обложку: $sourcePath", e)
             null
         }
     }
 
-    // НОВЫЙ МЕТОД: принимает Uri и сам копирует в filesDir
     override suspend fun safeCopyToPrivateStorageFromUri(uri: Uri): String? {
         return try {
-            // Получаем имя файла из URI или генерируем
             val fileName = uri.lastPathSegment ?: "cover_${System.currentTimeMillis()}"
-            // Копируем сразу в filesDir (надёжно, не удалится при очистке кэша)
             val destFile = File(context.filesDir, fileName)
 
             context.contentResolver.openInputStream(uri)?.use { input ->
@@ -65,19 +54,12 @@ class PlaylistsRepositoryImplMedia(
                 }
             }
 
-            Log.d(
-                "RepoCheck",
-                "Копия создана: ${destFile.absolutePath}, exists=${destFile.exists()}, size=${destFile.length()}"
-            )
-
             if (destFile.exists() && destFile.length() > 0) {
                 destFile.absolutePath
             } else {
-                Log.w("RepoCheck", "Файл не создан или пустой")
                 null
             }
         } catch (e: Exception) {
-            Log.e("RepoCheck", "Ошибка копирования из Uri", e)
             null
         }
     }
@@ -91,7 +73,6 @@ class PlaylistsRepositoryImplMedia(
     override suspend fun addPlaylist(playlist: Playlist): Long = withContext(Dispatchers.IO) {
         require(playlist.name.isNotBlank()) { "Название плейлиста не может быть пустым" }
 
-        // Обрабатываем coverPath ДО конвертации в Entity
         var coverPath = playlist.coverPath
         if (!coverPath.isNullOrBlank() && (coverPath.startsWith("content://") || coverPath.startsWith("media_picker"))) {
             val uri = Uri.parse(coverPath)
@@ -99,29 +80,8 @@ class PlaylistsRepositoryImplMedia(
         }
 
         val entity = playlist.copy(coverPath = coverPath).toEntity()
-
-        Log.d("RepoCheck", "Готов к вставке в БД entity.coverPath: ${entity.coverPath?.take(60)}")
-        if (entity.coverPath.isNullOrEmpty()) {
-            Log.e("RepoCheck", "ОШИБКА: entity.coverPath пуст перед insertPlaylist! playlist.name=${playlist.name}")
-        }
-
         dao.insertPlaylist(entity)
     }
-
-
-    override suspend fun updatePlaylist(playlist: Playlist) = withContext(Dispatchers.IO) {
-        // То же самое для обновления
-        var coverPath = playlist.coverPath
-        if (!coverPath.isNullOrBlank() && (coverPath.startsWith("content://") || coverPath.startsWith("media_picker"))) {
-            val uri = Uri.parse(coverPath)
-            coverPath = safeCopyToPrivateStorageFromUri(uri)
-        }
-
-        val entity = playlist.copy(coverPath = coverPath).toEntity()
-        Log.d("RepoCheck", "Обновление плейлиста, entity.coverPath: ${entity.coverPath?.take(60)}")
-        dao.updatePlaylist(entity)
-    }
-
 
     override suspend fun deletePlaylist(playlistId: Long) = withContext(Dispatchers.IO) {
         dao.deletePlaylistById(playlistId)
@@ -144,16 +104,12 @@ class PlaylistsRepositoryImplMedia(
         dao.insertTrackToPlaylist(playlistTrackEntity)
         dao.incrementTrackCount(playlistId)
     }
+
     override suspend fun getPlaylistById(playlistId: Long): PlaylistEntity? {
-        Log.d("RepoDebug", "🔍 Запрос плейлиста ID=$playlistId")
-        val result = dao.getPlaylistById(playlistId)
-        Log.d("RepoDebug", "🗃 Из БД: name='${result?.name}', coverPath='${result?.coverPath}'")
-        return result
+        return dao.getPlaylistById(playlistId)
     }
-//        dao.getPlaylistById(playlistId)
 
     override suspend fun getTrackDurationsSeconds(playlistId: Long): List<Int> =
-
         dao.getTrackDurationsByPlaylistId(playlistId)
 
     override suspend fun getPlaylistTracks(playlistId: Long): List<PlaylistTrackEntity> =
@@ -161,7 +117,7 @@ class PlaylistsRepositoryImplMedia(
 
     override suspend fun removeTrackFromPlaylist(playlistId: Long, trackId: String) {
         dao.removeTrackFromPlaylist(playlistId, trackId)
-        dao.decrementTrackCount(playlistId)  // <-- критично: обновляем счётчик
+        dao.decrementTrackCount(playlistId)
     }
 
     override suspend fun deleteTrackIfUnused(trackId: String) {
@@ -171,15 +127,53 @@ class PlaylistsRepositoryImplMedia(
         }
     }
 
-    override suspend fun deletePlaylistAndCleanup(playlistId: Long) = withContext(Dispatchers.IO) {
-        // Сначала удаляем сам плейлист
-        dao.deletePlaylistById(playlistId)
+    override suspend fun deletePlaylistAndCleanup(playlistId: Long) =
+        withContext(Dispatchers.IO) {
 
-        // Теперь можно безопасно проверить и удалить треки, которые могли стать неиспользуемыми
-        // (в твоём текущем DAO нет массового удаления, поэтому делаем точечно по каждому треку плейлиста)
-        val tracks = dao.getTracksByPlaylistId(playlistId)
-        for (track in tracks) {
-            deleteTrackIfUnused(track.trackId)
+            val tracks = dao.getTracksByPlaylistId(playlistId)
+
+            dao.deletePlaylistById(playlistId)
+
+            tracks.forEach { track ->
+                deleteTrackIfUnused(track.trackId)
+            }
         }
+
+    override suspend fun updatePlaylist(
+        id: Long,
+        name: String,
+        description: String?,
+        coverUri: android.net.Uri?
+    ): Result<Unit> = withContext(Dispatchers.IO) {
+        try {
+            val currentEntity = dao.getPlaylistById(id)
+                ?: return@withContext Result.failure(Exception("Плейлист не найден: $id"))
+
+            var coverPath = currentEntity.coverPath
+            if (coverUri != null) {
+                coverPath = safeCopyToPrivateStorageFromUri(coverUri)
+            }
+
+            val updatedEntity = currentEntity.copy(
+                name = name,
+                description = description,
+                coverPath = coverPath
+            )
+
+            dao.updatePlaylist(updatedEntity)
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    override suspend fun updatePlaylistName(
+        id: Long,
+        newName: String
+    ) = withContext(Dispatchers.IO) {
+
+        dao.updatePlaylistName(
+            playlistId = id,
+            newName = newName
+        )
     }
 }

@@ -70,6 +70,13 @@
     <string name="permission_denied_permanently_message">Для выбора изображения из галереи требуется разрешение. Вы можете включить его в настройках приложения.</string>
     <string name="go_to_settings">Настройки</string>
 
+    <string name="playlist_updated">Плейлист обновлён</string>
+
+    <string name="edit_playlist">Редактировать</string>
+    <string name="save">Сохранить</string>
+    <string name="create">Создать</string>
+
+
 
 
 </resources>
