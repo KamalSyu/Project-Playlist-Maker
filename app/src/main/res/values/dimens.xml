@@ -18,5 +18,9 @@
     <dimen name="spacing_8">8dp</dimen>
     <dimen name="spacing_16">16dp</dimen>
     <dimen name="spacing_46">46dp</dimen>
-
+    <dimen name="text_style_playlist_name">24dp</dimen>
+    <dimen name="playlist_description">18dp</dimen>
+    <dimen name="bottom_sheet_peek">200dp</dimen>
+    <dimen name="playlist_tracks_sheet_height">266dp</dimen>
+    <dimen name="menu_bottom_sheet_height">383dp</dimen>
 </resources>

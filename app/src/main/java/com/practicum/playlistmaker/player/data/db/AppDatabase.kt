@@ -8,7 +8,7 @@ import com.practicum.playlistmaker.mediateka.data.db.PlaylistsDao
 
 @Database(
     entities = [FavoriteTrackEntity::class, PlaylistEntity::class, PlaylistTrackEntity::class],
-    version = 2,
+    version = 3,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {

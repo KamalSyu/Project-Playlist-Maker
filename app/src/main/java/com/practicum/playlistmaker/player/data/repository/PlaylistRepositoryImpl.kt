@@ -62,6 +62,7 @@ class PlaylistRepositoryImpl(
                     title = track.trackName,
                     artist = track.artistName,
                     duration = ((track.trackTimeMillis ?: 0L) / 1000).toInt(),
+                    artworkUrl100 = track.artworkUrl100,
                     addedAt = System.currentTimeMillis()
                 )
 

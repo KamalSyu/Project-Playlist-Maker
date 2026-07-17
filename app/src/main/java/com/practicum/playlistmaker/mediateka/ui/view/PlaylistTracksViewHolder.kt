@@ -30,20 +30,17 @@ class PlaylistTracksViewHolder(
         } ?: run {
             trackTimeTextView.text = ""
         }
-
-        // --- ТРЕБОВАНИЕ 3: явный плейсхолдер при отсутствии обложки ---
         if (track.artworkUrl100.isNullOrBlank()) {
             artworkImageView.setImageResource(R.drawable.ic_placeholder_312)
         } else {
             Glide.with(itemView.context)
-                .load(track.artworkUrl100)
+                .load(track.getHighQualityArtworkUrl())
                 .placeholder(R.drawable.ic_placeholder_312)
                 .error(R.drawable.ic_placeholder_312)
                 .centerCrop()
                 .transform(RoundedCorners(2))
                 .into(artworkImageView)
         }
-        // -----------------------------------------------------------------
     }
 
 }

@@ -561,6 +561,8 @@
 
     <style name="ShapeAppearanceOverlay.MyApp.Rounded8dp" parent="">
         <item name="cornerSize">8dp</item>
+        <item name="cornerFamily">rounded</item>
+
     </style>
 
     <style name="Playlist">
@@ -595,6 +597,96 @@
     <style name="ShapeAppearanceOverlay.App.Corner2dp" parent="">
         <item name="cornerSize">2dp</item>
     </style>
+
+    <style name="TextStyleDetail" parent="Widget.MaterialComponents.TextView">
+    <item name="android:layout_width">wrap_content</item>
+    <item name="android:layout_height">wrap_content</item>
+    <item name="android:textColor">@color/yp_black</item>
+    <item name="android:textSize">@dimen/primary_text_size</item>
+    <item name="android:minHeight">56dp</item>
+    <item name="android:layout_marginBottom">24dp</item>
+    <item name="android:fontFamily">@font/ys_display_medium</item>
+    <item name="android:elevation">0dp</item>
+    <item name="android:drawableTint">@color/yp_black</item>
+    <item name="android:textFontWeight">500</item>
+    <item name="android:drawablePadding">12dp</item>
+    <item name="android:paddingStart">12dp</item>
+    </style>
+
+    <style name="TextStylePlaylistName" parent="Widget.MaterialComponents.TextView">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/yp_black</item>
+        <item name="android:textSize">@dimen/text_style_playlist_name</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">@font/ys_display_bold</item>
+        <item name="android:maxLines">2</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
+    </style>
+
+    <style name="StyleInfoBackground" parent="android:Widget">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">0dp</item>
+        <item name="android:background">@color/yp_light_gray</item>
+    </style>
+
+    <style name="StylePlaylistCoverImage" parent="Widget.MaterialComponents.ShapeableImageView">
+        <item name="android:scaleType">centerCrop</item>
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay.MyApp.Rounded8dp</item>
+    </style>
+
+    <style name="LayoutStyleStatsContainer" parent="android:Widget">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
+    </style>
+
+    <style name="TextStylePlaylistDescription" parent="Widget.MaterialComponents.TextView">
+        <item name="android:textColor">@color/yp_black</item>
+        <item name="android:textSize">@dimen/playlist_description</item>
+        <item name="android:fontFamily">@font/ys_display_regular</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
+    </style>
+
+    <style name="TextStyleStatsItem" parent="Widget.MaterialComponents.TextView">
+        <item name="android:textColor">@color/yp_black</item>
+        <item name="android:textSize">@dimen/playlist_description</item>
+        <item name="android:fontFamily">@font/ys_display_regular</item>
+    </style>
+
+    <style name="StylePlaylistActionIcon" parent="android:Widget">
+        <item name="android:layout_width">24dp</item>
+        <item name="android:layout_height">24dp</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:tint">@color/yp_black</item>
+    </style>
+
+    <style name="LayoutStyleActionIconsContainer" parent="android:Widget">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:gravity">center_vertical</item>
+    </style>
+
+    <style name="MenuItemStyle" parent="TextAppearance.AppCompat.Body1">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">56dp</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:paddingStart">@dimen/medium_padding</item>
+        <item name="android:paddingEnd">@dimen/medium_padding</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/yp_black</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+    </style>
+
 
 </resources>
 

@@ -26,13 +26,14 @@ data class PlaylistTrackEntity(
     val title: String,
     val artist: String,
     val duration: Int,
+    val artworkUrl100: String?,
     val addedAt: Long
 )
 fun PlaylistTrackEntity.toTrack(): Track = Track(
     trackId = this.trackId,
     trackName = this.title,
     artistName = this.artist,
-    artworkUrl100 = null,                 // у тебя в Entity нет поля для обложки трека — ставим null
+    artworkUrl100 = artworkUrl100,
     trackTimeMillis = (this.duration * 1_000).toLong(),
     releaseDate = null,
     collectionName = null,

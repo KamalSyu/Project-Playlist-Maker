@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -15,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.imageview.ShapeableImageView
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.core.models.toParcelable
@@ -36,18 +38,19 @@ class PlaylistDetailFragment : Fragment() {
     private lateinit var shareIcon: ImageView
     private lateinit var menuIcon: ImageView
     private lateinit var tracksRecyclerView: RecyclerView
-
+    private lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
     private lateinit var bottomSheetFrame: View
-    private var behavior: BottomSheetBehavior<View>? = null
-
     private lateinit var overlayDim: View
     private lateinit var menuBottomSheetFrame: View
     private var menuBehavior: BottomSheetBehavior<View>? = null
 
-    private lateinit var menuPlaylistName: TextView
     private lateinit var menuShareItem: TextView
     private lateinit var menuEditItem: TextView
     private lateinit var menuDeleteItem: TextView
+
+    private lateinit var menuPlaylistCover: ShapeableImageView
+    private lateinit var menuPlaylistName: TextView
+    private lateinit var menuPlaylistTrackCount: TextView
 
     private var adapter: PlaylistTracksAdapter? = null
     private var currentPlaylistId: Long? = null
@@ -69,8 +72,10 @@ class PlaylistDetailFragment : Fragment() {
             menuBehavior?.isHideable = true
             menuBehavior?.skipCollapsed = false
             menuBehavior?.state = BottomSheetBehavior.STATE_HIDDEN
-            menuBehavior?.peekHeight = 400
-
+            menuBottomSheetFrame.post {
+                menuBehavior?.peekHeight =
+                    resources.getDimensionPixelSize(R.dimen.menu_bottom_sheet_height)
+            }
             menuBehavior?.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
                 override fun onStateChanged(bottomSheet: View, newState: Int) {
                     when (newState) {
@@ -93,7 +98,12 @@ class PlaylistDetailFragment : Fragment() {
             })
         }
 
-        menuPlaylistName = view.findViewById(R.id.menuPlaylistName)
+        val selectedPlaylistItem = view.findViewById<View>(R.id.selectedPlaylistItem)
+
+        menuPlaylistCover = selectedPlaylistItem.findViewById(R.id.playlistCover)
+        menuPlaylistName = selectedPlaylistItem.findViewById(R.id.playlistName)
+        menuPlaylistTrackCount = selectedPlaylistItem.findViewById(R.id.playlistTrackCount)
+
         menuShareItem = view.findViewById(R.id.menuShareItem)
         menuEditItem = view.findViewById(R.id.menuEditItem)
         menuDeleteItem = view.findViewById(R.id.menuDeleteItem)
@@ -111,10 +121,15 @@ class PlaylistDetailFragment : Fragment() {
         tracksRecyclerView.layoutManager = LinearLayoutManager(requireContext())
 
         bottomSheetFrame = view.findViewById(R.id.bottomSheetFrame)
-        behavior = BottomSheetBehavior.from(bottomSheetFrame)
-        behavior?.isHideable = false
-        behavior?.peekHeight = 200
-
+        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheetFrame)
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+        bottomSheetBehavior.isHideable = false
+        bottomSheetBehavior.skipCollapsed = false
+        bottomSheetBehavior.isFitToContents = true
+        bottomSheetFrame.post {
+            bottomSheetBehavior.peekHeight =
+                resources.getDimensionPixelSize(R.dimen.playlist_tracks_sheet_height)
+        }
         arguments?.getString("playlistId")?.let { idString ->
             currentPlaylistId = idString.toLongOrNull()
         }
@@ -132,7 +147,7 @@ class PlaylistDetailFragment : Fragment() {
                     )
                 },
                 onItemLongClick = { playlistId, track ->
-                    AlertDialog.Builder(requireContext())
+                    MaterialAlertDialogBuilder(requireContext())
                         .setTitle("Хотите удалить трек?")
                         .setPositiveButton("ДА") { _, _ ->
                             viewModel.removeTrack(playlistId, track.trackId)
@@ -165,10 +180,32 @@ class PlaylistDetailFragment : Fragment() {
                 return@setOnClickListener
             }
 
-            menuPlaylistName.text = state.playlist.name
+            val playlist = state.playlist
+
+            menuPlaylistName.text = playlist.name
+
+            menuPlaylistTrackCount.text =
+                when (playlist.trackCount) {
+                    0 -> "Нет треков"
+                    1 -> "1 трек"
+                    in 2..4 -> "${playlist.trackCount} трека"
+                    else -> "${playlist.trackCount} треков"
+                }
+
+
+            if (playlist.coverPath.isNullOrBlank()) {
+                menuPlaylistCover.setImageResource(R.drawable.ic_placeholder_312)
+            } else {
+                Glide.with(this)
+                    .load(playlist.coverPath)
+                    .placeholder(R.drawable.ic_placeholder_312)
+                    .error(R.drawable.ic_placeholder_312)
+                    .centerCrop()
+                    .into(menuPlaylistCover)
+            }
 
             if (menuBehavior != null) {
-                menuBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
+                menuBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
             } else {
                 Toast.makeText(requireContext(), "Ошибка: меню недоступно", Toast.LENGTH_LONG).show()
             }
@@ -263,12 +300,9 @@ class PlaylistDetailFragment : Fragment() {
 
                     adapter?.submitList(state.tracks)
 
-                    behavior?.isHideable = false
-                    if (state.tracks.isEmpty()) {
-                        behavior?.state = BottomSheetBehavior.STATE_COLLAPSED
-                    } else {
-                        behavior?.state = BottomSheetBehavior.STATE_HALF_EXPANDED
-                    }
+                    bottomSheetBehavior.isHideable = false
+                    bottomSheetBehavior.state =
+                        BottomSheetBehavior.STATE_COLLAPSED
                 }
 
                 is PlaylistDetailUiState.Deleted -> {
@@ -287,6 +321,9 @@ class PlaylistDetailFragment : Fragment() {
         currentPlaylistId?.let {
             viewModel.loadPlaylist(it.toString())
         }
+
+
+
     }
 
     private fun closeMenuWithAnimation() {
