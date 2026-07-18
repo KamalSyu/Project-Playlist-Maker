@@ -9,7 +9,6 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.core.utils.FormatTrackDurationUseCase
-import com.practicum.playlistmaker.mediateka.data.db.PlaylistTrackEntity
 
 class PlaylistTracksViewHolder(
     itemView: View,

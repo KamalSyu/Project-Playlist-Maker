@@ -11,6 +11,6 @@ sealed class PlaylistDetailUiState {
         val tracks: List<Track>
     ) : PlaylistDetailUiState()
     data class Error(val error: Throwable) : PlaylistDetailUiState()
-    object Deleted : PlaylistDetailUiState()  // <-- обязательно
+    object Deleted : PlaylistDetailUiState()
 }
 

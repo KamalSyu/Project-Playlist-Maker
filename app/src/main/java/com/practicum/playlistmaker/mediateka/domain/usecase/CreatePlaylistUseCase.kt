@@ -2,7 +2,6 @@ package com.practicum.playlistmaker.mediateka.domain.usecase
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import com.practicum.playlistmaker.core.models.domain.Playlist
 import com.practicum.playlistmaker.mediateka.domain.repository.PlaylistsRepositoryMedia
 import java.io.File
@@ -18,22 +17,11 @@ class CreatePlaylistUseCase(
     ): Result<String> {
         val trimmedName = playlistName.trim()
         if (trimmedName.isBlank()) {
-            Log.e("CreatePlaylistUseCase", "Название плейлиста пустое")
             return Result.failure(IllegalArgumentException("Название плейлиста не может быть пустым"))
         }
         val coverPathResult = if (coverUri != null) {
             try {
                 playlistsRepositoryMedia.safeCopyToPrivateStorageFromUri(coverUri)
-                    .also { path ->
-                        if (!path.isNullOrEmpty()) {
-                            val file = File(path)
-                            Log.d("CreatePlaylistUseCase", "Путь сохранён: $path")
-                            Log.d("CreatePlaylistUseCase", "file.exists(): ${file.exists()}")
-                            Log.d("CreatePlaylistUseCase", "file.length(): ${file.length()}")
-                        } else {
-                            Log.w("CreatePlaylistUseCase", "Не удалось получить путь к обложке")
-                        }
-                    }
             } catch (e: Exception) {
                 null
             }

@@ -1,13 +1,11 @@
 package com.practicum.playlistmaker.mediateka.ui.view
 
-import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.mediateka.domain.interactor.PlaylistInteractor
 import com.practicum.playlistmaker.mediateka.ui.CreatePlaylistUiState
 import kotlinx.coroutines.launch
@@ -62,7 +60,6 @@ open class CreatePlaylistViewModel(
             }
         }
     }
-    // Отдельный метод для создания
     fun createPlaylist() = viewModelScope.launch {
         val currentState = _uiState.value ?: return@launch
         val name = currentState.playlistName.trim()
@@ -93,7 +90,6 @@ open class CreatePlaylistViewModel(
         }
     }
 
-    // Отдельный метод для обновления
     fun updatePlaylist() = viewModelScope.launch {
         val currentState = _uiState.value ?: return@launch
         val playlistId = editPlaylistId

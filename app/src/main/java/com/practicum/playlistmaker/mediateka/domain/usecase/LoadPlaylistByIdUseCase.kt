@@ -15,10 +15,8 @@ class LoadPlaylistByIdUseCase(
 ) {
     operator fun invoke(playlistId: Long): Flow<PlaylistDetailUiState> = flow {
         emit(PlaylistDetailUiState.Loading)
-
         try {
             val entity = playlistsRepositoryMedia.getPlaylistById(playlistId)
-
             if (entity == null) {
                 emit(
                     PlaylistDetailUiState.Error(
@@ -27,20 +25,13 @@ class LoadPlaylistByIdUseCase(
                 )
                 return@flow
             }
-
             val tracksEntities = playlistsRepositoryMedia.getPlaylistTracks(playlistId)
-
             val tracks = tracksEntities.map { it.toTrack() }
-
-            val durationSum = tracks.sumOf {
-                it.trackTimeMillis ?: 0L
-            }
-
+            val durationSum = tracks.sumOf { it.trackTimeMillis ?: 0L }
             val durationFormatted = SimpleDateFormat(
                 "mm",
                 Locale.getDefault()
             ).format(durationSum)
-
             val playlist = Playlist(
                 id = entity.id.toString(),
                 name = entity.name,
@@ -50,18 +41,15 @@ class LoadPlaylistByIdUseCase(
                 createdAt = entity.createdAt,
                 durationFormatted = durationFormatted
             )
-
             emit(
                 PlaylistDetailUiState.Success(
                     playlist,
                     tracks
                 )
             )
-
         } catch (e: Exception) {
             emit(PlaylistDetailUiState.Error(e))
         }
-
     }.catch { error ->
         emit(PlaylistDetailUiState.Error(error))
     }

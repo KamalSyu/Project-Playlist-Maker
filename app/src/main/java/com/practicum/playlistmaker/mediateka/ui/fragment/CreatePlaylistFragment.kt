@@ -32,14 +32,10 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
-import androidx.navigation.fragment.navArgs
 import com.bumptech.glide.Glide
 import com.practicum.playlistmaker.core.utils.DashedRoundedBorderDrawable
 import com.practicum.playlistmaker.mediateka.ui.view.CreatePlaylistViewModel
-import org.koin.android.ext.android.inject
 import java.io.File
-
-// ВАЖНО: Добавлен импорт ShapeableImageView
 import com.google.android.material.imageview.ShapeableImageView
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -72,7 +68,6 @@ open class CreatePlaylistFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        // 1. Восстановление состояния из savedInstanceState (если был поворот экрана)
         savedInstanceState?.let { bundle ->
             val playlistName = bundle.getString("playlistName", "")
             val playlistDescription = bundle.getString("playlistDescription", "")
@@ -98,7 +93,6 @@ open class CreatePlaylistFragment : Fragment() {
             }
         }
 
-        // 2. Настройка UI под режим (создание/редактирование) — вынесено в отдельный метод
         configureScreenUi(view)
 
         setupTextWatchers()
@@ -118,7 +112,6 @@ open class CreatePlaylistFragment : Fragment() {
             insets
         }
 
-        // 3. Логика кнопки «Назад» — вынесена в отдельный метод для переопределения
         setupOnBackPressedCallback()
         configureScreenUi(view)
 
@@ -134,9 +127,6 @@ open class CreatePlaylistFragment : Fragment() {
         borderImage.setImageDrawable(drawable)
     }
 
-    /**
-     * Переопределяется в наследнике, если нужна другая логика заголовков/кнопки.
-     */
     protected open fun configureScreenUi(view: View) {
         val titleTextView = view.findViewById<TextView>(R.id.back)
         if (isEditMode) {
@@ -147,22 +137,6 @@ open class CreatePlaylistFragment : Fragment() {
             createButton.text = getString(R.string.create)
         }
     }
-
-    /**
-     * Настраивает OnBackPressedCallback. Переопределяется в наследнике при необходимости.
-     */
-//    protected open fun setupOnBackPressedCallback() {
-//        val callback = object : OnBackPressedCallback(true) {
-//            override fun handleOnBackPressed() {
-//                if (hasUnsavedChanges()) {
-//                    showDiscardChangesDialog()
-//                } else {
-//                    findNavController().popBackStack()
-//                }
-//            }
-//        }
-//        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
-//    }
 
     protected open fun setupOnBackPressedCallback() {
 
@@ -228,7 +202,6 @@ open class CreatePlaylistFragment : Fragment() {
                     val projection = arrayOf(
                         android.provider.MediaStore.Images.Media.DATA
                     )
-
                     val cursor = requireContext()
                         .contentResolver
                         .query(
@@ -250,10 +223,8 @@ open class CreatePlaylistFragment : Fragment() {
                         }
                     }
                 }
-
                 else -> File(uri.path ?: "")
             }
-
         } catch (e: Exception) {
             Log.w(
                 "CoverImage",
@@ -261,8 +232,6 @@ open class CreatePlaylistFragment : Fragment() {
             )
             null
         }
-
-
         if (file != null && file.exists()) {
 
             Glide.with(this)
@@ -279,7 +248,6 @@ open class CreatePlaylistFragment : Fragment() {
                 .error(R.drawable.ic_placeholder_312)
                 .into(coverImage)
         }
-
         playlistCenterIcon.visibility = View.GONE
     }
 
@@ -319,8 +287,6 @@ open class CreatePlaylistFragment : Fragment() {
         }
 
         backButton.setOnClickListener {
-            // Логика по кнопке «Назад» на UI делегирована OnBackPressedCallback,
-            // но оставим эту заглушку, чтобы не ломать верстку, если она используется.
             if (hasUnsavedChanges()) {
                 showDiscardChangesDialog()
             } else {
@@ -345,10 +311,9 @@ open class CreatePlaylistFragment : Fragment() {
         }
 
         if (isEditMode) {
-            // Передаём данные в ViewModel, Context не нужен
-            viewModel.updatePlaylist() // внутри ViewModel уже знает playlistId из editPlaylistId
+            viewModel.updatePlaylist()
         } else {
-            viewModel.createPlaylist() // без Context
+            viewModel.createPlaylist()
         }
     }
 

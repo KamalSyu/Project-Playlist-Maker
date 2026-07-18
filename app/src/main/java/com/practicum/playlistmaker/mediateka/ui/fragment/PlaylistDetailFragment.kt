@@ -315,7 +315,6 @@ class PlaylistDetailFragment : Fragment() {
         )
     }
 
-
     private fun updatePlaylistInfo(playlist: Playlist) {
 
         playlistName.text = playlist.name

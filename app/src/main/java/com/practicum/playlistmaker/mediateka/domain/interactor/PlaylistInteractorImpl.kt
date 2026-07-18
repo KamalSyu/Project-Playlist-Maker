@@ -3,7 +3,6 @@ package com.practicum.playlistmaker.mediateka.domain.interactor
 import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.core.models.domain.AddTrackStatus
 import com.practicum.playlistmaker.core.models.domain.Playlist
-import com.practicum.playlistmaker.mediateka.data.db.PlaylistsDao
 import com.practicum.playlistmaker.mediateka.data.mapper.toDomain
 import com.practicum.playlistmaker.mediateka.domain.repository.PlaylistsRepositoryMedia
 import com.practicum.playlistmaker.mediateka.domain.usecase.AddTrackToPlaylistUseCase

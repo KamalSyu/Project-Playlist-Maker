@@ -1,6 +1,5 @@
 package com.practicum.playlistmaker.mediateka.ui.view
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -26,37 +25,24 @@ class PlaylistDetailViewModel(
     private var playlistJob: Job? = null
 
     fun loadPlaylist(playlistIdString: String) {
-
         val playlistId = playlistIdString.toLongOrNull() ?: run {
-            _uiState.value =
-                PlaylistDetailUiState.Error(
-                    IllegalArgumentException("Некорректный ID плейлиста")
-                )
+            _uiState.value = PlaylistDetailUiState.Error(
+                IllegalArgumentException("Некорректный ID плейлиста")
+            )
             return
         }
 
         playlistJob?.cancel()
 
         playlistJob = viewModelScope.launch {
-
-            Log.d(
-                "PlaylistDebug",
-                "ViewModel: запрашиваем плейлист с ID=$playlistId"
-            )
-
             loadPlaylistByIdUseCase(playlistId)
                 .flowOn(Dispatchers.IO)
                 .collect { state ->
-
-                    Log.d(
-                        "PlaylistDebug",
-                        "ViewModel: получили состояние: ${state::class.simpleName}"
-                    )
-
                     _uiState.value = state
                 }
         }
     }
+
     fun removeTrack(playlistId: Long, trackId: String) {
         viewModelScope.launch {
             try {
@@ -67,6 +53,7 @@ class PlaylistDetailViewModel(
             }
         }
     }
+
     fun deletePlaylist(playlistId: Long) {
         viewModelScope.launch {
             try {
@@ -77,6 +64,4 @@ class PlaylistDetailViewModel(
             }
         }
     }
-
-
 }

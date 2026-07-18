@@ -231,10 +231,8 @@ val appModule = module {
     factory<AddTrackToPlaylistUseCase> {
         AddTrackToPlaylistUseCase(get())
     }
-    // Новые UseCase для плейлиста
     factory<SharePlaylistUseCase> { SharePlaylistUseCase() }
     factory<DeletePlaylistUseCase> { DeletePlaylistUseCase(get()) }
-
 
     // 7. ViewModel
     viewModel { SearchViewModel(
