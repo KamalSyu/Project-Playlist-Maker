@@ -36,7 +36,6 @@ open class CreatePlaylistViewModel(
 
     fun setEditMode(playlistId: Long) {
         editPlaylistId = playlistId
-        // Сбрасываем сообщения перед загрузкой
         _uiState.value = _uiState.value?.copy(
             successMessage = null,
             error = null,
@@ -46,12 +45,14 @@ open class CreatePlaylistViewModel(
         viewModelScope.launch {
             val playlist = playlistInteractor.getPlaylistById(playlistId)
             if (playlist != null) {
-                _uiState.value = _uiState.value?.copy(
+                _uiState.value = CreatePlaylistUiState( isLoading = false,
+                    error = null, isCreated = false,
+                    playlistId = playlist.id.toString(),
                     playlistName = playlist.name,
-                    playlistDescription = playlist.description ?: "",
+                    playlistDescription = playlist.description.orEmpty(),
+                    coverFilePath = playlist.coverPath,
                     selectedCoverUri = playlist.coverPath?.let { Uri.parse(it) },
-                    isLoading = false,
-                    error = null
+                    successMessage = null
                 )
             } else {
                 _uiState.value = _uiState.value?.copy(
@@ -61,8 +62,6 @@ open class CreatePlaylistViewModel(
             }
         }
     }
-
-
     // Отдельный метод для создания
     fun createPlaylist() = viewModelScope.launch {
         val currentState = _uiState.value ?: return@launch

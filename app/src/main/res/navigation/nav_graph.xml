@@ -41,9 +41,7 @@
         android:id="@+id/editPlaylistFragment"
         android:name="com.practicum.playlistmaker.mediateka.ui.fragment.EditPlaylistFragment"
         android:label="@string/edit_playlist">
-        <argument
-            android:name="playlistId"
-            app:argType="long"/>
+
     </fragment>
 
     <action

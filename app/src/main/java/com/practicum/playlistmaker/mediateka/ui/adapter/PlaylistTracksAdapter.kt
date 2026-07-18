@@ -10,9 +10,9 @@ import com.practicum.playlistmaker.core.models.Track
 import com.practicum.playlistmaker.core.utils.FormatTrackDurationUseCase
 
 class PlaylistTracksAdapter(
-    private val currentPlaylistId: Long,               // <-- ДОБАВЛЕНО: передаём ID плейлиста один раз при создании
+    private val currentPlaylistId: Long,
     private val onItemClick: (Track) -> Unit,
-    private val onItemLongClick: (Long, Track) -> Unit, // <-- сигнатура: (playlistId, track)
+    private val onItemLongClick: (Long, Track) -> Unit,
     private val formatDurationUseCase: FormatTrackDurationUseCase
 ) : ListAdapter<Track, PlaylistTracksViewHolder>(DiffCallback) {
 

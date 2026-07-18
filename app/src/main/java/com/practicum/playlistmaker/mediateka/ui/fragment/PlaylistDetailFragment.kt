@@ -40,6 +40,7 @@ class PlaylistDetailFragment : Fragment() {
     private lateinit var shareIcon: ImageView
     private lateinit var menuIcon: ImageView
     private lateinit var tracksRecyclerView: RecyclerView
+    private lateinit var emptyTracksText: TextView
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
     private lateinit var bottomSheetFrame: View
     private lateinit var overlayDim: View
@@ -86,7 +87,7 @@ class PlaylistDetailFragment : Fragment() {
                         BottomSheetBehavior.STATE_COLLAPSED -> {
                             overlayDim.visibility = View.VISIBLE
                             overlayDim.alpha = 0f
-                            overlayDim.animate().alpha(0.5f).setDuration(200).start()
+                            overlayDim.animate().alpha(1f).setDuration(200).start()
                         }
                         else -> {
                             overlayDim.animate().alpha(0f).setDuration(200).withEndAction {
@@ -121,6 +122,8 @@ class PlaylistDetailFragment : Fragment() {
 
         tracksRecyclerView = view.findViewById(R.id.tracksRecyclerView)
         tracksRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+
+        emptyTracksText = view.findViewById(R.id.emptyTracksText)
 
         bottomSheetFrame = view.findViewById(R.id.bottomSheetFrame)
         bottomSheetBehavior = BottomSheetBehavior.from(bottomSheetFrame)
@@ -228,9 +231,12 @@ class PlaylistDetailFragment : Fragment() {
             startActivity(chooserIntent)
         }
 
-        menuShareItem.setOnClickListener { shareIcon.performClick() }
-
+        menuShareItem.setOnClickListener {
+            closeMenuWithAnimation()
+            shareIcon.performClick()
+        }
         menuEditItem.setOnClickListener {
+            closeMenuWithAnimation()
             currentPlaylistId?.let { id ->
                 val bundle = Bundle().apply {
                     putLong("playlistId", id)
@@ -243,15 +249,16 @@ class PlaylistDetailFragment : Fragment() {
             }
         }
         menuDeleteItem.setOnClickListener {
+            closeMenuWithAnimation()
             AlertDialog.Builder(requireContext())
                 .setTitle("Удалить плейлист")
-                .setMessage("Хотите удалить плейлист?")
-                .setPositiveButton("Да") { _, _ ->
+                .setMessage("Вы уверены, что хотите удалить этот плейлист?")
+                .setPositiveButton("Удалить") { _, _ ->
                     currentPlaylistId?.let { id ->
                         viewModel.deletePlaylist(id)
                     }
                 }
-                .setNegativeButton("Нет", null)
+                .setNegativeButton("Отмена", null)
                 .show()
         }
         viewModel.uiState.observe(viewLifecycleOwner) { state ->
@@ -262,7 +269,14 @@ class PlaylistDetailFragment : Fragment() {
 
                     updatePlaylistInfo(state.playlist)
 
-                    adapter?.submitList(state.tracks)
+                    if (state.tracks.isEmpty()) {
+                        emptyTracksText.visibility = View.VISIBLE
+                        tracksRecyclerView.visibility = View.GONE
+                    } else {
+                        emptyTracksText.visibility = View.GONE
+                        tracksRecyclerView.visibility = View.VISIBLE
+                        adapter?.submitList(state.tracks)
+                    }
 
                     bottomSheetBehavior.isHideable = false
                     bottomSheetBehavior.state =
@@ -270,7 +284,11 @@ class PlaylistDetailFragment : Fragment() {
                 }
 
                 is PlaylistDetailUiState.Deleted -> {
-                    findNavController().popBackStack()
+
+                    findNavController().popBackStack(
+                        R.id.mediatekaFragment,
+                        false
+                    )
                 }
 
                 is PlaylistDetailUiState.Error -> {
@@ -284,7 +302,6 @@ class PlaylistDetailFragment : Fragment() {
         currentPlaylistId?.let {
             viewModel.loadPlaylist(it.toString())
         }
-
     }
 
     private fun updateMenuPlaylistInfo(playlist: Playlist) {
@@ -303,7 +320,7 @@ class PlaylistDetailFragment : Fragment() {
 
         playlistName.text = playlist.name
         playlistDescription.text = playlist.description.orEmpty()
-        playlistDuration.text = playlist.durationFormatted
+        playlistDuration.text = "${playlist.durationFormatted} минут"
         playlistTrackCount.text = playlist.trackCount.toTracksText()
 
         loadCover(
@@ -339,5 +356,13 @@ class PlaylistDetailFragment : Fragment() {
             overlayDim.visibility = View.GONE
         }.start()
         menuBehavior?.state = BottomSheetBehavior.STATE_HIDDEN
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        currentPlaylistId?.let {
+            viewModel.loadPlaylist(it.toString())
+        }
     }
 }

@@ -44,7 +44,7 @@ interface PlaylistsDao {
     @Query("SELECT duration FROM playlist_tracks WHERE playlistId = :playlistId")
     suspend fun getTrackDurationsByPlaylistId(playlistId: Long): List<Int>
 
-    @Query("SELECT * FROM playlist_tracks WHERE playlistId = :playlistId")
+    @Query("SELECT * FROM playlist_tracks WHERE playlistId = :playlistId ORDER BY addedAt DESC")
     suspend fun getTracksByPlaylistId(playlistId: Long): List<PlaylistTrackEntity>
 
     @Query("DELETE FROM playlist_tracks WHERE playlistId = :playlistId AND trackId = :trackId")

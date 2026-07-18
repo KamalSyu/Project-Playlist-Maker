@@ -213,60 +213,74 @@ open class CreatePlaylistFragment : Fragment() {
     }
 
     protected fun updateCoverImage(uri: Uri?) {
-        val state = viewModel.uiState.value
-        if (state?.isCreated == true && uri == null) {
+
+        if (uri == null) {
             coverImage.setImageResource(R.drawable.ic_placeholder_312)
-            playlistCenterIcon.visibility = View.VISIBLE
-        } else {
-            uri?.let { sourceUri ->
-                val file = try {
-                    when (sourceUri.scheme) {
-                        "file" -> File(sourceUri.path ?: "")
-                        "content" -> {
-                            val projection = arrayOf(android.provider.MediaStore.Images.Media.DATA)
-                            val cursor = requireContext().contentResolver.query(sourceUri, projection, null, null, null)
-                            if (cursor != null) {
-                                try {
-                                    if (cursor.moveToFirst()) {
-                                        val index = cursor.getColumnIndexOrThrow(android.provider.MediaStore.Images.Media.DATA)
-                                        File(cursor.getString(index))
-                                    } else {
-                                        null
-                                    }
-                                } finally {
-                                    cursor.close()
-                                }
-                            } else {
-                                null
-                            }
+            playlistCenterIcon.visibility = View.GONE
+            return
+        }
+
+        val file = try {
+            when (uri.scheme) {
+                "file" -> File(uri.path ?: "")
+
+                "content" -> {
+                    val projection = arrayOf(
+                        android.provider.MediaStore.Images.Media.DATA
+                    )
+
+                    val cursor = requireContext()
+                        .contentResolver
+                        .query(
+                            uri,
+                            projection,
+                            null,
+                            null,
+                            null
+                        )
+
+                    cursor?.use {
+                        if (it.moveToFirst()) {
+                            val index = it.getColumnIndexOrThrow(
+                                android.provider.MediaStore.Images.Media.DATA
+                            )
+                            File(it.getString(index))
+                        } else {
+                            null
                         }
-                        else -> File(sourceUri.path ?: "")
                     }
-                } catch (e: Exception) {
-                    Log.w("CoverImage", "Не удалось превратить URI в File: ${e.message}")
-                    null
                 }
 
-                if (file != null && file.exists()) {
-                    Glide.with(this)
-                        .load(file)
-                        .placeholder(R.drawable.ic_placeholder_312)
-                        .error(R.drawable.ic_placeholder_312)
-                        .into(coverImage)
-                    playlistCenterIcon.visibility = View.GONE
-                } else {
-                    Glide.with(this)
-                        .load(sourceUri)
-                        .placeholder(R.drawable.ic_placeholder_312)
-                        .error(R.drawable.ic_placeholder_312)
-                        .into(coverImage)
-                    playlistCenterIcon.visibility = View.GONE
-                }
-            } ?: run {
-                coverImage.setImageDrawable(null)
-                playlistCenterIcon.visibility = View.VISIBLE
+                else -> File(uri.path ?: "")
             }
+
+        } catch (e: Exception) {
+            Log.w(
+                "CoverImage",
+                "Не удалось получить файл: ${e.message}"
+            )
+            null
         }
+
+
+        if (file != null && file.exists()) {
+
+            Glide.with(this)
+                .load(file)
+                .placeholder(R.drawable.ic_placeholder_312)
+                .error(R.drawable.ic_placeholder_312)
+                .into(coverImage)
+
+        } else {
+
+            Glide.with(this)
+                .load(uri)
+                .placeholder(R.drawable.ic_placeholder_312)
+                .error(R.drawable.ic_placeholder_312)
+                .into(coverImage)
+        }
+
+        playlistCenterIcon.visibility = View.GONE
     }
 
     private fun setupTextWatchers() {

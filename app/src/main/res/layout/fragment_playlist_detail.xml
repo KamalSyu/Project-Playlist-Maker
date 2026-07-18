@@ -7,17 +7,6 @@
     android:background="@color/yp_light_gray"
     >
 
-    <!-- Затемнение фона (overlayDim) -->
-    <View
-        android:id="@+id/overlayDim"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#80000000"
-        android:alpha="0"
-        android:visibility="gone"
-        android:clickable="true"
-        android:focusable="true"/>
-
     <!-- Верхняя часть: обложка + инфо + иконки -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/topContent"
@@ -158,6 +147,16 @@
                 android:background="@drawable/rounded_line_50_4"
                 android:backgroundTint="?attr/bottom_sheet_separator_color"/>
 
+            <TextView
+                android:id="@+id/emptyTracksText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/MenuItemStyle"
+                android:layout_marginTop="24dp"
+                android:gravity="center"
+                android:text="@string/no_track"
+                android:visibility="gone" />
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/tracksRecyclerView"
                 android:layout_width="match_parent"
@@ -218,4 +217,13 @@
         </LinearLayout>
     </FrameLayout>
 
+    <View
+        android:id="@+id/overlayDim"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#801A1B22"
+        android:alpha="0"
+        android:visibility="gone"
+        android:clickable="true"
+        android:focusable="true"/>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -5,14 +5,12 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.practicum.playlistmaker.core.models.domain.Playlist
-import com.practicum.playlistmaker.mediateka.data.db.PlaylistTrackEntity
+import kotlinx.coroutines.Job
 import com.practicum.playlistmaker.mediateka.domain.usecase.DeletePlaylistUseCase
 import com.practicum.playlistmaker.mediateka.domain.usecase.LoadPlaylistByIdUseCase
 import com.practicum.playlistmaker.mediateka.domain.usecase.RemoveTrackFromPlaylistUseCase
 import com.practicum.playlistmaker.mediateka.ui.PlaylistDetailUiState
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 
@@ -25,25 +23,40 @@ class PlaylistDetailViewModel(
     private val _uiState = MutableLiveData<PlaylistDetailUiState>()
     val uiState: LiveData<PlaylistDetailUiState> = _uiState
 
+    private var playlistJob: Job? = null
+
     fun loadPlaylist(playlistIdString: String) {
+
         val playlistId = playlistIdString.toLongOrNull() ?: run {
-            _uiState.value = PlaylistDetailUiState.Error(IllegalArgumentException("Некорректный ID плейлиста"))
+            _uiState.value =
+                PlaylistDetailUiState.Error(
+                    IllegalArgumentException("Некорректный ID плейлиста")
+                )
             return
         }
 
-        viewModelScope.launch {
-            Log.d("PlaylistDebug", "ViewModel: запрашиваем плейлист с ID=$playlistId")
+        playlistJob?.cancel()
+
+        playlistJob = viewModelScope.launch {
+
+            Log.d(
+                "PlaylistDebug",
+                "ViewModel: запрашиваем плейлист с ID=$playlistId"
+            )
 
             loadPlaylistByIdUseCase(playlistId)
                 .flowOn(Dispatchers.IO)
                 .collect { state ->
-                    Log.d("PlaylistDebug", "ViewModel: получили состояние: ${state::class.simpleName}")
+
+                    Log.d(
+                        "PlaylistDebug",
+                        "ViewModel: получили состояние: ${state::class.simpleName}"
+                    )
+
                     _uiState.value = state
                 }
         }
     }
-
-
     fun removeTrack(playlistId: Long, trackId: String) {
         viewModelScope.launch {
             try {
