@@ -15,9 +15,9 @@ import android.Manifest
 import com.practicum.playlistmaker.R
 import android.content.pm.PackageManager
 import android.app.AlertDialog
-import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.graphics.Rect
 import android.provider.Settings
 import android.widget.Button
 import android.widget.ImageView
@@ -27,11 +27,11 @@ import android.text.Editable
 import androidx.activity.OnBackPressedCallback
 import android.os.Build
 import android.util.Log
-import android.view.inputmethod.InputMethodManager
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
+import androidx.core.widget.NestedScrollView
 import com.bumptech.glide.Glide
 import com.practicum.playlistmaker.core.utils.DashedRoundedBorderDrawable
 import com.practicum.playlistmaker.mediateka.ui.view.CreatePlaylistViewModel
@@ -67,6 +67,7 @@ open class CreatePlaylistFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+
         savedInstanceState?.let { bundle ->
             val playlistName = bundle.getString("playlistName", "")
             val playlistDescription = bundle.getString("playlistDescription", "")
@@ -98,21 +99,152 @@ open class CreatePlaylistFragment : Fragment() {
         setupErrorClearingOnInput()
         setupClickListeners()
         setupObservers()
+//
+//        if (savedInstanceState == null) {
+//            nameField.editText?.clearFocus()
+//        }
 
-        if (savedInstanceState == null) {
-            nameField.editText?.requestFocus()
-            val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.showSoftInput(nameField.editText, InputMethodManager.SHOW_IMPLICIT)
+        val nestedScrollView = view.findViewById<NestedScrollView>(R.id.nestedScrollView)
+        var keyboardHeight = 0
+        Log.d("KEYBOARD_DEBUG", "Screen height = ${resources.displayMetrics.heightPixels}")
+
+        nestedScrollView.viewTreeObserver.addOnGlobalLayoutListener {
+
+            val rect = Rect()
+
+            nestedScrollView.getWindowVisibleDisplayFrame(rect)
+
+            val screenHeight = nestedScrollView.rootView.height
+
+            val height = screenHeight - rect.bottom
+
+
+            if (height != keyboardHeight) {
+
+                keyboardHeight = height
+
+
+                if (height > 0) {
+
+                    val focusedView = requireActivity()
+                        .currentFocus
+
+
+                    focusedView?.let { view ->
+
+                        nestedScrollView.post {
+
+                            val location = IntArray(2)
+
+                            view.getLocationOnScreen(location)
+
+
+                            val viewBottom =
+                                location[1] + view.height
+
+
+                            val visibleBottom =
+                                rect.bottom
+
+
+                            val offset =
+                                viewBottom - visibleBottom
+
+
+                            if (offset > 0) {
+
+                                nestedScrollView.smoothScrollBy(
+                                    0,
+                                    offset + 0
+                                )
+
+                            }
+                        }
+                    }
+                }
+            }
         }
 
-        ViewCompat.setOnApplyWindowInsetsListener(view) { view, insets ->
-            val statusBar = insets.getInsets(WindowInsetsCompat.Type.statusBars())
-            view.updatePadding(top = statusBar.top)
+
+        ViewCompat.setOnApplyWindowInsetsListener(nestedScrollView) { scrollView, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
+
+            scrollView.updatePadding(
+                top = systemBars.top,
+                bottom = ime.bottom
+            )
             insets
         }
 
+
+//        nameField.editText?.setOnFocusChangeListener { view, hasFocus ->
+//
+//            Log.d(
+//                "KEYBOARD_DEBUG",
+//                "NAME focus=$hasFocus top=${view.top} y=${view.y}"
+//            )
+//
+//            if (hasFocus) {
+//                nestedScrollView.post {
+//
+//                    Log.d(
+//                        "KEYBOARD_DEBUG",
+//                        "Before scroll name scrollY=${nestedScrollView.scrollY}"
+//                    )
+//
+//                    nestedScrollView.smoothScrollTo(
+//                        0,
+//                        nameField.top
+//                    )
+//
+//                    nestedScrollView.postDelayed({
+//
+//                        Log.d(
+//                            "KEYBOARD_DEBUG",
+//                            "After scroll name scrollY=${nestedScrollView.scrollY}"
+//                        )
+//
+//                    }, 300)
+//                }
+//            }
+//        }
+//
+//        descriptionField.editText?.setOnFocusChangeListener { view, hasFocus ->
+//
+//            Log.d(
+//                "KEYBOARD_DEBUG",
+//                "DESCRIPTION focus=$hasFocus top=${view.top} y=${view.y}"
+//            )
+//
+//            if (hasFocus) {
+//
+//                nestedScrollView.post {
+//
+//                    Log.d(
+//                        "KEYBOARD_DEBUG",
+//                        "Before scroll description scrollY=${nestedScrollView.scrollY}"
+//                    )
+//
+//                    nestedScrollView.smoothScrollTo(
+//                        0,
+//                        descriptionField.top
+//                    )
+//
+//                    nestedScrollView.postDelayed({
+//
+//                        Log.d(
+//                            "KEYBOARD_DEBUG",
+//                            "After scroll description scrollY=${nestedScrollView.scrollY}"
+//                        )
+//
+//                    }, 300)
+//                }
+//            }
+//        }
+
         setupOnBackPressedCallback()
-        configureScreenUi(view)
+//        configureScreenUi(view)
 
         borderImage = view.findViewById(R.id.playlistBorderImage)
         val drawable = DashedRoundedBorderDrawable(
