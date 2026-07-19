@@ -105,7 +105,7 @@ open class CreatePlaylistFragment : Fragment() {
         Log.d("KEYBOARD_DEBUG", "Screen height = ${resources.displayMetrics.heightPixels}")
 
         nestedScrollView.viewTreeObserver.addOnGlobalLayoutListener {
-
+            if (!isAdded) return@addOnGlobalLayoutListener
             val rect = Rect()
 
             nestedScrollView.getWindowVisibleDisplayFrame(rect)
