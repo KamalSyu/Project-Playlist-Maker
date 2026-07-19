@@ -61,7 +61,6 @@ open class CreatePlaylistFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        requireActivity().findViewById<View>(R.id.bottom_navigation)?.visibility = View.GONE
         val view = inflater.inflate(R.layout.fragment_create_playlist, container, false)
         setupViews(view)
         return view
@@ -436,7 +435,6 @@ open class CreatePlaylistFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        requireActivity().findViewById<View>(R.id.bottom_navigation)?.visibility = View.VISIBLE
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

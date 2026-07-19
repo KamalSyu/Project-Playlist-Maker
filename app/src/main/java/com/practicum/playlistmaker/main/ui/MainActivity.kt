@@ -52,11 +52,15 @@ class MainActivity : AppCompatActivity() {
     }
     private fun updateToolbarAndBottomNavVisibility(destinationId: Int?) {
         when (destinationId) {
-            R.id.audioPlayerFragment -> {
+            R.id.audioPlayerFragment,
+            R.id.playlistDetailFragment,
+            R.id.editPlaylistFragment,
+            R.id.createPlaylistFragment -> {
                 toolbar.visibility = View.GONE
                 supportActionBar?.hide()
                 bottomNavigationView.visibility = View.GONE
             }
+
             else -> {
                 toolbar.visibility = View.GONE
                 supportActionBar?.hide()

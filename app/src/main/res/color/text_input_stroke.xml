@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- пустое поле -->
-    <item
-        android:state_focused="false"
-        android:color="@color/yp_black"/>
-
-    <!-- при фокусе -->
     <item
         android:state_focused="true"
+        android:color="@color/text_input_hint_color"/>
+
+    <item
+        android:state_hovered="true"
+        android:color="@color/text_input_hint_color"/>
+
+    <item
         android:color="@color/text_input_hint_color"/>
 
 </selector>
