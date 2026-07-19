@@ -14,9 +14,7 @@ data class Track(
     val addedDate: Long,
     var isFavorite: Boolean = false
 )  {
-
     fun getHighQualityArtworkUrl(): String? {
         return artworkUrl100?.replace("100x100bb.jpg", "512x512bb.jpg")
     }
-
 }

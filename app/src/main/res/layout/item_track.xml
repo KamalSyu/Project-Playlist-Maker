@@ -47,8 +47,8 @@
 
         <ImageView
             android:id="@+id/point_image"
-            android:layout_width="13dp"
-            android:layout_height="13dp"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
             android:src="@drawable/ic_point_13"
             app:tint="@color/for_point_search" />
 

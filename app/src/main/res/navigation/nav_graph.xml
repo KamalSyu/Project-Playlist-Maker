@@ -3,71 +3,121 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/mediatekaFragment">
 
-    <!-- Основной экран медиатеки -->
     <fragment
         android:id="@+id/mediatekaFragment"
         android:name="com.practicum.playlistmaker.mediateka.MediatekaFragment"
         android:label="@string/mediateca">
 
         <action
-            android:id="@+id/action_mediatekaFragment_to_audioPlayerFragment"
-            app:destination="@id/audioPlayerFragment" />
+            android:id="@+id/action_mediatekaFragment_to_createPlaylistFragment"
+            app:destination="@id/createPlaylistFragment">
+            <argument
+                android:name="playlistId"
+                app:argType="long"
+                android:defaultValue="-1L"/>
+        </action>
 
         <action
-            android:id="@+id/action_mediatekaFragment_to_createPlaylistFragment"
-            app:destination="@id/createPlaylistFragment" />
+            android:id="@+id/action_mediatekaFragment_to_playlistDetailFragment"
+            app:destination="@id/playlistDetailFragment">
+            <argument
+                android:name="playlistId"
+                app:argType="string"
+                app:nullable="false"/>
+        </action>
     </fragment>
 
-    <!-- Экран создания плейлиста -->
     <fragment
         android:id="@+id/createPlaylistFragment"
         android:name="com.practicum.playlistmaker.mediateka.ui.fragment.CreatePlaylistFragment"
         android:label="@string/create_playlist">
+        <argument
+            android:name="playlistId"
+            app:argType="long"
+            android:defaultValue="-1L"/>
     </fragment>
 
-    <!-- Вкладка «Избранные» внутри медиатеки -->
+    <fragment
+        android:id="@+id/editPlaylistFragment"
+        android:name="com.practicum.playlistmaker.mediateka.ui.fragment.EditPlaylistFragment"
+        android:label="@string/edit_playlist">
+
+    </fragment>
+
+    <action
+        android:id="@+id/action_playlistDetailFragment_to_editPlaylistFragment"
+        app:destination="@id/editPlaylistFragment">
+        <argument
+            android:name="playlistId"
+            app:argType="long"
+            app:nullable="false"/>
+    </action>
+
     <fragment
         android:id="@+id/fragmentFavorites"
         android:name="com.practicum.playlistmaker.mediateka.ui.fragment.FragmentFavorites"
         android:label="@string/favorites">
-
         <action
             android:id="@+id/action_fragmentFavorites_to_audioPlayerFragment"
             app:destination="@id/audioPlayerFragment" />
     </fragment>
 
-    <!-- Поиск -->
     <fragment
         android:id="@+id/searchFragment"
         android:name="com.practicum.playlistmaker.search.ui.SearchFragment"
         android:label="@string/search_button">
-
         <action
             android:id="@+id/action_searchFragment_to_audioPlayerFragment"
             app:destination="@id/audioPlayerFragment" />
     </fragment>
 
-    <!-- Настройки -->
     <fragment
         android:id="@+id/settingsFragment"
         android:name="com.practicum.playlistmaker.settings.ui.SettingsFragment"
         android:label="@string/setting" />
 
-    <!-- Аудиоплеер -->
     <fragment
         android:id="@+id/audioPlayerFragment"
         android:name="com.practicum.playlistmaker.player.ui.AudioPlayerFragment"
         android:label="@string/audio_player">
-
-        <!-- Параметр для передачи трека -->
         <argument
-            android:name="trackParcelable"
-            app:argType="com.practicum.playlistmaker.search.ui.parcel.ParcelableTrack" />
-
+        android:name="track"
+        app:argType="com.practicum.playlistmaker.search.ui.parcel.ParcelableTrack" />
         <action
             android:id="@+id/action_audioPlayerFragment_to_createPlaylistFragment"
-            app:destination="@id/createPlaylistFragment" />
+            app:destination="@id/createPlaylistFragment">
+            <argument
+                android:name="playlistId"
+                app:argType="long"
+                android:defaultValue="-1L"/>
+        </action>
     </fragment>
 
+    <fragment
+        android:id="@+id/fragmentPlaylists"
+        android:name="com.practicum.playlistmaker.mediateka.ui.fragment.FragmentPlaylists"
+        android:label="@string/playlists"/>
 
+    <fragment
+        android:id="@+id/playlistDetailFragment"
+        android:name="com.practicum.playlistmaker.mediateka.ui.fragment.PlaylistDetailFragment"
+        android:label="@string/playlist_detail">
+        <argument
+            android:name="playlistId"
+            app:argType="string"
+            app:nullable="false"/>
+
+        <action
+            android:id="@+id/action_playlistDetailFragment_to_audioPlayerFragment"
+            app:destination="@id/audioPlayerFragment"/>
+
+        <action
+            android:id="@+id/action_playlistDetailFragment_to_createPlaylistFragment"
+            app:destination="@id/createPlaylistFragment">
+            <argument
+                android:name="playlistId"
+                app:argType="long"/>
+        </action>
+
+    </fragment>
 </navigation>

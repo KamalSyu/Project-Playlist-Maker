@@ -1,17 +1,14 @@
 package com.practicum.playlistmaker.mediateka.ui.view
 
-import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.core.models.domain.Playlist
 import com.practicum.playlistmaker.mediateka.ui.adapter.PlaylistsAdapter
-import java.io.File
 
 class PlaylistViewHolder(
     itemView: View,

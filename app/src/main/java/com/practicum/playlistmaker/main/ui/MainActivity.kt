@@ -19,9 +19,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var bottomNavigationView: BottomNavigationView
     private lateinit var toolbar: Toolbar
     private lateinit var appBarConfiguration: AppBarConfiguration
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         toolbar = findViewById(R.id.toolbar)
         try {
@@ -38,6 +39,7 @@ class MainActivity : AppCompatActivity() {
                     R.id.audioPlayerFragment
                     )
             )
+
             updateToolbarAndBottomNavVisibility(navController.currentDestination?.id)
             setupNavigationVisibility()
             bottomNavigationView.setupWithNavController(navController)
@@ -52,11 +54,15 @@ class MainActivity : AppCompatActivity() {
     }
     private fun updateToolbarAndBottomNavVisibility(destinationId: Int?) {
         when (destinationId) {
-            R.id.audioPlayerFragment -> {
+            R.id.audioPlayerFragment,
+            R.id.playlistDetailFragment,
+            R.id.editPlaylistFragment,
+            R.id.createPlaylistFragment -> {
                 toolbar.visibility = View.GONE
                 supportActionBar?.hide()
                 bottomNavigationView.visibility = View.GONE
             }
+
             else -> {
                 toolbar.visibility = View.GONE
                 supportActionBar?.hide()

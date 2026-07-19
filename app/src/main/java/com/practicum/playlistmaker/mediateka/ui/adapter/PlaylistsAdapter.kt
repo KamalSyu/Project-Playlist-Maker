@@ -9,19 +9,17 @@ import com.practicum.playlistmaker.mediateka.ui.view.PlaylistViewHolder
 
 class PlaylistsAdapter(
     private var playlists: List<Playlist> = emptyList(),
-    private val onPlaylistAction: (Playlist, Action) -> Unit
+    private val onPlaylistAction: (Playlist, Action) -> Unit,
+    private val onPlaylistClick: (Playlist) -> Unit = {}
 ) : RecyclerView.Adapter<PlaylistViewHolder>() {
-
     enum class Action {
         RENAME,
         DELETE
     }
-
     fun submitList(newPlaylists: List<Playlist>) {
         playlists = newPlaylists
         notifyDataSetChanged()
     }
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PlaylistViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_playlist, parent, false)
@@ -29,10 +27,12 @@ class PlaylistsAdapter(
             onPlaylistAction(playlist, action)
         }
     }
-
     override fun onBindViewHolder(holder: PlaylistViewHolder, position: Int) {
-        holder.bind(playlists[position])
+        val playlist = playlists[position]
+        holder.bind(playlist)
+        holder.itemView.setOnClickListener {
+            onPlaylistClick(playlist)
+        }
     }
-
     override fun getItemCount() = playlists.size
 }

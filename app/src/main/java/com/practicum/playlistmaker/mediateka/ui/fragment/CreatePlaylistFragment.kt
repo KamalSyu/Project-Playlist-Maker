@@ -15,9 +15,9 @@ import android.Manifest
 import com.practicum.playlistmaker.R
 import android.content.pm.PackageManager
 import android.app.AlertDialog
-import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.graphics.Rect
 import android.provider.Settings
 import android.widget.Button
 import android.widget.ImageView
@@ -27,53 +27,53 @@ import android.text.Editable
 import androidx.activity.OnBackPressedCallback
 import android.os.Build
 import android.util.Log
-import android.view.inputmethod.InputMethodManager
-import android.widget.FrameLayout
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
+import androidx.core.widget.NestedScrollView
 import com.bumptech.glide.Glide
 import com.practicum.playlistmaker.core.utils.DashedRoundedBorderDrawable
 import com.practicum.playlistmaker.mediateka.ui.view.CreatePlaylistViewModel
-import org.koin.android.ext.android.inject
 import java.io.File
-
-// ВАЖНО: Добавлен импорт ShapeableImageView
 import com.google.android.material.imageview.ShapeableImageView
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class CreatePlaylistFragment : Fragment() {
-    private val viewModel: CreatePlaylistViewModel by inject()
-    private lateinit var createButton: Button
-    private lateinit var nameField: TextInputLayout
-    private lateinit var descriptionField: TextInputLayout
+open class CreatePlaylistFragment : Fragment() {
 
-    // ИЗМЕНЕНИЕ: Тип теперь ShapeableImageView, чтобы корректно работать с XML-макетом
-    private lateinit var coverImage: ShapeableImageView
+    protected open val viewModel: CreatePlaylistViewModel by viewModel()
+    open lateinit var createButton: Button
+    open lateinit var nameField: TextInputLayout
+    open lateinit var descriptionField: TextInputLayout
+    open lateinit var coverImage: ShapeableImageView
+    open lateinit var backButton: TextView
+    open lateinit var playlistCenterIcon: ImageView
+    open lateinit var borderImage: ImageView
 
-    private lateinit var backButton: TextView
-    private lateinit var playlistCenterIcon: ImageView
+    private val playlistId: Long
+        get() = arguments?.getLong("playlistId", -1L) ?: -1L
 
-    // ДОБАВЛЕНО: Поле для рамки (ImageView из макета)
-    private lateinit var borderImage: ImageView
+    protected val isEditMode: Boolean
+        get() = playlistId != -1L
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        requireActivity().findViewById<View>(R.id.bottom_navigation)?.visibility = View.GONE
         val view = inflater.inflate(R.layout.fragment_create_playlist, container, false)
         setupViews(view)
         return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+
         savedInstanceState?.let { bundle ->
             val playlistName = bundle.getString("playlistName", "")
             val playlistDescription = bundle.getString("playlistDescription", "")
             val coverUri = bundle.getParcelable("selectedCoverUri", Uri::class.java)
             val nameFieldHasError = bundle.getBoolean("nameFieldHasError", false)
+
             if (playlistName.isNotBlank()) {
                 nameField.editText?.setText(playlistName)
                 nameField.editText?.setSelection(playlistName.length)
@@ -92,39 +92,90 @@ class CreatePlaylistFragment : Fragment() {
                 }
             }
         }
+
+        configureScreenUi(view)
+
         setupTextWatchers()
         setupErrorClearingOnInput()
-
         setupClickListeners()
         setupObservers()
-        if (savedInstanceState == null) {
-            nameField.editText?.requestFocus()
-            val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.showSoftInput(nameField.editText, InputMethodManager.SHOW_IMPLICIT)
-        }
-        ViewCompat.setOnApplyWindowInsetsListener(view) { view, insets ->
-            val statusBar = insets.getInsets(WindowInsetsCompat.Type.statusBars())
-            view.updatePadding(top = statusBar.top)
-            insets
-        }
 
-        val callback = object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                if (hasUnsavedChanges()) {
-                    showDiscardChangesDialog()
-                } else {
-                    this.remove()
-                    findNavController().popBackStack()
+        val nestedScrollView = view.findViewById<NestedScrollView>(R.id.nestedScrollView)
+        var keyboardHeight = 0
+        Log.d("KEYBOARD_DEBUG", "Screen height = ${resources.displayMetrics.heightPixels}")
+
+        nestedScrollView.viewTreeObserver.addOnGlobalLayoutListener {
+            if (!isAdded) return@addOnGlobalLayoutListener
+            val rect = Rect()
+
+            nestedScrollView.getWindowVisibleDisplayFrame(rect)
+
+            val screenHeight = nestedScrollView.rootView.height
+
+            val height = screenHeight - rect.bottom
+
+
+            if (height != keyboardHeight) {
+
+                keyboardHeight = height
+
+
+                if (height > 0) {
+
+                    val focusedView = requireActivity()
+                        .currentFocus
+
+
+                    focusedView?.let { view ->
+
+                        nestedScrollView.post {
+
+                            val location = IntArray(2)
+
+                            view.getLocationOnScreen(location)
+
+
+                            val viewBottom =
+                                location[1] + view.height
+
+
+                            val visibleBottom =
+                                rect.bottom
+
+
+                            val offset =
+                                viewBottom - visibleBottom
+
+
+                            if (offset > 0) {
+
+                                nestedScrollView.smoothScrollBy(
+                                    0,
+                                    offset + 0
+                                )
+
+                            }
+                        }
+                    }
                 }
             }
         }
-        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
 
-        // --- ИСПРАВЛЕНИЕ ЗДЕСЬ ---
-        // 1. Получаем ImageView для рамки (НЕ контейнер!)
+
+        ViewCompat.setOnApplyWindowInsetsListener(nestedScrollView) { scrollView, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
+
+            scrollView.updatePadding(
+                top = systemBars.top,
+                bottom = ime.bottom
+            )
+            insets
+        }
+
+        setupOnBackPressedCallback()
+
         borderImage = view.findViewById(R.id.playlistBorderImage)
-
-        // 2. Создаем drawable
         val drawable = DashedRoundedBorderDrawable(
             context = requireContext(),
             strokeWidth = 1f,
@@ -133,11 +184,32 @@ class CreatePlaylistFragment : Fragment() {
             color = Color.parseColor("#AEAFB4"),
             cornerRadiusDp = 8f
         )
-
-        // 3. Ставим drawable НА РАМКУ (ImageView), а не на фон контейнера.
-        // Именно это возвращает картинку на место.
         borderImage.setImageDrawable(drawable)
-        // --------------------------
+    }
+
+    protected open fun configureScreenUi(view: View) {
+        val titleTextView = view.findViewById<TextView>(R.id.back)
+        if (isEditMode) {
+            titleTextView.text = getString(R.string.edit_playlist)
+            createButton.text = getString(R.string.save)
+        } else {
+            titleTextView.text = getString(R.string.new_playlist)
+            createButton.text = getString(R.string.create)
+        }
+    }
+
+    protected open fun setupOnBackPressedCallback() {
+
+        requireActivity()
+            .onBackPressedDispatcher
+            .addCallback(viewLifecycleOwner,
+                object : OnBackPressedCallback(true) {
+
+                    override fun handleOnBackPressed() {
+                        findNavController().popBackStack()
+                    }
+                }
+            )
     }
 
     private val pickImage = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
@@ -162,82 +234,81 @@ class CreatePlaylistFragment : Fragment() {
         }
     }
 
-    private fun setupViews(view: View) {
+    protected open fun setupViews(view: View) {
         createButton = view.findViewById(R.id.createPlaylistButton)
         nameField = view.findViewById(R.id.playlistNameField)
         descriptionField = view.findViewById(R.id.playlistDescriptionField)
-
-        // ИЗМЕНЕНИЕ: Приводим к правильному типу
         coverImage = view.findViewById(R.id.playlistCoverImage)
-
         backButton = view.findViewById(R.id.back)
         playlistCenterIcon = view.findViewById(R.id.playlistCenterIcon)
-
-        // ДОБАВЛЕНО: Инициализируем borderImage здесь тоже, на всякий случай,
-        // хотя в onViewCreated мы его тоже находим.
-        // Но лучше пусть инициализация drawable будет строго в onViewCreated,
-        // а тут просто убедимся, что поле существует.
 
         val currentState = viewModel.uiState.value
         updateCoverImage(currentState?.selectedCoverUri)
     }
 
-    private fun updateCoverImage(uri: Uri?) {
-        val state = viewModel.uiState.value
-        if (state?.isCreated == true && uri == null) {
-            coverImage.setImageResource(R.drawable.ic_placeholder_312)
-            playlistCenterIcon.visibility = View.VISIBLE
-        } else {
-            uri?.let { sourceUri ->
-                val file = try {
-                    when (sourceUri.scheme) {
-                        "file" -> File(sourceUri.path ?: "")
-                        "content" -> {
-                            val projection = arrayOf(android.provider.MediaStore.Images.Media.DATA)
-                            val cursor = requireContext().contentResolver.query(sourceUri, projection, null, null, null)
-                            if (cursor != null) {
-                                try {
-                                    if (cursor.moveToFirst()) {
-                                        val index = cursor.getColumnIndexOrThrow(android.provider.MediaStore.Images.Media.DATA)
-                                        File(cursor.getString(index))
-                                    } else {
-                                        null
-                                    }
-                                } finally {
-                                    cursor.close()
-                                }
-                            } else {
-                                null
-                            }
-                        }
-                        else -> File(sourceUri.path ?: "")
-                    }
-                } catch (e: Exception) {
-                    Log.w("CoverImage", "Не удалось превратить URI в File: ${e.message}")
-                    null
-                }
+    protected fun updateCoverImage(uri: Uri?) {
 
-                if (file != null && file.exists()) {
-                    Glide.with(this)
-                        .load(file)
-                        .placeholder(R.drawable.ic_placeholder_312)
-                        .error(R.drawable.ic_placeholder_312)
-                        .into(coverImage)
-                    playlistCenterIcon.visibility = View.GONE
-                } else {
-                    // Если файл не найден, грузим сразу по URI (Glide умеет работать с content://)
-                    Glide.with(this)
-                        .load(sourceUri)
-                        .placeholder(R.drawable.ic_placeholder_312)
-                        .error(R.drawable.ic_placeholder_312)
-                        .into(coverImage)
-                    playlistCenterIcon.visibility = View.GONE
-                }
-            } ?: run {
-                coverImage.setImageDrawable(null)
-                playlistCenterIcon.visibility = View.VISIBLE
-            }
+        if (uri == null) {
+            coverImage.setImageResource(R.drawable.ic_placeholder_312)
+            playlistCenterIcon.visibility = View.GONE
+            return
         }
+
+        val file = try {
+            when (uri.scheme) {
+                "file" -> File(uri.path ?: "")
+
+                "content" -> {
+                    val projection = arrayOf(
+                        android.provider.MediaStore.Images.Media.DATA
+                    )
+                    val cursor = requireContext()
+                        .contentResolver
+                        .query(
+                            uri,
+                            projection,
+                            null,
+                            null,
+                            null
+                        )
+
+                    cursor?.use {
+                        if (it.moveToFirst()) {
+                            val index = it.getColumnIndexOrThrow(
+                                android.provider.MediaStore.Images.Media.DATA
+                            )
+                            File(it.getString(index))
+                        } else {
+                            null
+                        }
+                    }
+                }
+                else -> File(uri.path ?: "")
+            }
+        } catch (e: Exception) {
+            Log.w(
+                "CoverImage",
+                "Не удалось получить файл: ${e.message}"
+            )
+            null
+        }
+        if (file != null && file.exists()) {
+
+            Glide.with(this)
+                .load(file)
+                .placeholder(R.drawable.ic_placeholder_312)
+                .error(R.drawable.ic_placeholder_312)
+                .into(coverImage)
+
+        } else {
+
+            Glide.with(this)
+                .load(uri)
+                .placeholder(R.drawable.ic_placeholder_312)
+                .error(R.drawable.ic_placeholder_312)
+                .into(coverImage)
+        }
+        playlistCenterIcon.visibility = View.GONE
     }
 
     private fun setupTextWatchers() {
@@ -266,7 +337,7 @@ class CreatePlaylistFragment : Fragment() {
         descriptionField.editText?.addTextChangedListener(descriptionTextWatcher)
     }
 
-    private fun setupClickListeners() {
+    protected open fun setupClickListeners() {
         coverImage.setOnClickListener {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 pickImage.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
@@ -274,6 +345,7 @@ class CreatePlaylistFragment : Fragment() {
                 requestReadStoragePermission()
             }
         }
+
         backButton.setOnClickListener {
             if (hasUnsavedChanges()) {
                 showDiscardChangesDialog()
@@ -281,24 +353,31 @@ class CreatePlaylistFragment : Fragment() {
                 findNavController().popBackStack()
             }
         }
+
         createButton.setOnClickListener {
             createPlaylist()
         }
     }
 
-    private fun createPlaylist() {
+    protected open fun createPlaylist() {
         nameField.error = null
         val state = viewModel.uiState.value ?: return
-        if (state.isCreateButtonEnabled) {
-            viewModel.createPlaylist(requireContext())
-        } else {
+
+        if (!state.isCreateButtonEnabled) {
             nameField.postDelayed({
                 nameField.error = getString(R.string.playlist_name_required)
             }, 100)
+            return
+        }
+
+        if (isEditMode) {
+            viewModel.updatePlaylist()
+        } else {
+            viewModel.createPlaylist()
         }
     }
 
-    private fun setupObservers() {
+    protected open fun setupObservers() {
         viewModel.uiState.observe(viewLifecycleOwner) { state ->
             updateCoverImage(state.selectedCoverUri)
             createButton.isEnabled = state.isCreateButtonEnabled
@@ -417,7 +496,6 @@ class CreatePlaylistFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        requireActivity().findViewById<View>(R.id.bottom_navigation)?.visibility = View.VISIBLE
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

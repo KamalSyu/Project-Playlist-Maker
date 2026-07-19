@@ -13,13 +13,15 @@ import kotlinx.coroutines.launch
 
 class PlaylistsViewModel(
     private val loadPlaylistsUseCase: LoadPlaylistsUseCase,
-    private val playlistInteractor: PlaylistInteractor)
-    : ViewModel() {
+    private val playlistInteractor: PlaylistInteractor
+) : ViewModel() {
     private val _uiState = MutableLiveData<PlaylistsUiState>(PlaylistsUiState.Loading)
     val uiState: LiveData<PlaylistsUiState> = _uiState
+
     init {
         loadPlaylists()
     }
+
     fun loadPlaylists() {
         viewModelScope.launch {
             try {
@@ -37,6 +39,7 @@ class PlaylistsViewModel(
             }
         }
     }
+
     fun addTrackToPlaylist(playlistId: String, track: Track) {
         viewModelScope.launch {
             val currentState = _uiState.value
@@ -49,7 +52,6 @@ class PlaylistsViewModel(
                     _uiState.value = currentState.copy(addTrackStatus = status)
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
                 if (currentState is PlaylistsUiState.Success) {
                     _uiState.value = currentState.copy(addTrackStatus = AddTrackStatus.ERROR)
                 }
@@ -66,12 +68,12 @@ class PlaylistsViewModel(
         playlistInteractor.deletePlaylist(playlistId)
         loadPlaylists()
     }
+
     fun createPlaylist(name: String, coverPath: String?) = viewModelScope.launch {
         try {
             playlistInteractor.createPlaylist(name, coverPath)
             loadPlaylists()
         } catch (e: Exception) {
-            e.printStackTrace()
         }
     }
 }

@@ -34,7 +34,8 @@
     <string name="no_playlists_message">Вы не создали\nни одного плейлиста</string>
     <string name="empty_state_image">Изображение состояния отсутствия данных</string>
     <string name="audio_player">Аудиоплеер</string>
-
+    playlist_detail
+    <string name="playlist_detail">Плейлист</string>
 
     <string name="playlist_cover">Обложка плейлиста</string>
     <string name="create_playlist">Создать</string>
@@ -68,6 +69,14 @@
     <string name="permission_rationale_title2">Необходимое разрешение</string>
     <string name="permission_denied_permanently_message">Для выбора изображения из галереи требуется разрешение. Вы можете включить его в настройках приложения.</string>
     <string name="go_to_settings">Настройки</string>
+
+    <string name="playlist_updated">Плейлист обновлён</string>
+
+    <string name="edit_playlist">Редактировать</string>
+    <string name="save">Сохранить</string>
+    <string name="create">Создать</string>
+
+    <string name="no_track">В этом плейлисте нет треков</string>
 
 
 

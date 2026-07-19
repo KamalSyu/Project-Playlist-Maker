@@ -2,10 +2,12 @@
     <!-- Базовая тема приложения -->
     <style name="Base.Theme.PlaylistMaker" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Основной цвет бренда -->
-        <item name="colorPrimary">@color/purple_200</item>
+<!--        <item name="colorPrimary">@color/purple_200</item>-->
         <item name="colorPrimaryVariant">@color/purple_700</item>
         <item name="colorOnPrimary">@color/black</item>
 
+        <item name="colorAccent">@color/yp_blue</item>
+        <item name="colorPrimary">@color/yp_blue</item>
         <!-- Вторичный цвет бренда -->
         <item name="colorSecondary">@color/teal_200</item>
         <item name="colorSecondaryVariant">@color/teal_200</item>
@@ -32,4 +34,5 @@
     </style>
 
     <style name="Theme.PlaylistMaker" parent="Base.Theme.PlaylistMaker" />
+
 </resources>

@@ -39,4 +39,23 @@ interface PlaylistsDao {
 
     @Query("UPDATE playlists SET name = :newName WHERE id = :playlistId")
     suspend fun updatePlaylistName(playlistId: Long, newName: String)
+
+    @Query("SELECT duration FROM playlist_tracks WHERE playlistId = :playlistId")
+    suspend fun getTrackDurationsByPlaylistId(playlistId: Long): List<Int>
+
+    @Query("SELECT * FROM playlist_tracks WHERE playlistId = :playlistId ORDER BY addedAt DESC")
+    suspend fun getTracksByPlaylistId(playlistId: Long): List<PlaylistTrackEntity>
+
+    @Query("DELETE FROM playlist_tracks WHERE playlistId = :playlistId AND trackId = :trackId")
+    suspend fun removeTrackFromPlaylist(playlistId: Long, trackId: String)
+
+    @Query("SELECT COUNT(*) FROM playlist_tracks WHERE trackId = :trackId")
+    suspend fun countPlaylistsWithTrack(trackId: String): Int
+
+    @Query("UPDATE playlists SET trackCount = trackCount - 1 WHERE id = :playlistId")
+    suspend fun decrementTrackCount(playlistId: Long)
+
+    @Query("DELETE FROM playlist_tracks WHERE trackId = :trackId")
+    suspend fun deleteTrackByTrackId(trackId: String)
+
 }

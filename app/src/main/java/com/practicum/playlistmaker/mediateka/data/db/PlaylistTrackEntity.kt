@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.practicum.playlistmaker.core.models.Track
 
 @Entity(
     tableName = "playlist_tracks",
@@ -25,5 +26,20 @@ data class PlaylistTrackEntity(
     val title: String,
     val artist: String,
     val duration: Int,
+    val artworkUrl100: String?,
     val addedAt: Long
+)
+fun PlaylistTrackEntity.toTrack(): Track = Track(
+    trackId = this.trackId,
+    trackName = this.title,
+    artistName = this.artist,
+    artworkUrl100 = artworkUrl100,
+    trackTimeMillis = (this.duration * 1_000).toLong(),
+    releaseDate = null,
+    collectionName = null,
+    primaryGenreName = null,
+    country = null,
+    previewUrl = null,
+    addedDate = this.addedAt,
+    isFavorite = false
 )
