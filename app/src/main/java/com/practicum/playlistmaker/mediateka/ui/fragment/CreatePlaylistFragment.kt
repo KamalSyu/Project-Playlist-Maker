@@ -99,10 +99,6 @@ open class CreatePlaylistFragment : Fragment() {
         setupErrorClearingOnInput()
         setupClickListeners()
         setupObservers()
-//
-//        if (savedInstanceState == null) {
-//            nameField.editText?.clearFocus()
-//        }
 
         val nestedScrollView = view.findViewById<NestedScrollView>(R.id.nestedScrollView)
         var keyboardHeight = 0
@@ -177,74 +173,7 @@ open class CreatePlaylistFragment : Fragment() {
             insets
         }
 
-
-//        nameField.editText?.setOnFocusChangeListener { view, hasFocus ->
-//
-//            Log.d(
-//                "KEYBOARD_DEBUG",
-//                "NAME focus=$hasFocus top=${view.top} y=${view.y}"
-//            )
-//
-//            if (hasFocus) {
-//                nestedScrollView.post {
-//
-//                    Log.d(
-//                        "KEYBOARD_DEBUG",
-//                        "Before scroll name scrollY=${nestedScrollView.scrollY}"
-//                    )
-//
-//                    nestedScrollView.smoothScrollTo(
-//                        0,
-//                        nameField.top
-//                    )
-//
-//                    nestedScrollView.postDelayed({
-//
-//                        Log.d(
-//                            "KEYBOARD_DEBUG",
-//                            "After scroll name scrollY=${nestedScrollView.scrollY}"
-//                        )
-//
-//                    }, 300)
-//                }
-//            }
-//        }
-//
-//        descriptionField.editText?.setOnFocusChangeListener { view, hasFocus ->
-//
-//            Log.d(
-//                "KEYBOARD_DEBUG",
-//                "DESCRIPTION focus=$hasFocus top=${view.top} y=${view.y}"
-//            )
-//
-//            if (hasFocus) {
-//
-//                nestedScrollView.post {
-//
-//                    Log.d(
-//                        "KEYBOARD_DEBUG",
-//                        "Before scroll description scrollY=${nestedScrollView.scrollY}"
-//                    )
-//
-//                    nestedScrollView.smoothScrollTo(
-//                        0,
-//                        descriptionField.top
-//                    )
-//
-//                    nestedScrollView.postDelayed({
-//
-//                        Log.d(
-//                            "KEYBOARD_DEBUG",
-//                            "After scroll description scrollY=${nestedScrollView.scrollY}"
-//                        )
-//
-//                    }, 300)
-//                }
-//            }
-//        }
-
         setupOnBackPressedCallback()
-//        configureScreenUi(view)
 
         borderImage = view.findViewById(R.id.playlistBorderImage)
         val drawable = DashedRoundedBorderDrawable(
